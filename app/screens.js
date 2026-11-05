@@ -75,7 +75,7 @@
     const recs = D.items.slice(0, 8);
     return {
       tab: 'home', html: `
-      <header class="topbar">${UI.searchbar({ readonlyHref: '#/search' })}${UI.iconBtn({ icon: 'heart', label: 'Favoritter', href: '#/favorites' })}${UI.iconBtn({ icon: 'bell', label: 'Notifikationer', href: '#/notifications', dot: true })}</header>
+      <header class="topbar">${UI.iconBtn({ icon: 'heart', label: 'Favoritter', href: '#/favorites' })}${UI.searchbar({ readonlyHref: '#/search' })}${UI.iconBtn({ icon: 'bell', label: 'Notifikationer', href: '#/notifications', dot: true })}</header>
       <div class="content content--tabs">
         <section class="hero" aria-label="Kampagne">
           <h2 class="t-display" style="font-size:28px;line-height:32px;max-width:220px">Giv tøjet nyt liv. Sælg nemt, køb unikt.</h2>
