@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>re:spin – designpakke</title>
+<link rel="stylesheet" href="tokens.css"><link rel="stylesheet" href="base.css"><link rel="stylesheet" href="components.css">
+<style>
+ body{padding:32px 20px 80px;max-width:1040px;margin:auto} h1{font-size:36px;font-weight:900;letter-spacing:-.03em}
+ section{margin-top:48px} section>h2{font-size:22px;font-weight:800;border-bottom:2px solid var(--slate);padding-bottom:8px;margin-bottom:20px}
+ .demo{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;position:relative}
+ .demo .col{width:358px;max-width:100%;display:flex;flex-direction:column;gap:12px;position:relative;background:var(--bg);padding:12px;border-radius:var(--r-lg);overflow:hidden}
+ code{font-size:12px;background:var(--surface-sunk);padding:2px 6px;border-radius:6px} .sw{width:120px} .sw i{display:block;height:64px;border-radius:12px;border:1px solid var(--border)} .sw b{font-size:13px;display:block;margin-top:6px} .sw span{font-size:12px;color:var(--text-muted)}
+ .cap{font-size:12px;color:var(--text-muted);width:100%}
+ .tbwrap{position:relative;height:110px;width:358px}.tbwrap .tabbar{position:absolute}
+</style></head><body>
+<h1>re:spin design-pakke</h1>
+<p class="t-muted mt-2">Én kilde til sandhed: <code>tokens.css</code> → <code>components.css</code> → <code>components.js</code>. Alle skærme bruger kun disse.</p>
+<div id="root"></div>
+<script src="icons.js"></script><script src="components.js"></script>
+<script>
+const it=(n)=>({id:n,title:['Ganni uldjakke','Adidas Samba OG'][n-1],brand:['Ganni','Adidas'][n-1],size:['M','41'][n-1],price:[450,350][n-1],tone:['forest','stone'][n-1],glyph:['shirt','sneaker'][n-1],badge:n==1?['Næsten ny','lime']:null});
+const sw=(n,v,t)=>`<div class="sw"><i style="background:${v}"></i><b>${n}</b><span>${t||v}</span></div>`;
+const sec=(t,b)=>`<section><h2>${t}</h2>${b}</section>`;
+const demo=(h,c)=>`<div class="demo">${c?`<div class="col">${h}</div>`:h}</div>`;
+const favs=new Set([1]);
+document.getElementById('root').innerHTML=[
+sec('Farver',demo([['Deep Forest','var(--forest)','#0E5A2F'],['Electric Lime','var(--lime)','#D2FF32'],['Sunset Coral','var(--coral)','#FF5A5F'],['Coral 600 (køb)','var(--coral-600)','#D93A41'],['Warm Cream','var(--cream)','#FDFBF7'],['Slate Dark','var(--slate)','#1C1C1C']].map(a=>sw(...a)).join('')+`<div class="cap">Lime = primær handling (tekst altid mørk). Coral 600 = Køb (hvid tekst, kontrast ≥ 4,5:1). Forest = brand/valgt tilstand. Coral = hjerte/notifikation.</div><div style="width:100%;height:48px;border-radius:16px;background:var(--gradient-energy)"></div>`)),
+sec('Typografi',demo(`<div style="width:100%"><div class="t-display">Display 32/36</div><div class="t-h1">Overskrift H1 26</div><div class="t-h2">Sektion H2 20</div><div class="t-h3">Titel H3 17</div><p>Brødtekst 15/22 – Satoshi, geometrisk og letlæselig.</p><p class="t-small t-muted">Small 13 – hjælpetekst</p><span class="t-caption t-muted">Caption 12</span></div>`)),
+sec('Knapper',demo(UI.btn({label:'Sæt til salg'})+UI.btn({label:'Køb nu',variant:'buy'})+UI.btn({label:'Byd',variant:'outline'})+UI.btn({label:'Log ind',variant:'dark'})+UI.btn({label:'Forest',variant:'forest',icon:'plus'})+UI.btn({label:'Ghost',variant:'ghost'})+UI.btn({label:'Deaktiveret',disabled:true})+UI.btn({label:'Lille',size:'sm'})+UI.btn({label:'Stor – fuld bredde',size:'lg',full:true}))),
+sec('Ikoner',demo(UI.icons.map(n=>`<div style="width:64px;text-align:center">${UI.icon(n,28)}<div class="t-caption t-muted">${n}</div></div>`).join('')+`<div class="cap">UI.icon('navn', størrelse)</div>`)),
+sec('Chips, badges, avatar, rating',demo(UI.chip('Alle',{action:'x',active:true})+UI.chip('Sneakers',{action:'x'})+UI.chip('Næsten ny',{tag:true})+UI.badge('Live','coral live')+UI.badge('Næsten ny','lime')+UI.badge('Verificeret','soft','check')+UI.badge('Skal sendes','warn')+UI.avatar('Mette',  '',true)+UI.avatar('Jonas','lg')+UI.rating(4.9,120))),
+sec('Produktkort',demo(`<div class="grid-2" style="width:358px;padding:0">${UI.productCard(it(1),favs)}${UI.productCard(it(2),favs)}</div>`)),
+sec('Formularer',demo(`<div class="form-stack">${UI.field({label:'Titel',id:'a',placeholder:'fx Ganni uldjakke',hint:'Skriv brand og størrelse'})}${UI.field({label:'E-mail',id:'b',icon:'mail',value:'fejl',error:'Ugyldig e-mail'})}${UI.select({label:'Kategori',id:'c',options:['Vintage','Sneakers']})}${UI.field({label:'Pris',id:'d',suffix:'kr.',value:'450'})}<label class="row-flex gap-3" style="justify-content:space-between"><b>Fjern baggrund</b>${UI.toggle({id:'t',checked:true,label:'x'})}</label>${UI.checkbox({id:'k',label:'Jeg accepterer vilkår',checked:true})}${UI.optcard({name:'o',value:'1',title:'Pakkeshop · DAO',sub:'2–3 dage',icon:'pin',right:'39 kr.',checked:true})}${UI.optcard({name:'o',value:'2',title:'Hjemmelevering',sub:'2–3 dage',icon:'truck',right:'59 kr.'})}</div>`,1)),
+sec('Navigation',demo(`${UI.topbar({title:'Titel',back:true,actions:UI.iconBtn({icon:'share',label:'Del'})})}${UI.searchbar()}${UI.segmented([['a','Køb'],['b','Salg']],'a')}${UI.tabs([['a','Annoncer'],['b','Anmeldelser']],'a')}<div class="tbwrap">${UI.tabbar('home')}</div>`,1)),
+sec('Lister & feedback',demo(`${UI.list([UI.row({icon:'wallet',title:'Saldo',sub:'1.240 kr.',href:'#'}),UI.row({icon:'bell',title:'Notifikationer',trailing:UI.toggle({id:'t2',checked:true,label:'n'})}),UI.row({icon:'logout',title:'Log ud',danger:true,chevron:false})])}${UI.notice('<b>Køberbeskyttelse</b> inkluderet.')}${UI.notice('Pas på med betaling uden for appen.','info',true)}${UI.progress(60)}${UI.timeline([{title:'Betalt',sub:'I dag',state:'done'},{title:'Afsendt',state:'now'},{title:'Leveret'}])}${UI.sum([['Vare','450 kr.'],['Beskyttelse','26 kr.']],['I alt','476 kr.'])}${UI.empty({icon:'heart',title:'Ingen favoritter',text:'Tryk på hjertet for at gemme.'})}<div class="skeleton" style="height:80px"></div>`,1)),
+sec('Chat',demo(`<div class="chat" style="padding:0">${UI.bubble('Er den stadig til salg?','in','9:41')}${UI.bubble('Ja!','out','9:43')}<div class="offer"><div class="t-caption t-muted">Dit bud</div><div class="t-h2 t-price">300 kr.</div></div></div>`,1))
+].join('');
+</script></body></html>

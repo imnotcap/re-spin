@@ -1,0 +1,92 @@
+/* ==========================================================================
+   re:spin — DESIGN TOKENS
+   Eneste sted hvor farver, typografi, afstande, radier og motion defineres.
+   Alt andet (components.css, app) refererer kun til disse variabler.
+   ========================================================================== */
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap");
+
+:root {
+  /* ---- Brand colors (fra brand identity) ---- */
+  --forest-900: #07301a;
+  --forest-700: #0b4725;
+  --forest:     #0e5a2f;   /* Deep Forestgrøn */
+  --forest-100: #e1eee6;
+  --forest-50:  #f0f6f2;
+
+  --lime:       #d2ff32;   /* Electric Lime – primær handling */
+  --lime-600:   #b9e610;
+  --lime-100:   #f2ffbd;
+
+  --coral:      #ff5a5f;   /* Sunset Coral – køb / hjerte / notifikation */
+  --coral-600:  #d93a41;   /* mørkere variant: hvid tekst består kontrast (≥4.5:1) */
+  --coral-100:  #ffe8e8;
+
+  --cream:      #fdfbf7;   /* Warm Cream – baggrund */
+  --cream-200:  #f5f1e9;
+  --cream-300:  #e9e4d8;
+
+  --slate:      #1c1c1c;   /* Slate Dark – tekst */
+  --slate-700:  #3b3b38;
+  --slate-500:  #6a6a64;   /* dæmpet tekst (5:1 på cream) */
+  --slate-300:  #a9a79f;
+  --white:      #ffffff;
+
+  /* ---- Semantiske farver (brug DISSE i komponenter) ---- */
+  --bg:            var(--cream);
+  --surface:       var(--white);
+  --surface-sunk:  var(--cream-200);
+  --text:          var(--slate);
+  --text-muted:    var(--slate-500);
+  --text-inverse:  var(--cream);
+  --border:        var(--cream-300);
+  --border-strong: var(--slate);
+  --brand:         var(--forest);
+  --action:        var(--lime);
+  --action-text:   var(--slate);      /* tekst på lime – ALDRIG hvid */
+  --buy:           var(--coral-600);
+  --danger:        #c62828;
+  --success:       var(--forest);
+  --warning:       #b26a00;
+  --focus-ring:    0 0 0 3px rgba(210, 255, 50, .85), 0 0 0 4.5px var(--forest);
+
+  --gradient-energy: linear-gradient(100deg, #0e5a2f 0%, #0a8a78 30%, #d2ff32 62%, #ff5a5f 92%);
+
+  /* ---- Typografi ---- */
+  --font: "Satoshi", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fs-display: 32px;  --lh-display: 36px;
+  --fs-h1: 26px;       --lh-h1: 32px;
+  --fs-h2: 20px;       --lh-h2: 26px;
+  --fs-h3: 17px;       --lh-h3: 24px;
+  --fs-body: 15px;     --lh-body: 22px;
+  --fs-small: 13px;    --lh-small: 18px;
+  --fs-caption: 12px;  --lh-caption: 16px;
+
+  /* ---- Spacing (4pt) ---- */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px;
+  --gutter: 16px;
+
+  /* ---- Radius ---- */
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 24px; --r-pill: 999px;
+
+  /* ---- Elevation ---- */
+  --shadow-1: 0 1px 2px rgba(28,28,28,.06), 0 1px 1px rgba(28,28,28,.04);
+  --shadow-2: 0 4px 14px rgba(28,28,28,.10);
+  --shadow-3: 0 12px 32px rgba(28,28,28,.18);
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --t-fast: 120ms; --t-base: 220ms; --t-slow: 340ms;
+
+  /* ---- Layout ---- */
+  --tap: 44px;                         /* minimum touch-target */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tabbar-h: 64px;
+  --z-bar: 10; --z-tabbar: 20; --z-sheet: 40; --z-toast: 60;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --t-fast: 1ms; --t-base: 1ms; --t-slow: 1ms; }
+}
