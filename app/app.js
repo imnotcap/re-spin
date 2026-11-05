@@ -119,7 +119,7 @@
     const f = e.target.closest('[data-form]'); if (!f) return; e.preventDefault();
     const kind = f.dataset.form;
     if (kind === 'login') location.hash = '#/home';
-    if (kind === 'signup') location.hash = '#/interests';
+    if (kind === 'signup') location.hash = '#/intro';
     if (kind === 'profile') { App.toast('Profil gemt'); A.back(); }
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });

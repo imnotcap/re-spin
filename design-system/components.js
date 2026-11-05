@@ -16,12 +16,12 @@
     const cls = 'btn btn--' + variant + (size ? ' btn--' + size : '') + (full ? ' btn--full' : '');
     const inner = (icon ? U.icon(icon, 20) : '') + esc(label) + (iconRight ? U.icon(iconRight, 20) : '');
     const a = attrs(Object.assign({ class: cls, id, 'data-action': action, disabled }, attr));
-    return href ? '<a' + a + ' href="' + href + '">' + inner + '</a>' : '<button type="button"' + a + '>' + inner + '</button>';
+    return href ? '<a' + a + ' href="' + href + '">' + inner + '</a>' : '<button' + (attr.type ? '' : ' type="button"') + a + '>' + inner + '</button>';
   };
   U.iconBtn = ({ icon, label, variant, href, action, dot, attr = {}, size = 24 }) => {
     const a = attrs(Object.assign({ class: 'iconbtn' + (variant ? ' iconbtn--' + variant : ''), 'aria-label': label, 'data-action': action }, attr));
     const inner = U.icon(icon, size) + (dot ? '<span class="dot"></span>' : '');
-    return href ? '<a' + a + ' href="' + href + '">' + inner + '</a>' : '<button type="button"' + a + '>' + inner + '</button>';
+    return href ? '<a' + a + ' href="' + href + '">' + inner + '</a>' : '<button' + (attr.type ? '' : ' type="button"') + a + '>' + inner + '</button>';
   };
 
   /* ---- Small things ---- */

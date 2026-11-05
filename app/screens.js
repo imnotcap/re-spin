@@ -47,7 +47,7 @@
   });
 
   S.signup = () => ({
-    html: `${UI.topbar({ title: UI.stepper(1, 2), back: true })}
+    html: `${UI.topbar({ title: UI.stepper(1, 3), back: true })}
     <div class="content content--footer"><div class="px stack gap-6">
       <div><h1 class="t-h1">Opret din konto</h1><p class="t-muted mt-2">Det tager under et minut. Det er gratis at sælge.</p></div>
       <form class="form-stack" data-form="signup">
@@ -61,8 +61,43 @@
     </div></div>`
   });
 
+
+  /* ======================= INTRO (efter oprettelse) ======================= */
+  S.intro = () => {
+    const it = D.items[1], mini = (n) => `<div style="flex:1">${UI.ph({ shade: n, title: 'Billede' }, '34').replace('class="ph', 'style="border-radius:8px" class="ph')}</div>`;
+    const slides = [
+      { title: 'Sælg på få minutter', text: 'Tag billeder, skriv en kort titel og sæt en pris. Det er gratis at sælge, og du beholder hele beløbet.', pts: ['Op til 8 billeder pr. annonce', 'AI-baggrundsfjerner giver rene produktbilleder'],
+        art: `<div class="row-flex gap-2">${mini(1)}${mini(2)}${mini(3)}</div><div class="row-flex" style="justify-content:space-between;margin-top:var(--s-4)"><b>Din pris</b><b class="t-price">300 kr.</b></div>${UI.notice('<b>Du får 300 kr.</b> – ingen gebyrer for sælger.', 'wallet')}` },
+      { title: 'Køb trygt', text: 'Betal i appen, så holder vi pengene, indtil du har modtaget varen og er tilfreds.', pts: ['Køberbeskyttelse er med på alle køb', 'Passer varen ikke, får du pengene tilbage'],
+        art: `${UI.productRow(it, '<b class="t-price">' + UI.kr(it.price) + '</b>')}${UI.timeline([{ title: 'Du betaler', sub: 'Pengene holdes sikkert', state: 'done' }, { title: 'Sælger sender', sub: '', state: 'now' }, { title: 'Du godkender', sub: 'Først nu får sælger pengene' }])}` },
+      { title: 'Byd og skriv sammen', text: 'Spørg ind til varen eller giv et bud. Sælger kan acceptere, afslå eller svare igen.', pts: ['Hold samtalen i appen – så er du dækket', 'Du får besked, når nogen svarer'],
+        art: `<div class="chat" style="padding:0">${UI.bubble('Er den stadig til salg?', 'in')}${UI.bubble('Ja! Giv gerne et bud.', 'out')}<div class="offer"><div class="t-caption t-muted">Dit bud</div><div class="t-h2 t-price">300 kr.</div><div class="mt-2">${UI.badge('Afventer svar', 'warn', 'clock')}</div></div></div>` },
+      { title: 'Send og få dine penge', text: 'Når varen er solgt, får du en fragtlabel. Pengene lander på din saldo, og du kan udbetale til din bank.', pts: ['Print label eller brug QR-kode i en pakkeshop', 'Udbetaling tager 1–2 bankdage'],
+        art: `<div class="balance" style="margin:0"><div class="t-small" style="opacity:.8">Din saldo</div><div class="t-display" style="font-size:36px;color:var(--cream);margin-top:4px">1.240 kr.</div></div>${UI.sum([['Salg: Ganni uldjakke', '+450 kr.'], ['Udbetaling', '−800 kr.']])}` }
+    ];
+    return {
+      html: `${UI.topbar({ title: UI.stepper(2, 3), back: true, actions: '<a class="btn btn--ghost btn--sm" href="#/interests">Spring over</a>' })}
+      <div class="content" id="slides" style="display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none">
+        ${slides.map((s, i) => `<section style="flex:0 0 100%;scroll-snap-align:start;overflow-y:auto;padding:var(--s-2) var(--gutter) var(--s-6)" aria-label="Trin ${i + 1} af ${slides.length}">
+          <div class="stack gap-4" style="background:var(--grad-stone);border-radius:var(--r-lg);padding:var(--s-5);height:300px;overflow:hidden;justify-content:center">${s.art}</div>
+          <p class="t-small t-muted mt-6">Trin ${i + 1} af ${slides.length}</p>
+          <h1 class="t-h1 mt-2">${s.title}</h1><p class="mt-2">${s.text}</p>
+          <ul class="stack gap-2 mt-4" style="list-style:none;margin:0;padding:0">${s.pts.map((p) => `<li class="row-flex gap-3" style="align-items:flex-start">${UI.icon('check', 20)}<span>${p}</span></li>`).join('')}</ul></section>`).join('')}
+      </div>
+      <div class="footer" style="flex-direction:column;align-items:stretch;border-top:0"><div class="dots" id="idots" style="margin-bottom:var(--s-2)">${slides.map((_, i) => `<i class="${i ? '' : 'on'}" style="background:var(--stone-300)"></i>`).join('')}</div>${UI.btn({ label: 'Næste', size: 'lg', full: true, id: 'introNext' })}</div>`,
+      mount(el) {
+        const sc = el.querySelector('#slides'), dots = [...el.querySelectorAll('#idots i')], btn = el.querySelector('#introNext'), n = slides.length;
+        const cur = () => Math.round(sc.scrollLeft / sc.clientWidth);
+        const upd = () => { const i = cur(); dots.forEach((d, k) => { d.classList.toggle('on', k === i); d.style.background = k === i ? 'var(--slate)' : 'var(--stone-300)'; }); btn.textContent = i === n - 1 ? 'Kom i gang' : 'Næste'; };
+        sc.addEventListener('scroll', upd, { passive: true });
+        btn.addEventListener('click', () => { const i = cur(); if (i >= n - 1) location.hash = '#/interests'; else sc.scrollTo({ left: (i + 1) * sc.clientWidth, behavior: 'smooth' }); });
+        upd();
+      }
+    };
+  };
+
   S.interests = () => ({
-    html: `${UI.topbar({ title: UI.stepper(2, 2), back: true })}
+    html: `${UI.topbar({ title: UI.stepper(3, 3), back: true })}
     <div class="content content--footer"><div class="px stack gap-6">
       <div><h1 class="t-h1">Hvad kan du lide?</h1><p class="t-muted mt-2">Vælg et par ting, så viser vi dig de bedste fund først.</p></div>
       <div class="row-flex gap-2" style="flex-wrap:wrap">${[...D.categories.map((c) => c.label), 'Ganni', 'Nike', 'Adidas', 'Levi’s', 'Carhartt', 'Skind', 'Retro', 'Minimalistisk'].map((l, i) => UI.chip(l, { action: 'toggle-chip', active: i < 2 })).join('')}</div>
