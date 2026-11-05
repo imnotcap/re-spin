@@ -11,7 +11,7 @@
   /* ======================= ONBOARDING ======================= */
   S.welcome = () => ({
     cls: 'screen--bleed screen--dark', html: `
-    <div class="content" style="background:radial-gradient(90% 50% at 100% 100%, rgba(210,255,50,.18), transparent 70%), var(--grad-deep);color:var(--cream);display:flex;flex-direction:column">
+    <div class="content" style="background:radial-gradient(80% 45% at 0% 100%, rgba(210,255,50,.30), transparent 70%), var(--grad-deep);color:var(--cream);display:flex;flex-direction:column">
             <div style="position:relative;flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:calc(var(--safe-top) + 72px) var(--s-6) calc(var(--s-6) + var(--safe-bottom))">
         <div class="stack gap-6">
           ${UI.wordmark(40, 'var(--cream)')}
