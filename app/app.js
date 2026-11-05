@@ -102,6 +102,7 @@
     'sheet-sort'(el) { App.state.filters.sort = el.dataset.value; dirtyFilter(); },
     'sheet-cond'(el) { const c = App.state.filters.cond, v = el.dataset.value; c.has(v) ? c.delete(v) : c.add(v); dirtyFilter(); },
     'offer-pct'(el) { const it = DATA.items.find((i) => i.id == document.querySelector('[data-action="send-offer"]').dataset.id); document.getElementById('offerAmt').value = Math.round(it.price * (1 - el.dataset.value / 100)); },
+    certify() { DATA.me.certified = true; closeSheet(true); App.rerender(); App.toast('Du er nu certificeret sælger – 0,5 % i gebyr'); },
     'send-offer'(el) { const id = el.dataset.id; closeSheet(true); App.toast('Bud sendt til sælger'); location.hash = '#/chat/i' + id; },
     seg: tabSet, tab: tabSet, utab: (el) => tabSet(el, 'utab'), ptab: (el) => tabSet(el, 'ptab'), ftab: (el) => tabSet(el, 'ftab'), otab: (el) => tabSet(el, 'otab')
   };

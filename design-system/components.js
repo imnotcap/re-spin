@@ -34,6 +34,7 @@
     return href ? '<a' + a + ' href="' + href + '">' + inner + '</a>' : '<button type="button"' + a + '>' + inner + '</button>';
   };
   U.badge = (label, tone, icon) => '<span class="badge' + (tone ? ' ' + tone.split(' ').map((t) => 'badge--' + t).join(' ') : '') + '">' + (icon ? U.icon(icon, 12) : '') + esc(label) + '</span>';
+  U.certBadge = () => U.badge('Certificeret', 'forest', 'check');
   U.avatar = (name, size, online) => {
     const v = ['', 'b', 'c', 'd'][(name || 'x').charCodeAt(0) % 4];
     return '<span class="avatar' + (size ? ' avatar--' + size : '') + (v ? ' avatar--' + v : '') + '" aria-hidden="true">' + esc((name || '?').trim()[0].toUpperCase()) + (online ? '<span class="online"></span>' : '') + '</span>';

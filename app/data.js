@@ -1,6 +1,6 @@
 /* re:spin — mock-data (kun til skelettet) */
 window.DATA = {
-  me: { id: 0, name: 'Casper J.', handle: '@casper', city: 'Aarhus C', rating: 4.8, reviews: 23, followers: 128, following: 54, balance: 1240, bio: 'Sælger mit vintage-tøj og et par sneakers. Sender inden for 2 dage' },
+  me: { id: 0, name: 'Casper J.', handle: '@casper', city: 'Aarhus C', rating: 4.8, reviews: 23, followers: 128, following: 54, balance: 1240, certified: false, bio: 'Sælger mit vintage-tøj og et par sneakers. Sender inden for 2 dage' },
   categories: [
     { id: 'vintage', label: 'Vintage', icon: 'shirt' }, { id: 'gadestil', label: 'Gade-stil', icon: 'hoodie' },
     { id: 'sneakers', label: 'Sneakers', icon: 'sneaker' }, { id: 'tasker', label: 'Tasker', icon: 'bag' },
@@ -8,7 +8,7 @@ window.DATA = {
     { id: 'sport', label: 'Sport', icon: 'ball' }, { id: 'smykker', label: 'Smykker', icon: 'gem' }
   ],
   sellers: {
-    1: { id: 1, name: 'Mette K.', city: 'København V', rating: 4.9, reviews: 120, followers: 342, since: '2023', replies: 'Svarer inden for en time' },
+    1: { id: 1, certified: true, name: 'Mette K.', city: 'København V', rating: 4.9, reviews: 120, followers: 342, since: '2023', replies: 'Svarer inden for en time' },
     2: { id: 2, name: 'Jonas P.', city: 'Odense C', rating: 4.7, reviews: 56, followers: 88, since: '2024', replies: 'Svarer samme dag' },
     3: { id: 3, name: 'Sofie L.', city: 'Aarhus N', rating: 5.0, reviews: 31, followers: 140, since: '2024', replies: 'Svarer inden for en time' },
     4: { id: 4, name: 'Anders B.', city: 'Aalborg', rating: 4.6, reviews: 12, followers: 19, since: '2025', replies: 'Svarer inden for en dag' }

@@ -211,7 +211,7 @@
           </div>
           <div class="dots" id="dots" style="position:absolute;left:0;right:0;bottom:56px"><i class="on"></i><i></i><i></i></div>
           <a href="#/user/${s.id}" class="row-flex gap-3" style="position:absolute;left:var(--gutter);right:var(--gutter);bottom:-32px;background:var(--surface);padding:var(--s-3) var(--s-4);border-radius:var(--r-lg);box-shadow:var(--shadow-2)">
-            ${UI.avatar(s.name, '')}<div class="grow"><div class="t-bold">${esc(s.name)}</div>${UI.rating(s.rating, s.reviews + ' vurderinger')}</div>${UI.icon('next', 20)}</a>
+            ${UI.avatar(s.name, '')}<div class="grow"><div class="row-flex gap-2"><span class="t-bold">${esc(s.name)}</span>${s.certified ? UI.badge('Certificeret', 'forest', 'check') : ''}</div>${UI.rating(s.rating, s.reviews + ' vurderinger')}</div>${UI.icon('next', 20)}</a>
         </div>
         <div class="px" style="margin-top:56px">
           <h1 class="t-h1">${esc(it.title)}</h1>
@@ -253,7 +253,7 @@
         <div class="px stack gap-4" style="align-items:center;text-align:center;padding-top:var(--s-2)">
           ${UI.avatar(s.name, 'xl')}
           <div><h2 class="t-h1">${esc(s.name)}</h2><div class="row-flex gap-2" style="justify-content:center;margin-top:4px">${UI.rating(s.rating, s.reviews)}<span class="t-small t-muted">· ${esc(s.city)}</span></div></div>
-          <div class="row-flex gap-2" style="flex-wrap:wrap;justify-content:center">${UI.badge('E-mail verificeret', 'soft', 'check')}${UI.badge(s.replies, 'soft', 'clock')}</div>
+          <div class="row-flex gap-2" style="flex-wrap:wrap;justify-content:center">${s.certified ? UI.certBadge() : ''}${UI.badge('E-mail verificeret', 'soft', 'check')}${UI.badge(s.replies, 'soft', 'clock')}</div>
           <div class="row-flex" style="width:100%;padding:var(--s-3) 0;border-block:1px solid var(--border)"><div class="stat"><b>${list.length}</b><span>Annoncer</span></div><div class="stat"><b>${s.followers}</b><span>Følgere</span></div><div class="stat"><b>${s.since}</b><span>Medlem siden</span></div></div>
           <div class="row-flex gap-3" style="width:100%">${UI.btn({ label: ui('follow' + id) ? 'Følger' : 'Følg', variant: ui('follow' + id) ? 'outline' : 'primary', action: 'follow', attr: { 'data-id': id, style: 'flex:1' } })}${UI.btn({ label: 'Skriv', variant: 'outline', icon: 'chat', href: '#/chat/i' + (list[0] ? list[0].id : 1), attr: { style: 'flex:1' } })}</div>
         </div>
@@ -269,12 +269,13 @@
       tab: 'profile', html: `
       ${UI.topbar({ title: 'Profil', variant: 'left', actions: UI.iconBtn({ icon: 'settings', label: 'Indstillinger', href: '#/settings' }) })}
       <div class="content content--tabs">
-        <div class="px row-flex gap-4">${UI.avatar(m.name, 'lg')}<div class="grow"><h2 class="t-h2">${esc(m.name)}</h2><div class="t-small t-muted">${m.handle} · ${esc(m.city)}</div><div class="mt-2">${UI.rating(m.rating, m.reviews)}</div></div></div>
+        <div class="px row-flex gap-4">${UI.avatar(m.name, 'lg')}<div class="grow"><h2 class="t-h2">${esc(m.name)}</h2><div class="t-small t-muted">${m.handle} · ${esc(m.city)}</div><div class="row-flex gap-2 mt-2">${UI.rating(m.rating, m.reviews)}${m.certified ? UI.certBadge() : ''}</div></div></div>
         <p class="px t-small mt-4">${esc(m.bio)}</p>
         <div class="px row-flex gap-3 mt-4">
           <div class="row-flex stat-row" style="flex:1"><div class="stat"><b>${mine.length}</b><span>Annoncer</span></div><div class="stat"><b>${m.followers}</b><span>Følgere</span></div><div class="stat"><b>${m.following}</b><span>Følger</span></div></div>
         </div>
         <div class="px mt-4">${UI.btn({ label: 'Rediger profil', variant: 'outline', full: true, icon: 'edit', href: '#/profile/edit' })}</div>
+        <div class="mt-4">${UI.list([m.certified ? UI.row({ icon: 'shield', title: 'Certificeret sælger', sub: 'Du betaler kun 0,5 % i gebyr', action: 'sheet', value: '' }).replace('data-action="sheet"', 'data-action="sheet" data-sheet="certify"') : UI.row({ icon: 'shield', title: 'Bliv certificeret sælger', sub: 'Betal kun 0,5 % i stedet for 1 %', action: 'sheet', value: '' }).replace('data-action="sheet"', 'data-action="sheet" data-sheet="certify"')])}</div>
         <div class="grid-tiles mt-6">
           <a class="tile" href="#/wallet"><span class="tile__icon">${UI.icon('wallet', 20)}</span><span class="t-small t-muted">Saldo</span><b class="t-h3 t-price">${kr(m.balance)}</b></a>
           <a class="tile" href="#/orders"><span class="tile__icon">${UI.icon('package', 20)}</span><span class="t-small t-muted">Ordrer</span><b class="t-h3">2 undervejs</b></a>
@@ -345,7 +346,7 @@
         el.querySelector('#pLabel').textContent = n + ' af 5 udfyldt';
         el.querySelector('#pBar').innerHTML = UI.progress(n * 20);
         const btn = el.querySelector('#publish'); btn.disabled = n < 5;
-        el.querySelector('#priceInfo').innerHTML = price ? `${UI.icon('wallet', 20)}<div><b>Du får ${UI.krd(price - UI.sellerFee(price))}</b> efter 1 % til re:spin.<br>Certificeret sælger: kun 0,5 % (${UI.krd(price - UI.sellerFee(price, true))}).<br>Køber betaler ${kr(price + UI.fee(price))} inkl. køberbeskyttelse.</div>` : `${UI.icon('info', 20)}<div>Sæt en pris, så viser vi hvad du får udbetalt.</div>`;
+        el.querySelector('#priceInfo').innerHTML = price ? `${UI.icon('wallet', 20)}<div>${D.me.certified ? `<b>Du får ${UI.krd(price - UI.sellerFee(price, true))}</b> efter 0,5 % til re:spin (certificeret sælger).` : `<b>Du får ${UI.krd(price - UI.sellerFee(price))}</b> efter 1 % til re:spin.<br>Certificeret sælger: kun 0,5 % (${UI.krd(price - UI.sellerFee(price, true))}).`}<br>Køber betaler ${kr(price + UI.fee(price))} inkl. køberbeskyttelse.</div>` : `${UI.icon('info', 20)}<div>Sæt en pris, så viser vi hvad du får udbetalt.</div>`;
       };
       el.addEventListener('click', (e) => {
         const a = e.target.closest('[data-action]'); if (!a) return;
@@ -555,6 +556,15 @@
     },
     report() {
       return UI.sheet({ title: 'Hvad vil du gøre?', body: `<div class="list" style="margin:0">${[['flag', 'Rapportér', false], ['user', 'Blokér bruger', false], ['help', 'Få hjælp', false]].map(([i, t]) => UI.row({ icon: i, title: t, action: 'share-do', value: '' }).replace('data-action="share-do"', 'data-action="share-do" data-msg="' + t + ' – tak, vi kigger på det"')).join('')}</div>` });
+    },
+    certify() {
+      const m = D.me, ok = (t, s, done) => UI.row({ icon: done ? 'check' : 'clock', title: t, sub: s, chevron: false });
+      return UI.sheet({
+        title: m.certified ? 'Certificeret sælger' : 'Bliv certificeret sælger',
+        body: `<div class="stack gap-4"><p>${m.certified ? 'Du betaler kun <b>0,5 %</b> af salgsprisen til re:spin i stedet for 1 %. Dit mærke vises på profil og annoncer.' : 'Certificerede sælgere betaler kun <b>0,5 %</b> af salgsprisen i stedet for 1 %, og får et mærke på profil og annoncer.'}</p>
+          ${UI.list([ok('Mindst 10 gennemførte salg', '23 salg', true), ok('Vurdering på 4,5 eller højere', m.rating.toFixed(1) + ' i snit', true), ok('Bekræftet identitet', m.certified ? 'Bekræftet med MitID' : 'Mangler – tager 2 minutter', m.certified)]).replace('class="list"', 'class="list" style="margin:0"')}</div>`,
+        foot: m.certified ? UI.btn({ label: 'Luk', variant: 'outline', size: 'lg', full: true, action: 'close-sheet' }) : UI.btn({ label: 'Bekræft med MitID', size: 'lg', full: true, action: 'certify' })
+      });
     },
     payout() {
       return UI.sheet({ title: 'Udbetal til bank', body: `<div class="stack gap-4">${UI.field({ label: 'Beløb', id: 'po', suffix: 'kr.', value: String(D.me.balance), inputmode: 'numeric', required: true, hint: 'Udbetaling tager 1–2 bankdage' })}${UI.notice('Pengene sendes til Danske Bank •••• 5521', 'bank')}</div>`, foot: UI.btn({ label: 'Bekræft udbetaling', size: 'lg', full: true, action: 'share-do', attr: { 'data-msg': 'Udbetaling bestilt' } }) });
