@@ -64,7 +64,7 @@ window.DATA = {
   ],
   faq: [
     ['Hvordan fungerer køberbeskyttelse?', 'Dine penge holdes sikkert, indtil du har modtaget og godkendt varen. Passer den ikke til beskrivelsen, kan du melde det inden for 2 dage.'],
-    ['Hvad koster det at sælge?', 'Det er gratis at sælge på re:spin. Køber betaler et lille gebyr for køberbeskyttelse.'],
+    ['Hvad koster det at sælge?', 'Det er gratis at oprette annoncer. Når en vare sælges, går 1 % af salgsprisen til re:spin – kun 0,5 %, hvis du er certificeret sælger. Køber betaler et lille gebyr for køberbeskyttelse.'],
     ['Hvornår får jeg mine penge?', 'Saldoen frigives, når køber har godkendt varen – eller automatisk efter 2 dage. Udbetaling tager 1–2 bankdage.'],
     ['Hvordan sender jeg en pakke?', 'Du får en fragtetiket til print eller QR-kode til nærmeste pakkeshop, så snart varen er solgt.']
   ]

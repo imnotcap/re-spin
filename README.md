@@ -26,7 +26,7 @@ Komponenter: Button (primary/buy/outline/dark/forest/ghost, sm/md/lg) · IconBut
 
 `screens.js` indeholder alle skærme, `data.js` mock-data, `app.js` router/overgange/sheets.
 
-- **Onboarding:** velkommen, log ind, opret konto, intro (4 trin), interesser
+- **Onboarding:** velkommen, log ind, opret konto, intro (5 trin), interesser
 - **Opdag:** hjem, søg (med forslag), resultater (filter + sortering), kategori, favoritter
 - **Vare:** vareside (galleri, sælger, Køb nu / Byd, sikkerhed, lignende), sælgerprofil, bud-sheet, del/rapportér
 - **Sælg:** opret annonce (billeder, AI-baggrundsfjerner, live-fremdrift og udbetalingsberegning), annonce live

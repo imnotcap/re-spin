@@ -9,6 +9,8 @@
   const attrs = (o) => Object.entries(o || {}).map(([k, v]) => v === false || v == null ? '' : v === true ? ' ' + k : ' ' + k + '="' + esc(v) + '"').join('');
   U.esc = esc;
   U.kr = (n) => Math.round(n).toLocaleString('da-DK') + ' kr.';
+  U.krd = (n) => (Math.round(n * 100) / 100).toLocaleString('da-DK', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' kr.';
+  U.sellerFee = (price, certified) => Math.round(price * (certified ? 0.005 : 0.01) * 100) / 100; // 1 % (0,5 % for certificerede)
   U.fee = (price) => Math.round(price * 0.05 + 3); // køberbeskyttelse: 5 % + 3 kr.
 
   /* ---- Buttons ---- */

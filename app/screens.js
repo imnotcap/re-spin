@@ -16,7 +16,7 @@
         <div class="stack gap-6">
           ${UI.wordmark(40, 'var(--cream)')}
           <h1 class="t-display" style="font-size:40px;line-height:44px">Giv tøjet nyt liv.<br>Sælg nemt,<br>køb unikt.</h1>
-          <p style="opacity:.75;max-width:280px">Brugt tøj, sko og boligting. Gratis at sælge, tryg at købe.</p>
+          <p style="opacity:.75;max-width:280px">Brugt tøj, sko og boligting. Gratis at oprette annoncer, tryg at købe.</p>
         </div>
         <div class="stack gap-3">
           ${UI.btn({ label: 'Opret konto', size: 'lg', full: true, href: '#/signup' })}
@@ -49,7 +49,7 @@
   S.signup = () => ({
     html: `${UI.topbar({ title: UI.stepper(1, 3), back: true })}
     <div class="content content--footer"><div class="px stack gap-6">
-      <div><h1 class="t-h1">Opret din konto</h1><p class="t-muted mt-2">Det tager under et minut. Det er gratis at sælge.</p></div>
+      <div><h1 class="t-h1">Opret din konto</h1><p class="t-muted mt-2">Det tager under et minut. Det er gratis at oprette annoncer.</p></div>
       <form class="form-stack" data-form="signup">
         ${UI.field({ label: 'Fulde navn', id: 'name', placeholder: 'Fornavn Efternavn', icon: 'user', required: true })}
         ${UI.field({ label: 'E-mail', id: 'email', type: 'email', placeholder: 'navn@mail.dk', icon: 'mail', required: true })}
@@ -66,14 +66,16 @@
   S.intro = () => {
     const it = D.items[1], mini = (n) => `<div style="flex:1">${UI.ph({ shade: n, title: 'Billede' }, '34').replace('class="ph', 'style="border-radius:8px" class="ph')}</div>`;
     const slides = [
-      { title: 'Sælg på få minutter', text: 'Tag billeder, skriv en kort titel og sæt en pris. Det er gratis at sælge, og du beholder hele beløbet.', pts: ['Op til 8 billeder pr. annonce', 'AI-baggrundsfjerner giver rene produktbilleder'],
-        art: `<div class="row-flex gap-2">${mini(1)}${mini(2)}${mini(3)}</div><div class="row-flex" style="justify-content:space-between;margin-top:var(--s-4)"><b>Din pris</b><b class="t-price">300 kr.</b></div>${UI.notice('<b>Du får 300 kr.</b> – ingen gebyrer for sælger.', 'wallet')}` },
-      { title: 'Køb trygt', text: 'Betal i appen, så holder vi pengene, indtil du har modtaget varen og er tilfreds.', pts: ['Køberbeskyttelse er med på alle køb', 'Passer varen ikke, får du pengene tilbage'],
-        art: `${UI.productRow(it, '<b class="t-price">' + UI.kr(it.price) + '</b>')}${UI.timeline([{ title: 'Du betaler', sub: 'Pengene holdes sikkert', state: 'done' }, { title: 'Sælger sender', sub: '', state: 'now' }, { title: 'Du godkender', sub: 'Først nu får sælger pengene' }])}` },
-      { title: 'Byd og skriv sammen', text: 'Spørg ind til varen eller giv et bud. Sælger kan acceptere, afslå eller svare igen.', pts: ['Hold samtalen i appen – så er du dækket', 'Du får besked, når nogen svarer'],
-        art: `<div class="chat" style="padding:0">${UI.bubble('Er den stadig til salg?', 'in')}${UI.bubble('Ja! Giv gerne et bud.', 'out')}<div class="offer"><div class="t-caption t-muted">Dit bud</div><div class="t-h2 t-price">300 kr.</div><div class="mt-2">${UI.badge('Afventer svar', 'warn', 'clock')}</div></div></div>` },
-      { title: 'Send og få dine penge', text: 'Når varen er solgt, får du en fragtlabel. Pengene lander på din saldo, og du kan udbetale til din bank.', pts: ['Print label eller brug QR-kode i en pakkeshop', 'Udbetaling tager 1–2 bankdage'],
-        art: `<div class="balance" style="margin:0"><div class="t-small" style="opacity:.8">Din saldo</div><div class="t-display" style="font-size:36px;color:var(--cream);margin-top:4px">1.240 kr.</div></div>${UI.sum([['Salg: Ganni uldjakke', '+450 kr.'], ['Udbetaling', '−800 kr.']])}` }
+      { title: 'Sælg på få minutter', text: 'Tag billeder, sæt en pris og læg op. Det er gratis at oprette annoncer.', pts: [],
+        art: `<div class="row-flex gap-2">${mini(1)}${mini(2)}${mini(3)}</div><div class="row-flex" style="justify-content:space-between;margin-top:var(--s-4)"><b>Din pris</b><b class="t-price">300 kr.</b></div>${UI.notice('Gratis at oprette. Vi giver besked, når nogen byder.', 'tag')}` },
+      { title: 'Køb og byd trygt', text: 'Betal i appen, så holder vi pengene, til du har modtaget varen. Du kan også give et bud.', pts: [],
+        art: `${UI.productRow(it, '<b class="t-price">' + UI.kr(it.price) + '</b>')}${UI.timeline([{ title: 'Du betaler', sub: 'Pengene holdes sikkert', state: 'done' }, { title: 'Sælger sender', state: 'now' }, { title: 'Du godkender', sub: 'Først nu får sælger pengene' }])}` },
+      { title: 'Gem søgninger', text: 'Gem en søgning, så får du besked, når der kommer nye varer.', pts: [],
+        art: `<div class="row-flex gap-2" style="flex-wrap:wrap">${UI.chip('ganni', { icon: 'search' })}${UI.chip('str. M', { tag: true })}${UI.chip('under 500 kr.', { tag: true })}</div><button type="button" class="btn btn--outline btn--sm" style="align-self:flex-start">${UI.icon('bell', 16)}Gem søgning</button>${UI.notice('<b>Ny vare:</b> Ganni uldjakke, M – 450 kr.', 'bell')}` },
+      { title: 'Følg sælgere', text: 'Følg dine favoritsælgere og se deres nye varer først.', pts: [],
+        art: `<div class="row-flex gap-3">${UI.avatar('Mette K.', 'lg')}<div class="grow"><b class="t-h3">Mette K.</b><div>${UI.rating(4.9, 120)}</div></div><button type="button" class="btn btn--primary btn--sm">Følg</button></div><div class="row-flex gap-2">${mini(2)}${mini(4)}${mini(1)}</div><p class="t-small t-muted">Nye varer fra sælgere du følger, samles i dit feed.</p>` },
+      { title: 'Din saldo og gebyr', text: '1 % af salgsprisen går til re:spin. Som certificeret sælger er det kun 0,5 %.', pts: [],
+        art: `${UI.sum([['Salgspris', '450 kr.'], ['re:spin (1 %)', '−4,50 kr.']], ['Du får', '445,50 kr.'])}<div class="row-flex gap-2">${UI.badge('Certificeret sælger', 'forest', 'check')}<span class="t-small">kun 0,5 % = 447,75 kr.</span></div>` }
     ];
     return {
       html: `${UI.topbar({ title: UI.stepper(2, 3), back: true, actions: '<a class="btn btn--ghost btn--sm" href="#/interests">Spring over</a>' })}
@@ -82,7 +84,7 @@
           <div class="stack gap-4" style="background:var(--grad-stone);border-radius:var(--r-lg);padding:var(--s-5);height:300px;overflow:hidden;justify-content:center">${s.art}</div>
           <p class="t-small t-muted mt-6">Trin ${i + 1} af ${slides.length}</p>
           <h1 class="t-h1 mt-2">${s.title}</h1><p class="mt-2">${s.text}</p>
-          <ul class="stack gap-2 mt-4" style="list-style:none;margin:0;padding:0">${s.pts.map((p) => `<li class="row-flex gap-3" style="align-items:flex-start">${UI.icon('check', 20)}<span>${p}</span></li>`).join('')}</ul></section>`).join('')}
+          </section>`).join('')}
       </div>
       <div class="footer" style="flex-direction:column;align-items:stretch;border-top:0"><div class="dots" id="idots" style="margin-bottom:var(--s-2)">${slides.map((_, i) => `<i class="${i ? '' : 'on'}" style="background:var(--stone-300)"></i>`).join('')}</div>${UI.btn({ label: 'Næste', size: 'lg', full: true, id: 'introNext' })}</div>`,
       mount(el) {
@@ -303,7 +305,7 @@
   S.sell = () => ({
     html: `${UI.topbar({ title: 'Sælg noget nyt', left: UI.iconBtn({ icon: 'close', label: 'Luk', action: 'back' }), actions: '<button class="btn btn--ghost btn--sm" data-action="toast" data-msg="Kladde gemt">Gem kladde</button>' })}
     <div class="content content--footer">
-      <div class="px"><div class="row-flex" style="justify-content:space-between" class="t-small"><span class="t-small t-bold" id="pLabel">0 af 5 udfyldt</span><span class="t-small t-muted">Gratis at sælge</span></div><div class="mt-2" id="pBar">${UI.progress(0)}</div></div>
+      <div class="px"><div class="row-flex" style="justify-content:space-between" class="t-small"><span class="t-small t-bold" id="pLabel">0 af 5 udfyldt</span><span class="t-small t-muted">Gratis at oprette</span></div><div class="mt-2" id="pBar">${UI.progress(0)}</div></div>
       <form id="sellForm" class="px form-stack mt-6" novalidate>
         <section class="stack gap-3"><h2 class="t-h3">Billeder</h2><p class="t-small t-muted" style="margin-top:-8px">Tilføj op til 8 billeder. Første billede bliver forsidebillede.</p>
           <div class="uploader" id="uploader"></div></section>
@@ -343,7 +345,7 @@
         el.querySelector('#pLabel').textContent = n + ' af 5 udfyldt';
         el.querySelector('#pBar').innerHTML = UI.progress(n * 20);
         const btn = el.querySelector('#publish'); btn.disabled = n < 5;
-        el.querySelector('#priceInfo').innerHTML = price ? `${UI.icon('wallet', 20)}<div><b>Du får ${kr(price)}</b> – ingen gebyrer for sælger.<br>Køber betaler ${kr(price + UI.fee(price))} inkl. køberbeskyttelse.</div>` : `${UI.icon('info', 20)}<div>Sæt en pris, så viser vi hvad du får udbetalt.</div>`;
+        el.querySelector('#priceInfo').innerHTML = price ? `${UI.icon('wallet', 20)}<div><b>Du får ${UI.krd(price - UI.sellerFee(price))}</b> efter 1 % til re:spin.<br>Certificeret sælger: kun 0,5 % (${UI.krd(price - UI.sellerFee(price, true))}).<br>Køber betaler ${kr(price + UI.fee(price))} inkl. køberbeskyttelse.</div>` : `${UI.icon('info', 20)}<div>Sæt en pris, så viser vi hvad du får udbetalt.</div>`;
       };
       el.addEventListener('click', (e) => {
         const a = e.target.closest('[data-action]'); if (!a) return;
