@@ -25,6 +25,14 @@
   --cream-200:  #f5f1e9;
   --cream-300:  #e9e4d8;
 
+  /* Neutrale (varme grå) – bruges til flader, linjer og pladsholdere */
+  --stone-50:   #f8f7f4;
+  --stone-100:  #f0eeea;
+  --stone-200:  #e4e2dd;
+  --stone-300:  #d3d1cb;
+  --stone-400:  #b4b2ab;
+  --ph-1: #e3e2de; --ph-2: #dad9d5; --ph-3: #e8e7e4; --ph-4: #d6d5d1;  /* produkt-pladsholdere */
+
   --slate:      #1c1c1c;   /* Slate Dark – tekst */
   --slate-700:  #3b3b38;
   --slate-500:  #6a6a64;   /* dæmpet tekst (5:1 på cream) */
@@ -34,11 +42,11 @@
   /* ---- Semantiske farver (brug DISSE i komponenter) ---- */
   --bg:            var(--cream);
   --surface:       var(--white);
-  --surface-sunk:  var(--cream-200);
+  --surface-sunk:  var(--stone-100);
   --text:          var(--slate);
   --text-muted:    var(--slate-500);
   --text-inverse:  var(--cream);
-  --border:        var(--cream-300);
+  --border:        var(--stone-200);
   --border-strong: var(--slate);
   --brand:         var(--forest);
   --action:        var(--lime);
@@ -47,7 +55,7 @@
   --danger:        #c62828;
   --success:       var(--forest);
   --warning:       #b26a00;
-  --focus-ring:    0 0 0 3px rgba(210, 255, 50, .85), 0 0 0 4.5px var(--forest);
+  --focus-ring:    0 0 0 2px var(--bg), 0 0 0 4px var(--forest);
 
   --gradient-energy: linear-gradient(100deg, #0e5a2f 0%, #0a8a78 30%, #d2ff32 62%, #ff5a5f 92%);
 
@@ -67,12 +75,12 @@
   --gutter: 16px;
 
   /* ---- Radius ---- */
-  --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 24px; --r-pill: 999px;
+  --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 20px; --r-pill: 999px;
 
   /* ---- Elevation ---- */
-  --shadow-1: 0 1px 2px rgba(28,28,28,.06), 0 1px 1px rgba(28,28,28,.04);
-  --shadow-2: 0 4px 14px rgba(28,28,28,.10);
-  --shadow-3: 0 12px 32px rgba(28,28,28,.18);
+  --shadow-1: 0 0 0 1px rgba(28,28,28,.06);
+  --shadow-2: 0 2px 8px rgba(28,28,28,.08);
+  --shadow-3: 0 8px 24px rgba(28,28,28,.14);
 
   /* ---- Motion ---- */
   --ease: cubic-bezier(.2, .8, .2, 1);
@@ -83,7 +91,7 @@
   --tap: 44px;                         /* minimum touch-target */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --tabbar-h: 64px;
+  --tabbar-h: 58px;
   --z-bar: 10; --z-tabbar: 20; --z-sheet: 40; --z-toast: 60;
 }
 

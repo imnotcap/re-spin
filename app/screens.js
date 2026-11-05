@@ -10,15 +10,13 @@
 
   /* ======================= ONBOARDING ======================= */
   S.welcome = () => ({
-    cls: 'screen--bleed', html: `
-    <div class="content" style="background:var(--forest-900);color:var(--cream);display:flex;flex-direction:column;position:relative;overflow:hidden">
-      <div aria-hidden="true" style="position:absolute;width:420px;height:420px;border-radius:50%;background:var(--gradient-energy);filter:blur(60px);opacity:.55;right:-180px;top:-120px"></div>
-      <div aria-hidden="true" style="position:absolute;width:260px;height:260px;border-radius:50%;background:var(--forest);left:-120px;bottom:120px"></div>
-      <div style="position:relative;flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:calc(var(--safe-top) + 72px) var(--s-6) calc(var(--s-6) + var(--safe-bottom))">
+    cls: 'screen--bleed screen--dark', html: `
+    <div class="content" style="background:var(--forest-900);color:var(--cream);display:flex;flex-direction:column">
+            <div style="position:relative;flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:calc(var(--safe-top) + 72px) var(--s-6) calc(var(--s-6) + var(--safe-bottom))">
         <div class="stack gap-6">
           ${UI.wordmark(40, 'var(--cream)')}
-          <h1 class="t-display" style="font-size:44px;line-height:46px">Giv tøjet<br>nyt liv.<br><span style="color:var(--lime)">Sælg nemt,<br>køb unikt.</span></h1>
-          <p style="opacity:.8;max-width:280px">Danmarks nemmeste markedsplads til brugt tøj, sko og boligting. Gratis at sælge, tryg at købe.</p>
+          <h1 class="t-display" style="font-size:40px;line-height:44px">Giv tøjet nyt liv.<br>Sælg nemt,<br>køb unikt.</h1>
+          <p style="opacity:.75;max-width:280px">Brugt tøj, sko og boligting. Gratis at sælge, tryg at købe.</p>
         </div>
         <div class="stack gap-3">
           ${UI.btn({ label: 'Opret konto', size: 'lg', full: true, href: '#/signup' })}
@@ -80,9 +78,8 @@
       <header class="topbar">${UI.searchbar({ readonlyHref: '#/search' })}${UI.iconBtn({ icon: 'heart', label: 'Favoritter', href: '#/favorites' })}${UI.iconBtn({ icon: 'bell', label: 'Notifikationer', href: '#/notifications', dot: true })}</header>
       <div class="content content--tabs">
         <section class="hero" aria-label="Kampagne">
-          ${UI.badge('Live', 'lime live')}
-          <div><h2 class="t-display" style="font-size:28px;line-height:31px;max-width:190px">Giv tøjet nyt liv.<br>Sælg nemt, køb unikt.</h2>
-          <div class="mt-4">${UI.btn({ label: 'Sælg nu', variant: 'dark', size: 'sm', href: '#/sell', iconRight: 'arrow' })}</div></div>
+          <h2 class="t-display" style="font-size:28px;line-height:32px;max-width:220px">Giv tøjet nyt liv. Sælg nemt, køb unikt.</h2>
+          <div>${UI.btn({ label: 'Sælg nu', variant: 'dark', size: 'sm', href: '#/sell' })}</div>
         </section>
         <section class="section" style="padding-top:var(--s-6)">${UI.sectionHead('Kategorier', 'Se alle', '#/search')}</section>
         <div class="hscroll">${D.categories.map((c) => UI.category(c)).join('')}</div>
@@ -92,7 +89,7 @@
         <div class="hscroll">${D.items.filter((i) => /ny/i.test(i.cond)).map((i) => UI.productCard(i, favs(), 'h')).join('')}</div>
         <section class="section">${UI.sectionHead('Flere fund til dig')}</section>
         ${UI.productGrid(recs.slice(4), favs())}
-        <div class="px mt-8 t-center t-muted t-small">Du er ajour ✨ Kom tilbage senere for nye fund.</div>
+        <div class="px mt-8 t-center t-muted t-small">Du har set det hele. Kom tilbage senere for nye fund.</div>
       </div>`
     };
   };
@@ -109,7 +106,7 @@
         <div id="recent" class="row-flex gap-2" style="flex-wrap:wrap">${D.recent.map((r) => UI.chip(r, { icon: 'clock', href: '#/results/' + encodeURIComponent(r) })).join('')}</div>
       </section>
       <section class="section"><h2 class="t-h3 mb-2">Populært lige nu</h2>
-        <div class="row-flex gap-2" style="flex-wrap:wrap">${D.trending.map((r) => UI.chip(r, { icon: 'sparkle', href: '#/results/' + encodeURIComponent(r) })).join('')}</div>
+        <div class="row-flex gap-2" style="flex-wrap:wrap">${D.trending.map((r) => UI.chip(r, { href: '#/results/' + encodeURIComponent(r) })).join('')}</div>
       </section>
       <section class="section"><h2 class="t-h3 mb-4">Udforsk kategorier</h2>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s-4) 0;justify-items:center">${D.categories.map((c) => UI.category(c)).join('')}</div>
@@ -173,7 +170,7 @@
       <div class="content content--footer">
         <div style="position:relative">
           <div class="hscroll" id="gallery" style="padding:0;gap:0;scroll-snap-type:x mandatory">
-            ${[0, 1, 2].map((n) => `<div style="flex:0 0 100%;scroll-snap-align:start">${UI.ph(Object.assign({}, it, { tone: n ? ['sand', 'stone', 'sage'][n] : it.tone }), 'wide')}</div>`).join('')}
+            ${[0, 1, 2].map((n) => `<div style="flex:0 0 100%;scroll-snap-align:start">${UI.ph({ shade: it.id + n, title: it.title }, 'wide')}</div>`).join('')}
           </div>
           <div class="dots" id="dots" style="position:absolute;left:0;right:0;bottom:56px"><i class="on"></i><i></i><i></i></div>
           <a href="#/user/${s.id}" class="row-flex gap-3" style="position:absolute;left:var(--gutter);right:var(--gutter);bottom:-32px;background:var(--surface);padding:var(--s-3) var(--s-4);border-radius:var(--r-lg);box-shadow:var(--shadow-2)">
@@ -275,7 +272,7 @@
       <form id="sellForm" class="px form-stack mt-6" novalidate>
         <section class="stack gap-3"><h2 class="t-h3">Billeder</h2><p class="t-small t-muted" style="margin-top:-8px">Tilføj op til 8 billeder. Første billede bliver forsidebillede.</p>
           <div class="uploader" id="uploader"></div></section>
-        <label class="row-flex gap-3 optcard" style="cursor:pointer"><span class="lrow__icon">${UI.icon('sparkle', 20)}</span><span class="grow"><b class="t-bold" style="display:block">AI-baggrundsfjerner</b><span class="t-small t-muted">Fjern baggrunden og få et rent produktbillede</span></span>${UI.toggle({ id: 'bg', checked: true, label: 'Fjern baggrund' })}</label>
+        <label class="row-flex gap-3 optcard" style="cursor:pointer"><span class="lrow__icon">${UI.icon('image', 20)}</span><span class="grow"><b class="t-bold" style="display:block">AI-baggrundsfjerner</b><span class="t-small t-muted">Fjern baggrunden og få et rent produktbillede</span></span>${UI.toggle({ id: 'bg', checked: true, label: 'Fjern baggrund' })}</label>
         <section class="form-stack"><h2 class="t-h3">Detaljer</h2>
           ${UI.field({ label: 'Titel', id: 't', placeholder: 'fx Ganni uldjakke, str. M', required: true, hint: 'Skriv brand, type og størrelse' })}
           ${UI.textarea({ label: 'Beskrivelse', id: 'd', placeholder: 'Fortæl om stand, pasform og evt. fejl…' })}
@@ -299,7 +296,7 @@
       const st = { photos: [], cond: '' }, f = el.querySelector('#sellForm'), up = el.querySelector('#uploader');
       const tones = ['sage', 'sand', 'blush', 'sky', 'brown', 'stone', 'forest', 'lime'];
       const draw = () => {
-        up.innerHTML = st.photos.map((t, i) => `<div class="uploader__slot uploader__slot--filled">${UI.ph({ tone: t, title: 'Billede ' + (i + 1) }, '34')}${i === 0 ? '<span class="badge badge--lime uploader__cover">Forside</span>' : ''}${UI.iconBtn({ icon: 'close', label: 'Fjern billede', variant: 'glass', size: 16, action: 'rm-photo', attr: { 'data-i': i } })}</div>`).join('') +
+        up.innerHTML = st.photos.map((t, i) => `<div class="uploader__slot uploader__slot--filled">${UI.ph({ shade: i, title: 'Billede ' + (i + 1) }, '34')}${i === 0 ? '<span class="badge uploader__cover">Forside</span>' : ''}${UI.iconBtn({ icon: 'close', label: 'Fjern billede', variant: 'glass', size: 16, action: 'rm-photo', attr: { 'data-i': i } })}</div>`).join('') +
           (st.photos.length < 8 ? `<button type="button" class="uploader__slot uploader__slot--add" data-action="add-photo">${UI.icon(st.photos.length ? 'plus' : 'camera', 28)}${st.photos.length ? 'Tilføj' : 'Upload billeder'}</button>` : '');
         calc();
       };
@@ -315,7 +312,7 @@
       };
       el.addEventListener('click', (e) => {
         const a = e.target.closest('[data-action]'); if (!a) return;
-        if (a.dataset.action === 'add-photo') { st.photos.push(tones[st.photos.length % tones.length]); draw(); App.toast(el.querySelector('#bg').checked ? 'Baggrund fjernet automatisk' : 'Billede tilføjet', 'sparkle'); e.stopPropagation(); }
+        if (a.dataset.action === 'add-photo') { st.photos.push(tones[st.photos.length % tones.length]); draw(); App.toast(el.querySelector('#bg').checked ? 'Baggrund fjernet automatisk' : 'Billede tilføjet', 'check'); e.stopPropagation(); }
         if (a.dataset.action === 'rm-photo') { st.photos.splice(+a.dataset.i, 1); draw(); e.stopPropagation(); }
         if (a.dataset.action === 'cond') { st.cond = a.dataset.value; el.querySelectorAll('#cond .chip').forEach((c) => c.setAttribute('aria-pressed', String(c === a))); calc(); e.stopPropagation(); }
       }, true);
@@ -326,11 +323,12 @@
   });
 
   S['sell/success'] = () => ({
-    cls: 'screen--bleed', html: `<div class="content" style="display:flex;flex-direction:column;justify-content:center;padding:var(--s-8) var(--s-6);gap:var(--s-6);text-align:center;background:linear-gradient(180deg,var(--lime-100),var(--bg) 60%)">
-      <div class="empty__icon" style="margin:0 auto;background:var(--lime);width:104px;height:104px">${UI.icon('check', 56)}</div>
-      <div><h1 class="t-display">Din annonce er live!</h1><p class="t-muted mt-2">Den er nu synlig for tusindvis af købere. Vi giver besked, når nogen byder.</p></div>
-      <div class="list" style="margin:0;padding:var(--s-3)">${UI.productRow(D.items[1], UI.badge('Live', 'coral live'))}</div>
-      <div class="stack gap-3">${UI.btn({ label: 'Se min annonce', size: 'lg', full: true, href: '#/item/2' })}${UI.btn({ label: 'Sælg noget mere', variant: 'outline', size: 'lg', full: true, href: '#/sell' })}${UI.btn({ label: 'Til forsiden', variant: 'ghost', full: true, href: '#/home' })}</div></div>`
+    html: `${UI.topbar({ title: '', left: UI.iconBtn({ icon: 'close', label: 'Luk', href: '#/home' }) })}
+    <div class="content content--footer"><div class="px stack gap-6" style="padding-top:var(--s-6)">
+      <div><h1 class="t-display">Din annonce er live</h1><p class="t-muted mt-2">Den er nu synlig for købere. Du får besked, når nogen byder eller skriver.</p></div>
+      <div class="list" style="margin:0;padding:var(--s-3)">${UI.productRow(D.items[1], UI.badge('Aktiv', 'soft'))}</div>
+    </div></div>
+    <div class="footer" style="flex-direction:column;align-items:stretch">${UI.btn({ label: 'Se min annonce', size: 'lg', full: true, href: '#/item/2' })}${UI.btn({ label: 'Sælg noget mere', variant: 'outline', size: 'lg', full: true, href: '#/sell' })}</div>`
   });
 
   /* ======================= FAVORITES ======================= */
@@ -366,11 +364,11 @@
       <a class="pinned" href="#/item/${it.id}">${UI.ph(it, 'sq')}<div class="grow"><div class="t-bold t-small">${esc(it.title)}</div><div class="t-small">${UI.price(it.price)}</div></div>${UI.btn({ label: 'Byd', variant: 'outline', size: 'sm', action: 'sheet', attr: { 'data-sheet': 'offer', 'data-id': it.id } })}</a>
       <div class="content" id="msgs"><div class="chat">
         <div class="chat__day">I dag</div>
-        ${UI.bubble('Hej! Er den stadig til salg? 😊', 'in', '9:41')}
-        ${UI.bubble('Hej! Ja, den er stadig til salg 🙌', 'out', '9:43')}
+        ${UI.bubble('Hej! Er den stadig til salg?', 'in', '9:41')}
+        ${UI.bubble('Hej! Ja, den er stadig til salg', 'out', '9:43')}
         ${offerOut ? `<div class="offer"><div class="t-caption t-muted">Dit bud</div><div class="t-h2 t-price">300 kr.</div><div class="row-flex gap-2 mt-2">${UI.badge('Afventer svar', 'warn', 'clock')}</div></div>` : `${UI.bubble('Kan du sende den i dag?', 'in', '9:44')}<div class="chat__day">Tip: Brug “Byd”, så er du dækket af køberbeskyttelse</div>`}
       </div></div>
-      <div class="hscroll" style="padding-block:var(--s-2)">${['Er den stadig til salg?', 'Kan du sende i dag?', 'Tak! 🙌', 'Kan vi mødes?'].map((t) => UI.chip(t, { size: 'sm', action: 'quick-reply', value: t })).join('')}</div>
+      <div class="hscroll" style="padding-block:var(--s-2)">${['Er den stadig til salg?', 'Kan du sende i dag?', 'Tak!', 'Kan vi mødes?'].map((t) => UI.chip(t, { size: 'sm', action: 'quick-reply', value: t })).join('')}</div>
       <form class="composer" id="composer">${UI.iconBtn({ icon: 'camera', label: 'Vedhæft billede', action: 'toast', attr: { 'data-msg': 'Vælg et billede' } })}<input class="input" id="msg" placeholder="Skriv en besked…" aria-label="Besked" autocomplete="off">${UI.iconBtn({ icon: 'send', label: 'Send', variant: 'soft', attr: { type: 'submit' } })}</form>`,
       mount(el) {
         const box = el.querySelector('.chat'), sc = el.querySelector('#msgs'), inp = el.querySelector('#msg');
@@ -416,11 +414,12 @@
   };
 
   S['order/success'] = () => ({
-    cls: 'screen--bleed', html: `<div class="content" style="display:flex;flex-direction:column;justify-content:center;padding:var(--s-8) var(--s-6);gap:var(--s-6);text-align:center;background:linear-gradient(180deg,var(--lime-100),var(--bg) 60%)">
-      <div class="empty__icon" style="margin:0 auto;background:var(--lime);width:104px;height:104px">${UI.icon('check', 56)}</div>
-      <div><h1 class="t-display">Tak for dit køb!</h1><p class="t-muted mt-2">Mette sender din vare inden for 2 dage. Vi giver besked, når pakken er på vej.</p></div>
-      <div class="list" style="margin:0;padding:var(--s-4);text-align:left">${UI.timeline([{ title: 'Betalt', sub: 'I dag', state: 'done' }, { title: 'Afsendes af sælger', sub: 'Inden for 2 dage', state: 'now' }, { title: 'Leveret', sub: 'Forventet 8.–10. nov.' }])}</div>
-      <div class="stack gap-3">${UI.btn({ label: 'Følg min ordre', size: 'lg', full: true, href: '#/order/101' })}${UI.btn({ label: 'Fortsæt med at shoppe', variant: 'ghost', full: true, href: '#/home' })}</div></div>`
+    html: `${UI.topbar({ title: '', left: UI.iconBtn({ icon: 'close', label: 'Luk', href: '#/home' }) })}
+    <div class="content content--footer"><div class="px stack gap-6" style="padding-top:var(--s-6)">
+      <div><h1 class="t-display">Tak for dit køb</h1><p class="t-muted mt-2">Mette sender din vare inden for 2 dage. Vi giver besked, når pakken er på vej.</p></div>
+      <div class="list" style="margin:0;padding:var(--s-4)">${UI.timeline([{ title: 'Betalt', sub: 'I dag', state: 'done' }, { title: 'Afsendes af sælger', sub: 'Inden for 2 dage', state: 'now' }, { title: 'Leveret', sub: 'Forventet 8.–10. nov.' }])}</div>
+    </div></div>
+    <div class="footer" style="flex-direction:column;align-items:stretch">${UI.btn({ label: 'Følg min ordre', size: 'lg', full: true, href: '#/order/101' })}${UI.btn({ label: 'Fortsæt med at shoppe', variant: 'ghost', full: true, href: '#/home' })}</div>`
   });
 
   S.orders = () => {
@@ -515,7 +514,7 @@
       });
     },
     share() {
-      return UI.sheet({ title: 'Del annonce', body: `<div class="list" style="margin:0">${[['mail', 'Send i en besked'], ['share', 'Kopiér link'], ['sparkle', 'Del på sociale medier']].map(([i, t]) => UI.row({ icon: i, title: t, action: 'toast', value: '' }).replace('data-action="toast"', 'data-action="share-do" data-msg="' + (i === 'share' ? 'Link kopieret' : 'Delt') + '"')).join('')}</div>` });
+      return UI.sheet({ title: 'Del annonce', body: `<div class="list" style="margin:0">${[['mail', 'Send i en besked'], ['share', 'Kopiér link'], ['user', 'Del på sociale medier']].map(([i, t]) => UI.row({ icon: i, title: t, action: 'toast', value: '' }).replace('data-action="toast"', 'data-action="share-do" data-msg="' + (i === 'share' ? 'Link kopieret' : 'Delt') + '"')).join('')}</div>` });
     },
     report() {
       return UI.sheet({ title: 'Hvad vil du gøre?', body: `<div class="list" style="margin:0">${[['flag', 'Rapportér', false], ['user', 'Blokér bruger', false], ['help', 'Få hjælp', false]].map(([i, t]) => UI.row({ icon: i, title: t, action: 'share-do', value: '' }).replace('data-action="share-do"', 'data-action="share-do" data-msg="' + t + ' – tak, vi kigger på det"')).join('')}</div>` });

@@ -8,5 +8,6 @@
 6. **Lav friktion i sælg-flowet.** Én scrollbar side (ikke en veninde-wizard), AI-baggrundsfjerner, udbetalingsberegning mens man taster pris.
 7. **Direkte feedback.** Hjerte-pop + toast, sheets glider op/ned, sider glider ind (push/pop) og tabs fader; respekterer `prefers-reduced-motion`.
 8. **Tomme tilstande og fejl er designet.** Tomme favoritter, ingen søgeresultater (med "Nulstil filtre"), 404.
-9. **Ensartethed.** Alt udseende kommer fra tokens → komponenter → skærme.
-10. **Tilgængelighed.** Kontrast (hvid tekst kun på Coral 600, mørk tekst på lime), synlig fokusring, aria-labels, tabs/switch-roller.
+9. **Rolig, neutral overflade.** Flader, linjer og produkt-pladsholdere er varme grå; lime/coral/forest bruges kun som signal (handling, køb, hjerte). Ingen gradienter, glød, glas, emojis eller farvede ikon-cirkler.
+10. **Ensartethed.** Alt udseende kommer fra tokens → komponenter → skærme.
+11. **Tilgængelighed.** Kontrast (hvid tekst kun på Coral 600, mørk tekst på lime), synlig fokusring, aria-labels, tabs/switch-roller.

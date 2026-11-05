@@ -40,10 +40,10 @@
   U.price = (n, cls = '') => '<span class="t-price ' + cls + '">' + U.kr(n) + '</span>';
 
   /* ---- Placeholder image (skelet – erstattes med rigtige fotos) ---- */
-  const TONES = { sage: ['#dfe8dc', '#7c957a'], sand: ['#efe6d6', '#a8927a'], blush: ['#f6e1de', '#c98a85'], sky: ['#dde8f0', '#7f9db5'], lime: ['#f1ffbd', '#8aa312'], stone: ['#e6e4de', '#8c8a82'], forest: ['#cfe3d6', '#2f7a4f'], brown: ['#e8d9c8', '#8d6a43'] };
+  const SHADES = ['var(--ph-1)', 'var(--ph-2)', 'var(--ph-3)', 'var(--ph-4)'];
   U.ph = (item, ratio = '34') => {
-    const t = TONES[item.tone] || TONES.sand;
-    return '<div class="ph ph--' + ratio + '" style="--ph-bg:' + t[0] + ';--ph-fg:' + t[1] + '" role="img" aria-label="' + esc(item.title || 'Billede') + '">' + U.icon(item.glyph || 'shirt', 64) + '</div>';
+    const n = item.shade != null ? item.shade : (item.id || 0);
+    return '<div class="ph ph--' + ratio + '" style="--ph-bg:' + SHADES[Math.abs(n) % 4] + '" role="img" aria-label="' + esc(item.title || 'Billede') + '"></div>';
   };
 
   /* ---- Bars ---- */
