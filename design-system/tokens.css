@@ -51,7 +51,7 @@
   --brand:         var(--forest);
   --action:        var(--lime);
   --action-text:   var(--slate);      /* tekst på lime – ALDRIG hvid */
-  --buy:           var(--forest);
+  --buy:           var(--slate);
   --danger:        #c62828;
   --success:       var(--forest);
   --warning:       #b26a00;
@@ -59,9 +59,10 @@
 
   /* Gradienter – samme brandfarver. Alle dele med tekst holder kontrast (lime på forest ≥ 4.5:1). */
   --grad-lime:   linear-gradient(125deg, #f1ff8f 0%, #d2ff32 38%, #8fe86a 72%, #4fcf8e 100%);   /* kampagne / primær */
+  --grad-ink:    linear-gradient(145deg, #3a3a36 0%, #262624 55%, #1c1c1c 100%);                /* neutral mørk: valgt / køb / saldo */
   --grad-forest: linear-gradient(135deg, #052818 0%, #0e5a2f 45%, #0a7a63 100%);                /* valgt / køb / mørke bokse */
   --grad-deep:   linear-gradient(160deg, #0a7a63 0%, #0e5a2f 38%, #07301a 85%);                 /* velkomst / store flader */
-  --grad-accent: linear-gradient(90deg, #0e5a2f 0%, #0a7a63 50%, #c5f536 100%);                 /* fremdrift / understregning */
+  --grad-accent: linear-gradient(90deg, #1c1c1c 0%, #55554f 100%);                 /* fremdrift / understregning */
   --grad-card:   linear-gradient(160deg, #ffffff 0%, #f3f0ea 100%);                             /* kort / lister */
   --grad-stone:  linear-gradient(160deg, #f4f2ee 0%, #dedbd4 100%);                             /* neutrale flader */
   --glow-lime:   radial-gradient(60% 80% at 100% 0%, rgba(210,255,50,.38), transparent 70%);

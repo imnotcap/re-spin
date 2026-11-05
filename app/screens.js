@@ -449,7 +449,7 @@
   S.wallet = () => ({
     html: `${UI.topbar({ title: 'Saldo', back: true })}
     <div class="content content--footer">
-      <div class="balance"><div class="t-small" style="opacity:.8">Tilgængeligt til udbetaling</div><div class="t-display" style="color:var(--lime);font-size:44px;line-height:50px;margin:var(--s-2) 0 var(--s-5)">${kr(D.me.balance)}</div>${UI.btn({ label: 'Udbetal til bank', action: 'sheet', icon: 'bank', attr: { 'data-sheet': 'payout' } })}</div>
+      <div class="balance"><div class="t-small" style="opacity:.8">Tilgængeligt til udbetaling</div><div class="t-display" style="color:var(--cream);font-size:44px;line-height:50px;margin:var(--s-2) 0 var(--s-5)">${kr(D.me.balance)}</div>${UI.btn({ label: 'Udbetal til bank', variant: 'outline', action: 'sheet', icon: 'bank', attr: { 'data-sheet': 'payout' } })}</div>
       <div class="px mt-4">${UI.notice('Under behandling: <b>350 kr.</b> frigives, når køber har godkendt varen.', 'clock')}</div>
       <section class="section">${UI.sectionHead('Transaktioner')}</section>
       <div class="list">${D.transactions.map((t) => UI.row({ icon: t.amt > 0 ? 'tag' : 'bank', title: t.title, sub: t.date, chevron: false, trailing: `<b class="t-price" style="color:${t.amt > 0 ? 'var(--forest)' : 'var(--text)'}">${t.amt > 0 ? '+' : '−'}${kr(Math.abs(t.amt))}</b>` })).join('')}</div>
