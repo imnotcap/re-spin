@@ -1,0 +1,110 @@
+/* ==========================================================================
+   re:spin — DESIGN TOKENS
+   Eneste sted hvor farver, typografi, afstande, radier og motion defineres.
+   Alt andet (components.css, app) refererer kun til disse variabler.
+   ========================================================================== */
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap");
+
+:root {
+  /* ---- Brand colors (fra brand identity) ---- */
+  --forest-900: #07301a;
+  --forest-700: #0b4725;
+  --forest:     #0e5a2f;   /* Deep Forestgrøn */
+  --forest-100: #e1eee6;
+  --forest-50:  #f0f6f2;
+
+  --lime:       #d2ff32;   /* Electric Lime – primær handling */
+  --lime-600:   #b9e610;
+  --lime-100:   #f2ffbd;
+
+  --coral:      #ff5a5f;   /* Sunset Coral – køb / hjerte / notifikation */
+  --coral-600:  #d93a41;   /* mørkere variant: hvid tekst består kontrast (≥4.5:1) */
+  --coral-100:  #ffe8e8;
+
+  --cream:      #fdfbf7;   /* Warm Cream – baggrund */
+  --cream-200:  #f5f1e9;
+  --cream-300:  #e9e4d8;
+
+  /* Neutrale (varme grå) – bruges til flader, linjer og pladsholdere */
+  --stone-50:   #f8f7f4;
+  --stone-100:  #f0eeea;
+  --stone-200:  #e4e2dd;
+  --stone-300:  #d3d1cb;
+  --stone-400:  #b4b2ab;
+  --ph-1: #e3e2de; --ph-2: #dad9d5; --ph-3: #e8e7e4; --ph-4: #d6d5d1;  /* produkt-pladsholdere */
+
+  --slate:      #1c1c1c;   /* Slate Dark – tekst */
+  --slate-700:  #3b3b38;
+  --slate-500:  #6a6a64;   /* dæmpet tekst (5:1 på cream) */
+  --slate-300:  #a9a79f;
+  --white:      #ffffff;
+
+  /* ---- Semantiske farver (brug DISSE i komponenter) ---- */
+  --bg:            var(--cream);
+  --surface:       var(--white);
+  --surface-sunk:  var(--stone-100);
+  --text:          var(--slate);
+  --text-muted:    var(--slate-500);
+  --text-inverse:  var(--cream);
+  --border:        var(--stone-200);
+  --border-strong: var(--slate);
+  --brand:         var(--forest);
+  --action:        var(--lime);
+  --action-text:   var(--slate);      /* tekst på lime – ALDRIG hvid */
+  --buy:           var(--slate);
+  --danger:        #c62828;
+  --success:       var(--forest);
+  --warning:       #b26a00;
+  --focus-ring:    0 0 0 2px var(--bg), 0 0 0 4px var(--forest);
+
+  /* Gradienter – samme brandfarver. Alle dele med tekst holder kontrast (lime på forest ≥ 4.5:1). */
+  --grad-lime:   linear-gradient(125deg, #f1ff8f 0%, #d2ff32 38%, #8fe86a 72%, #4fcf8e 100%);   /* kampagne / primær */
+  --grad-ink:    linear-gradient(145deg, #3a3a36 0%, #262624 55%, #1c1c1c 100%);                /* neutral mørk: valgt / køb / saldo */
+  --grad-forest: linear-gradient(135deg, #052818 0%, #0e5a2f 45%, #0a7a63 100%);                /* valgt / køb / mørke bokse */
+  --grad-deep:   linear-gradient(160deg, #0a7a63 0%, #0e5a2f 38%, #07301a 85%);                 /* velkomst / store flader */
+  --grad-accent: linear-gradient(90deg, #1c1c1c 0%, #55554f 100%);                 /* fremdrift / understregning */
+  --grad-card:   linear-gradient(160deg, #ffffff 0%, #f3f0ea 100%);                             /* kort / lister */
+  --grad-stone:  linear-gradient(160deg, #f4f2ee 0%, #dedbd4 100%);                             /* neutrale flader */
+  --glow-lime:   radial-gradient(60% 80% at 100% 0%, rgba(210,255,50,.38), transparent 70%);
+  --gradient-energy: linear-gradient(100deg, #0e5a2f 0%, #0a8a78 30%, #d2ff32 62%, #ff5a5f 92%);
+
+  /* ---- Typografi ---- */
+  --font: "Satoshi", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fs-display: 32px;  --lh-display: 36px;
+  --fs-h1: 26px;       --lh-h1: 32px;
+  --fs-h2: 20px;       --lh-h2: 26px;
+  --fs-h3: 17px;       --lh-h3: 24px;
+  --fs-body: 15px;     --lh-body: 22px;
+  --fs-small: 13px;    --lh-small: 18px;
+  --fs-caption: 12px;  --lh-caption: 16px;
+
+  /* ---- Spacing (4pt) ---- */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px;
+  --gutter: 16px;
+
+  /* ---- Radius ---- */
+  --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 20px; --r-pill: 999px;
+
+  /* ---- Elevation ---- */
+  --shadow-1: 0 0 0 1px rgba(28,28,28,.06);
+  --shadow-2: 0 2px 8px rgba(28,28,28,.08);
+  --shadow-3: 0 8px 24px rgba(28,28,28,.14);
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --t-fast: 120ms; --t-base: 220ms; --t-slow: 340ms;
+
+  /* ---- Layout ---- */
+  --tap: 44px;                         /* minimum touch-target */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tabbar-h: 60px;
+  --tabbar-pad: max(var(--safe-bottom), 10px);
+  --z-bar: 10; --z-tabbar: 20; --z-sheet: 40; --z-toast: 60;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --t-fast: 1ms; --t-base: 1ms; --t-slow: 1ms; }
+}

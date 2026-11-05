@@ -1,0 +1,82 @@
+/* re:spin — ikonsæt (24px, 2px stroke, runde ender). Brug: UI.icon('heart', 24) */
+(function () {
+  const P = {
+    home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    minus: '<path d="M5 12h14"/>',
+    chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',
+    heart: '<path d="M12 20.5s-8-4.9-8-11A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5c0 6.1-8 11-8 11z"/>',
+    back: '<path d="m15 18-6-6 6-6"/>',
+    next: '<path d="m9 18 6-6-6-6"/>',
+    down: '<path d="m6 9 6 6 6-6"/>',
+    up: '<path d="m6 15 6-6 6 6"/>',
+    arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    share: '<path d="M12 3v12M8 7l4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>',
+    filter: '<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
+    sort: '<path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"/>',
+    close: '<path d="M6 6l12 12M18 6 6 18"/>',
+    check: '<path d="m5 12 5 5 9-10"/>',
+    camera: '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/>',
+    upload: '<path d="M12 16V4M7 9l5-5 5 5M4 20h16"/>',
+    shield: '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>',
+    truck: '<path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',
+    star: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+    bell: '<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>',
+    settings: '<circle cx="12" cy="12" r="3"/><path d="M12 2.5l1.6 2.3 2.7-.6.9 2.6 2.6.9-.6 2.7 2.3 1.6-2.3 1.6.6 2.7-2.6.9-.9 2.6-2.7-.6L12 21.5l-1.6-2.3-2.7.6-.9-2.6-2.6-.9.6-2.7L2.500 12l2.300-1.600-.6-2.700 2.600-.9.9-2.600 2.700.6z"/>',
+    tag: '<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1"/>',
+    bag: '<path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/>',
+    shirt: '<path d="M20.4 3.5 16 2a4 4 0 0 1-8 0L3.6 3.5a2 2 0 0 0-1.3 2.2l.6 3.5a1 1 0 0 0 1 .8H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.2a1 1 0 0 0 1-.8l.6-3.5a2 2 0 0 0-1.4-2.2z"/>',
+    hoodie: '<path d="M8 3 3 6l1 5 3-1v11h10V10l3 1 1-5-5-3c-.5 2-2 3-4 3S8.500 5 8 3z"/><path d="M12 9v4"/>',
+    sneaker: '<path d="M3 17v-4l4-1 2 2 4-3 3 3h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3z"/><path d="M9 14l2 1M12 12l2 1.500"/>',
+    wallet: '<path d="M4 7a2 2 0 0 1 2-2h12v4M4 7v11a2 2 0 0 0 2 2h14V9H6a2 2 0 0 1-2-2z"/><path d="M16 14.500h.01"/>',
+    pin: '<path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.500"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.500"/><path d="m21 16-5-5-9 9"/>',
+    trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+    edit: '<path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/>',
+    more: '<circle cx="5" cy="12" r="1.200"/><circle cx="12" cy="12" r="1.200"/><circle cx="19" cy="12" r="1.200"/>',
+    send: '<path d="M21 3 3 11l7 3 3 7z"/><path d="M10 14 21 3"/>',
+    card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+    package: '<path d="M12 3 3 7.500v9L12 21l9-4.500v-9z"/><path d="m3 7.500 9 4.500 9-4.500M12 12v9"/>',
+    help: '<circle cx="12" cy="12" r="9"/><path d="M9.500 9a2.500 2.500 0 1 1 3.500 2.300c-.7.400-1 1-1 1.700M12 17h.01"/>',
+    logout: '<path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 8l-4 4 4 4M6 12h10"/>',
+    lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    sparkle: '<path d="M12 3l1.800 5.200L19 10l-5.200 1.800L12 17l-1.800-5.200L5 10l5.200-1.800z"/><path d="M19 17v4M17 19h4"/>',
+    eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    grid: '<rect x="4" y="4" width="7" height="7" rx="1.500"/><rect x="13" y="4" width="7" height="7" rx="1.500"/><rect x="4" y="13" width="7" height="7" rx="1.500"/><rect x="13" y="13" width="7" height="7" rx="1.500"/>',
+    bank: '<path d="M3 10 12 4l9 6M5 10v8M9 10v8M15 10v8M19 10v8M3 20h18"/>',
+    phone: '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
+    flag: '<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
+    home2: '<path d="M4 20V9l8-5 8 5v11zM9 20v-6h6v6"/>',
+    baby: '<circle cx="12" cy="10" r="6"/><path d="M9 10h.01M15 10h.01M10 13c1 .8 3 .8 4 0M12 16v5M8 21h8"/>',
+    ball: '<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.500 5.500c4 3 9 3 13 0M5.500 18.500c4-3 9-3 13 0"/>',
+    gem: '<path d="M6 4h12l3 5-9 11L3 9z"/><path d="M3 9h18M9 4l3 5 3-5M12 20 9 9M12 20l3-11"/>',
+    refresh: '<path d="M20 11a8 8 0 0 0-14.500-4M4 4v4h4M4 13a8 8 0 0 0 14.500 4M20 20v-4h-4"/>',
+    apple: '<path d="M16.500 12.500c0-2.300 1.900-3.400 2-3.500-1.100-1.600-2.800-1.800-3.400-1.800-1.400-.1-2.800.9-3.500.9s-1.800-.8-3-.8c-1.500 0-3 .9-3.800 2.300-1.600 2.800-.4 7 1.200 9.300.8 1.100 1.700 2.400 2.900 2.300 1.200 0 1.600-.7 3-.7s1.800.7 3 .7 2-1.100 2.800-2.200c.9-1.300 1.200-2.500 1.300-2.600-.1 0-2.500-1-2.500-3.900zM14.300 5.600c.6-.8 1.100-1.800.9-2.900-.9 0-2 .6-2.700 1.400-.6.700-1.100 1.800-1 2.800 1 .1 2.100-.5 2.800-1.300z" fill="currentColor" stroke="none"/>',
+    google: '<path d="M21 12.200c0-.7-.1-1.300-.2-1.900H12v3.600h5.100a4.400 4.400 0 0 1-1.900 2.900v2.400h3.100c1.800-1.700 2.700-4.100 2.700-7z" fill="currentColor" stroke="none"/><path d="M12 21.500c2.600 0 4.700-.9 6.300-2.300l-3.100-2.400c-.9.600-2 .9-3.200.9-2.500 0-4.600-1.700-5.300-3.900H3.500v2.500a9.500 9.500 0 0 0 8.500 5.200z" fill="currentColor" stroke="none"/><path d="M6.700 13.800a5.700 5.700 0 0 1 0-3.600V7.700H3.500a9.500 9.500 0 0 0 0 8.600z" fill="currentColor" stroke="none"/><path d="M12 6.300c1.400 0 2.700.5 3.700 1.400l2.800-2.800A9.500 9.500 0 0 0 3.500 7.700l3.200 2.500C7.400 8 9.500 6.300 12 6.300z" fill="currentColor" stroke="none"/>'
+  };
+
+  window.UI = window.UI || {};
+  UI.icons = Object.keys(P);
+  UI.icon = function (name, size, extra) {
+    size = size || 24;
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' + (extra || '') + '>' + (P[name] || P.info) + '</svg>';
+  };
+
+  /* Logo-mærket: en spinnende burst. Brug UI.logo(size) / UI.wordmark(size) */
+  UI.logoMark = function (size) {
+    size = size || 40;
+    var petals = [[0, 11, '#fdfbf7'], [45, 9, '#d2ff32'], [90, 11, '#d2ff32'], [135, 8, '#fdfbf7'], [180, 11, '#d2ff32'], [225, 9, '#fdfbf7'], [270, 11, '#fdfbf7'], [315, 8, '#d2ff32']];
+    var g = petals.map(function (p) {
+      return '<line x1="32" y1="' + (32 - 11) + '" x2="32" y2="' + (32 - 11 - p[1]) + '" stroke="' + p[2] + '" stroke-width="8" stroke-linecap="round" transform="rotate(' + (p[0] + 12) + ' 32 32)"/>';
+    }).join('');
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 64 64" aria-hidden="true">' + g + '</svg>';
+  };
+  UI.wordmark = function (size, color) {
+    return '<span class="row-flex" style="gap:' + Math.round(size * .22) + 'px;color:' + (color || 'inherit') + '" aria-label="re:spin">' + UI.logoMark(size * 1.1) + '<span style="font-weight:900;font-size:' + size + 'px;letter-spacing:-.04em;line-height:1">re:spin</span></span>';
+  };
+})();
