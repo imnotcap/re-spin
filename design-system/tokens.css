@@ -51,12 +51,17 @@
   --brand:         var(--forest);
   --action:        var(--lime);
   --action-text:   var(--slate);      /* tekst på lime – ALDRIG hvid */
-  --buy:           var(--coral-600);
+  --buy:           var(--forest);
   --danger:        #c62828;
   --success:       var(--forest);
   --warning:       #b26a00;
   --focus-ring:    0 0 0 2px var(--bg), 0 0 0 4px var(--forest);
 
+  /* Gradienter til bokse/flader (dæmpede, samme brandfarver) */
+  --grad-lime:   linear-gradient(135deg, #e8ff7a 0%, #d2ff32 50%, #a6ee52 100%);
+  --grad-forest: linear-gradient(135deg, #0b4725 0%, #0e5a2f 50%, #0a7a63 100%);
+  --grad-deep:   linear-gradient(160deg, #0e5a2f 0%, #0b4725 45%, #07301a 100%);
+  --grad-card:   linear-gradient(180deg, #ffffff 0%, #f6f4f0 100%);
   --gradient-energy: linear-gradient(100deg, #0e5a2f 0%, #0a8a78 30%, #d2ff32 62%, #ff5a5f 92%);
 
   /* ---- Typografi ---- */
@@ -91,7 +96,8 @@
   --tap: 44px;                         /* minimum touch-target */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --tabbar-h: 58px;
+  --tabbar-h: 60px;
+  --tabbar-pad: max(var(--safe-bottom), 10px);
   --z-bar: 10; --z-tabbar: 20; --z-sheet: 40; --z-toast: 60;
 }
 
