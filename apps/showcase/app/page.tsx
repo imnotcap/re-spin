@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import {
-  Avatar, Badge, BalanceCard, Button, CertifiedBadge, ConversationRow, EmptyState, Icon, IconButton, List, ListRow, Notice,
-  PriceSummary, ProductCard, ProductGrid, Progress, Rating, Skeleton, Stepper, Text, Timeline, Wordmark
+  Avatar, Badge, BalanceCard, Button, CertifiedBadge, ConversationRow, EmptyState, Icon, IconButton, List, ListRow, Notice, PriceSummary, ProductCard, ProductGrid, Progress, Rating, Skeleton, Stepper, Text, Timeline, Wordmark, Breadcrumbs, CategoryTile, DetailList, PriceDetails, ProductGallery, SellerCard, TrustBar
 } from '@respin/ui';
 import { colors, gradients } from '@respin/ui/tokens';
 import { ICON_NAMES, buyerFee, formatKr, formatKrDecimals, sellerFee } from '@respin/ui/utils';
@@ -66,6 +65,30 @@ export default function Gallery() {
 
       <Section title="Produktkort">
         <div className="g-col"><ProductGrid style={{ padding: 0 }}>{items.slice(0, 2).map((it) => <ProductCard key={it.id} product={it} href={`/demo/item/${it.id}`} badge={it.condition} />)}</ProductGrid></div>
+      </Section>
+
+      <Section title="Markedsplads (hjemmeside)">
+        <div className="g-col" style={{ width: 560 }}>
+          <Breadcrumbs items={[{ label: 'Forside', href: '/' }, { label: 'Kvinder', href: '/demo' }, { label: 'Uldjakke' }]} />
+          <TrustBar variant="compact" items={[{ icon: 'shield', title: 'Køberbeskyttelse' }, { icon: 'tag', title: '0 kr. at sætte til salg' }, { icon: 'truck', title: 'Fragt fra 39 kr.' }]} />
+          <TrustBar items={[{ icon: 'shield', title: 'Køberbeskyttelse', text: 'Pengene holdes, til du har fået varen' }, { icon: 'eye', title: 'Ingen skjulte gebyrer', text: 'Prisen inkl. køberbeskyttelse står på hver vare' }]} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+            <CategoryTile variant="card" icon="shirt" label="Kvinder" count={128} href="/demo" />
+            <CategoryTile variant="card" icon="sneaker" label="Sko" count={1} href="/demo" />
+            <CategoryTile icon="bag" label="Tasker" href="/demo" />
+            <CategoryTile icon="home" label="Bolig" href="/demo" />
+          </div>
+          <ProductGrid layout="responsive">
+            <ProductCard product={{ id: 'a', title: 'Uldjakke i ternet mønster', brand: 'Ganni', size: 'M', condition: 'Meget god', price: 450 }} href="/demo" placeholderIcon="shirt" favoriteCount={38} seller={{ name: 'sofie.vintage', certified: true }} />
+            <ProductCard product={{ id: 'b', title: 'Samba OG', brand: 'Adidas', size: '41', condition: 'Ny med mærke', price: 350 }} href="/demo" placeholderIcon="sneaker" favoriteCount={74} badge="Vintage" />
+          </ProductGrid>
+        </div>
+        <div className="g-col">
+          <ProductGallery images={[{ alt: 'Forfra', shade: 0 }, { alt: 'Bagfra', shade: 1 }, { alt: 'Mærket', shade: 2 }]} placeholderIcon="shirt" />
+          <PriceDetails price={450} shippingFrom={39} />
+          <DetailList items={[['Mærke', 'Ganni'], ['Størrelse', 'M / 38'], ['Stand', 'Meget god'], ['Farve', 'Brun']]} />
+          <SellerCard name="sofie.vintage" href="/demo" rating={4.9} reviews={212} certified facts={[{ icon: 'pin', text: 'København NV' }, { icon: 'clock', text: 'Svarer typisk inden for en time' }]} />
+        </div>
       </Section>
 
       <Section title="Formularer, faner, sheet, toast">
