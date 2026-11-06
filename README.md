@@ -57,7 +57,13 @@ npm run dev:web     # http://localhost:3000 (se docs/platform/README.md for milj
 
 ## Hjemmeside (testversion): <https://imnotcap.github.io/re-spin/>
 
-`apps/site` er den offentlige præsentationsside. Den er bygget i Next.js, TypeScript, Tailwind og `@respin/ui`, med Motion og React Bits, og eksporteres statisk til GitHub Pages. Siden har en live-demo af appen, en gebyrberegner (samme regler som checkout) og en side om tryghed. Den er lazy-loaded og målt til 100 i Lighthouse (ydelse, tilgængelighed, best practices) med CLS 0.
+`apps/site` er markedspladsens hjemmeside med fokus på brugernes varer:
+
+- forside med kategorier og produkter;
+- kategorisider med filtre og varesider med gennemskuelig pris inkl. køberbeskyttelse;
+- sælgerprofiler, søgning og favoritter.
+
+Den er bygget i Next.js, TypeScript, Tailwind og `@respin/ui` og eksporteres statisk til GitHub Pages.
 
 ```bash
 npm run dev:site   # http://localhost:3030

@@ -10,7 +10,7 @@ const CARDS = [
 
 export function FeesTeaser() {
   return (
-    <section aria-labelledby="fees-title" className="mx-auto max-w-6xl px-4 pt-24 sm:px-6">
+    <section aria-labelledby="fees-title" className="mx-auto max-w-7xl px-4 pt-16 sm:px-6">
       <SectionHeading id="fees-title" eyebrow="Gebyrer" title="Enkle priser – ingen overraskelser" />
       <ul className="mt-10 grid gap-5 md:grid-cols-3">
         {CARDS.map((c, i) => (

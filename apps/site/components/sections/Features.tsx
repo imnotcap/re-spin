@@ -6,7 +6,7 @@ import { SectionHeading } from '../SectionHeading';
 
 export function Features() {
   return (
-    <section aria-labelledby="features-title" className="mx-auto max-w-6xl px-4 pt-24 sm:px-6">
+    <section aria-labelledby="features-title" className="mx-auto max-w-7xl px-4 pt-16 sm:px-6">
       <SectionHeading id="features-title" eyebrow="Tryghed først" title="Bygget til at handle trygt" intro="Sikkerheden er tænkt ind fra starten – ikke klistret på bagefter." />
       <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {FEATURES.map((f, i) => (

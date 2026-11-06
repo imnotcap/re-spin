@@ -10,7 +10,7 @@
   --rs-font-brand: var(--font-inter);
 }
 
-html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
 body { background: var(--rs-bg); color: var(--rs-text); font-family: var(--rs-font); -webkit-font-smoothing: antialiased; }
@@ -25,3 +25,10 @@ body { background: var(--rs-bg); color: var(--rs-text); font-family: var(--rs-fo
 @media print {
   .blur-text span { opacity: 1 !important; filter: none !important; transform: none !important; }
 }
+
+/* Hjemmesiden har ingen bundmenu som appen: beskeder tæt på bunden */
+.rs-toast { bottom: max(24px, env(safe-area-inset-bottom)); }
+
+/* Varesiden på mobil: plads til den faste købsbjælke under footeren */
+@media (max-width: 1023.98px) { body:has(.rs-buybar) footer { padding-bottom: 76px; } }
+@media print { .rs-buybar { display: none !important; } }

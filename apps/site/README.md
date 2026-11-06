@@ -1,11 +1,11 @@
 # apps/site – re:spin hjemmeside (testversion på GitHub Pages)
 
-Offentlig præsentationsside: forside med live-demo, gebyrberegner og side om tryghed. Bygges som **statisk eksport** (ren HTML/CSS/JS) og udgives på GitHub Pages: <https://imnotcap.github.io/re-spin/>
+Markedspladsens hjemmeside med fokus på brugernes varer, som hos Vinted, og en ren, professionel opbygning i stil med store danske webshops. Siden bygges som **statisk eksport** (ren HTML/CSS/JS) og udgives på GitHub Pages: <https://imnotcap.github.io/re-spin/>
 
-**Stak:** Next.js 16 (App Router, `output: 'export'`) · TypeScript · Tailwind CSS v4 + `@respin/ui` (kit og Tailwind-preset) · Motion · React Bits · `@respin/core` (samme gebyrregler som appen).
+**Stak:** Next.js 16 (App Router, `output: 'export'`), TypeScript, Tailwind CSS v4 og `@respin/ui` (kit og Tailwind-tema), Motion og React Bits. Gebyrer beregnes med `@respin/core`, med samme regler som checkout.
 
 ```bash
-npm run dev:site                                   # http://localhost:3030
+npm run dev:site                                       # http://localhost:3030
 NEXT_PUBLIC_BASE_PATH=/re-spin npm run build -w site   # → apps/site/out (som på GitHub Pages)
 ```
 
@@ -13,52 +13,69 @@ NEXT_PUBLIC_BASE_PATH=/re-spin npm run build -w site   # → apps/site/out (som 
 
 | Sti | Indhold |
 |---|---|
-| `/` | Hero, nøgletal, "sådan virker det" (faner), funktioner, live-demo af appen, gebyrer, FAQ |
-| `/gebyrer/` | Gebyrberegner – samme kode (`@respin/core/fees`) som checkout bruger |
-| `/sikkerhed/` | Køberbeskyttelse, svindel-tips, hvordan data opbevares |
-| `/404.html` | Egen "siden findes ikke" (GitHub Pages viser den automatisk) |
+| `/` | Kompakt banner, tryghedslinje, kategorier, *Nyt fra medlemmerne*, populære mærker, *Mest populære*, *Fra certificerede sælgere* og en opfordring til at sælge. Ingen vare går igen på siden. |
+| `/kategori/[slug]/` | 8 kategorier. Underkategorier som chips, filtre (størrelse, stand, pris, mærke) og sortering. Filtrene står i URL'en, så et link kan deles og overlever genindlæsning. |
+| `/vare/[id]/` | Galleri og gennemskuelig pris (pris, pris inkl. køberbeskyttelse og udfoldelig opdeling). "Køb nu" viser præcis, hvad købet koster. Desuden detaljer, beskrivelse, sælgerkort, *Flere fra sælgeren* og *Lignende varer*. På mobil er der en fast købsbjælke. |
+| `/medlem/[id]/` | Sælgerprofil: vurdering, certificering, by, svartid og varer til salg |
+| `/soeg/?q=` | Søgning i titel, mærke, kategori, farve og stand. Accenter og tegnsætning ignoreres ("levis" finder Levi's). Har samme filtre som kategorierne. |
+| `/favoritter/` | Varer gemt med hjertet. De gemmes kun i browseren, så der kræves intet login. |
+| `/saelg/`, `/saadan-virker-det/`, `/gebyrer/`, `/sikkerhed/` | Sælg-guide, sådan virker det (trin, nøgletal, FAQ), gebyrberegner og køberbeskyttelse |
+| `/licenser/` | Licenser for tredjeparts-software og skrift |
+
+Varerne og sælgerne er eksempeldata (`lib/catalog.ts`): 38 varer og 8 sælgere. Når backend'en er klar, erstattes kataloget af rigtige data. Kort, filtre og sider er uændrede.
 
 ## Ydelse og lazy load
 
-- **Alt er forudrenderet HTML.** Overskrifter og tekst står i HTML'en, så siden virker uden JavaScript, og det største element tegnes med det samme.
-- **Live-demoen** (`DemoSection`) hentes først, når man er 400 px fra den (`LazyMount` + `next/dynamic`, `ssr: false`). Indtil da står en pladsholder i samme højde, så intet hopper.
-- **React Bits-animationer** (`LazyBits.tsx`) hentes først, når browseren er ledig eller elementet er tæt på skærmen. Fallback er den endelige tekst. Det skiftende ord i hero står sidst på sin linje, så skiftet ikke flytter anden tekst.
-- **Motion** indlæses med `LazyMotion` (`m.*`-komponenter); animationsfunktionerne hentes i en separat chunk.
-- **Skrift:** Inter (latin-delsæt, variabel) via `next/font/local`. Den er selv-hostet og forhåndsindlæst, med en størrelsestilpasset reserveskrift, så skiftet ikke flytter noget.
-- **Fremkomst-animation** (`Reveal.tsx`) er ren CSS. Indhold, der allerede er synligt ved indlæsning, skjules aldrig.
-- **Bevægelse og print:** *Reducer bevægelse* slår alle animationer fra. Ved print vises alt.
-- **Bundle:** `@respin/core` importeres via under-stier (`/fees`, `/money`, `/limits`), så zod ikke kommer med.
+- **Alt er forudrenderet HTML** (65 sider). Overskrifter, varer og priser står i HTML'en, så siden virker uden JavaScript.
+- **Filtre og søgning:**
+  - Server-HTML'en og første klientvisning er identiske, så intet hopper (CLS 0).
+  - Filterændringer skriver til URL'en med `history.replaceState`. Der hentes intet fra nettet.
+- **Favoritter** læses med `useSyncExternalStore` fra localStorage. Det er sikret mod blokeret lager og ugyldige data og synkroniseres mellem faner.
+- **React Bits-animationer** (`LazyBits.tsx`) hentes først, når browseren er ledig eller elementet er tæt på. Indtil da vises den endelige tekst.
+- **Motion** indlæses med `LazyMotion`.
+- **Skrift:** Inter via `next/font/local`. Den er forhåndsindlæst, og en størrelsestilpasset reserveskrift sikrer, at intet flytter sig.
+- **Kategorier og stand** ligger i `lib/categories.ts`, så header og filtre ikke trækker hele kataloget med i browseren.
+- **Bevægelse og print:** *Reducer bevægelse* slår alle animationer fra. Ved print vises alt, og købsbjælken skjules.
 
-Målt (Lighthouse, mobil, statisk eksport bag en GitHub Pages-lignende server):
+Målt med Lighthouse (mobil) på statisk eksport bag en GitHub Pages-lignende server:
 
-| Side | Ydelse | Tilgængelighed | Best practices | SEO | LCP | CLS |
-|---|---|---|---|---|---|---|
-| `/` | 100 | 100 | 100 | 60* | 0,8 s | 0 |
-| `/gebyrer/` | 100 | 100 | 100 | 60* | 0,8 s | 0 |
-| `/sikkerhed/` | 100 | 100 | 100 | 60* | 0,8 s | 0 |
+| Side | Ydelse | Tilgængelighed | Best practices | LCP | CLS |
+|---|---|---|---|---|---|
+| `/` | 100 | 100 | 100 | 0,9 s | 0 |
+| `/kategori/sko/` | 100 | 100 | 100 | 0,9 s | 0 |
+| `/vare/…` | 100 | 100 | 100 | 0,9 s | 0 |
+| `/soeg/` | 99 | 100 | 100 | 0,9 s | 0 |
+| `/medlem/…`, `/favoritter/`, `/saelg/`, `/saadan-virker-det/` | 100 | 100 | 100 | 0,9 s | 0 |
 
-\* SEO er bevidst lav: testversionen har `noindex` og `robots.txt: Disallow: /`, så den ikke dukker op i søgemaskiner. Når siden går i luften rigtigt, sættes `SITE.isTest = false` i `lib/site.ts`, og `public/robots.txt` opdateres.
+SEO er bevidst 60: testversionen har `noindex` og `robots.txt: Disallow: /`. Ved rigtig lancering sættes `SITE.isTest = false` i `lib/site.ts`, og `public/robots.txt` opdateres.
 
 ## Testet
 
-Ud over Lighthouse er følgende kørt i Chromium mod den statiske eksport bag en server, der efterligner GitHub Pages (base-sti, 301 til afsluttende `/`, `404.html` med status 404):
+Enhedstests (vitest, en del af `npm test`):
 
-- **36 funktionelle tjek.** Dækker:
-  - alle sider og links (ingen døde links, ingen konsolfejl) og ingen vandret scroll fra 320 px og op;
-  - mobilmenu (Escape, fokus) og faner;
-  - lazy demo med filtre, favoritter og vare-ark med korrekt beregning;
-  - gebyrberegneren: grænser, ugyldigt input, certificeret sælger og fragtstørrelser;
-  - siden uden JavaScript, og med reduceret bevægelse.
-- **axe-core: 0 overtrædelser.** Gælder alle sider på mobil og desktop, inkl. det åbne demo-ark (fokus flyttes ind i dialogen).
-- **0 layout-skift**, målt over 14 sekunder med flere ordskift på 1280, 390 og 320 px.
-- **Print:** sektioner og animeret tekst, man ikke har scrollet hen til, kommer med på papir.
+- `lib/catalog.test.ts`: katalogets integritet, sortering og søgning (æ/ø/å, accenter, tegnsætning).
+- `lib/browse.test.ts`: filtre, prisintervaller uden huller, og at URL'en kan skrives og læses tilbage. Ondsindede værdier ignoreres.
+
+I browseren (Chromium) mod den statiske eksport:
+
+- **Alle 62 sider:** status 200, præcis én h1, titel og ingen konsolfejl.
+  - Ingen vandret scroll på 320, 390, 768 og 1280 px.
+  - Alle 128 interne links virker og har base-stien.
+- **Søgning, filtre, sortering og URL'en.** Filtrene overlever genindlæsning, og ugyldige værdier ignoreres.
+- **Vareside:**
+  - Køb-arket regner rigtigt (fx 450 + 25,50 + 49 = 524,50 kr.). Arket er fast i vinduet, låser scroll bagved, lukker med Escape og giver fokus tilbage.
+  - Galleriet virker, og købsbjælken på mobil dækker ikke footeren.
+- **Favoritter:** gem, tæller i header, favoritside, genindlæsning, fjern og ødelagte data.
+- **Mobilmenu**, gebyrberegner, siden uden JavaScript, reduceret bevægelse og 404.
+- **axe-core: 0 overtrædelser** på 13 sidetyper på mobil og desktop. Det gælder også åben menu, åbne filtre, udfoldet prisopdeling, toast og køb-arket.
+- **0 layout-skift**, også med `?q=`, filtre i URL'en og gemte favoritter.
 
 ## GitHub Pages: begrænsninger at kende
 
-- **Ingen egne HTTP-headers.** Pages kan ikke sætte CSP, HSTS-preload, `X-Frame-Options` osv. Det er acceptabelt for en statisk testside uden login og formularer. Den rigtige side (`apps/web`) sætter alle headers via `proxy.ts`.
-- **Kun statisk:** ingen login, ingen database. Demoen kører udelukkende i browseren.
-- **Cache:** Pages cacher i ca. 10 minutter, så en ny udgivelse kan være lidt om at slå igennem.
+- **Ingen egne HTTP-headers.** Pages kan ikke sætte CSP, HSTS-preload osv. Det er acceptabelt for en statisk side uden login og betaling. Den rigtige side (`apps/web`) sætter alle headers.
+- **Kun statisk:** intet login og ingen database. "Køb nu" viser prisen, men kan ikke købe.
+- **Cache:** Pages cacher i cirka 10 minutter.
 
 ## Licenser
 
-`components/reactbits/` er MIT + Commons Clause (se README der). Skriften Inter er SIL Open Font License 1.1 (`app/fonts/OFL-Inter.txt`).
+`components/reactbits/` er under MIT + Commons Clause (se README der). Skriften Inter er under SIL Open Font License 1.1 (`app/fonts/OFL-Inter.txt`). Begge er listet på `/licenser/`.

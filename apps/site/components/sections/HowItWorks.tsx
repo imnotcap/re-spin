@@ -11,7 +11,7 @@ type Role = 'seller' | 'buyer';
 export function HowItWorks() {
   const [role, setRole] = useState<Role>('seller');
   return (
-    <section aria-labelledby="saadan-title" id="saadan" className="mx-auto max-w-6xl scroll-mt-24 px-4 pt-24 sm:px-6">
+    <section aria-labelledby="saadan-title" id="saadan" className="mx-auto max-w-7xl scroll-mt-24 px-4 pt-16 sm:px-6">
       <SectionHeading id="saadan-title" eyebrow="Sådan virker det" title="Tre trin – uanset om du sælger eller køber" />
       <div className="mx-auto mt-8 max-w-sm">
         <Tabs<Role> variant="segmented" aria-label="Vælg rolle" value={role} onValueChange={setRole} items={[{ value: 'seller', label: 'Jeg vil sælge' }, { value: 'buyer', label: 'Jeg vil købe' }]} />

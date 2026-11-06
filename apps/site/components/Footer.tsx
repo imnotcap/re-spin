@@ -1,35 +1,47 @@
 import Link from 'next/link';
 import { Wordmark } from '@respin/ui';
-import { NAV } from '../lib/site';
+import { CATEGORIES } from '../lib/categories';
+import { HELP_NAV, SITE } from '../lib/site';
+
+const linkCls = 'text-cream/85 underline-offset-4 hover:text-cream hover:underline';
 
 export function Footer() {
   return (
-    <footer className="mt-24 bg-forest-900 text-cream">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.5fr_1fr_1fr]">
+    <footer className="mt-20 bg-forest-900 text-cream">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
         <div>
           <Wordmark size={26} color="var(--rs-cream)" />
-          <p className="mt-4 max-w-sm text-small text-cream/75">Dansk markedsplads for brugt tøj, sko og boligting. Testversion – under udvikling.</p>
+          <p className="mt-4 max-w-xs text-small text-cream/80">
+            Dansk markedsplads for brugt tøj, sko og boligting. Gratis at oprette annoncer – og køberbeskyttelse på alle køb.
+          </p>
+          {SITE.isTest && <p className="mt-3 max-w-xs text-caption text-cream/65">Testversion. re:spin er under udvikling, og intet her er til salg endnu.</p>}
         </div>
-        <nav aria-label="Sider">
-          <h2 className="text-small font-bold text-lime">Sider</h2>
-          <ul className="mt-3 space-y-2 text-small">
-            {NAV.map((n) => <li key={n.href}><Link className="text-cream/85 hover:text-cream hover:underline" href={n.href}>{n.label}</Link></li>)}
+        <nav aria-labelledby="footer-shop">
+          <h2 id="footer-shop" className="text-small font-bold text-lime">Shop</h2>
+          <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-small md:grid-cols-1">
+            {CATEGORIES.map((c) => <li key={c.slug}><Link className={linkCls} href={`/kategori/${c.slug}/`}>{c.label}</Link></li>)}
           </ul>
         </nav>
-        <div>
-          <h2 className="text-small font-bold text-lime">Om siden</h2>
-          <ul className="mt-3 space-y-2 text-small text-cream/85">
-            <li>Ingen cookies og ingen sporing</li>
-            <li>Skrifttype hostes af os selv</li>
-            <li>
-              Animationer:{' '}
-              <a className="underline hover:text-cream" href="https://github.com/DavidHDev/react-bits" rel="noopener noreferrer" target="_blank">React Bits</a>
-              {' '}(MIT + Commons Clause)
-            </li>
+        <nav aria-labelledby="footer-help">
+          <h2 id="footer-help" className="text-small font-bold text-lime">Hjælp</h2>
+          <ul className="mt-3 space-y-2 text-small">
+            {HELP_NAV.map((n) => <li key={n.href}><Link className={linkCls} href={n.href}>{n.label}</Link></li>)}
           </ul>
+        </nav>
+        <nav aria-labelledby="footer-respin">
+          <h2 id="footer-respin" className="text-small font-bold text-lime">{SITE.name}</h2>
+          <ul className="mt-3 space-y-2 text-small">
+            <li><Link className={linkCls} href="/saelg/">Sælg på {SITE.name}</Link></li>
+            <li><Link className={linkCls} href="/favoritter/">Dine favoritter</Link></li>
+          </ul>
+        </nav>
+      </div>
+      <div className="border-t border-cream/15">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-caption text-cream/65 sm:px-6">
+          <p>© 2026 {SITE.name}</p>
+          <Link className="underline-offset-4 hover:text-cream hover:underline" href="/licenser/">Licenser</Link>
         </div>
       </div>
-      <p className="border-t border-cream/15 py-5 text-center text-caption text-cream/60">© 2026 re:spin</p>
     </footer>
   );
 }

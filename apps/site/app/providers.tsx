@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { LazyMotion, MotionConfig } from 'motion/react';
-import { RespinProvider } from '@respin/ui';
+import { RespinProvider, ToastProvider } from '@respin/ui';
 
 // Motion-funktioner indlæses asynkront (mindre start-bundle); `m`-komponenter venter på dem.
 const loadFeatures = () => import('./motion-features').then((m) => m.default);
@@ -13,7 +13,9 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <RespinProvider linkComponent={Link}>
       <MotionConfig reducedMotion="user">
-        <LazyMotion features={loadFeatures}>{children}</LazyMotion>
+        <LazyMotion features={loadFeatures}>
+          <ToastProvider>{children}</ToastProvider>
+        </LazyMotion>
       </MotionConfig>
     </RespinProvider>
   );

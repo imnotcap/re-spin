@@ -5,7 +5,7 @@ import { SectionHeading } from '../SectionHeading';
 /** Native <details>: tilgængelig, virker uden JavaScript og kan søges med Ctrl+F */
 export function Faq() {
   return (
-    <section aria-labelledby="faq-title" id="faq" className="mx-auto max-w-3xl scroll-mt-24 px-4 pt-24 sm:px-6">
+    <section aria-labelledby="faq-title" id="faq" className="mx-auto max-w-3xl scroll-mt-24 px-4 pt-16 sm:px-6">
       <SectionHeading id="faq-title" eyebrow="Spørgsmål" title="Ofte stillede spørgsmål" />
       <div className="mt-10 divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
         {FAQ.map((f) => (

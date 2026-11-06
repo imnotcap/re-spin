@@ -3,7 +3,8 @@ import type { ReactNode } from 'react';
 import localFont from 'next/font/local';
 import './globals.css';
 import { Providers } from './providers';
-import { Header } from '../components/Header';
+import { CategoryNav, Header } from '../components/Header';
+import { TopBar } from '../components/TopBar';
 import { Footer } from '../components/Footer';
 import { SITE } from '../lib/site';
 
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
   formatDetection: { telephone: false }
 };
 
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#fdfbf7' };
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#ffffff' };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -36,7 +37,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           Spring til indhold
         </a>
         <Providers>
+          <TopBar />
           <Header />
+          <CategoryNav />
           <main id="indhold">{children}</main>
           <Footer />
         </Providers>

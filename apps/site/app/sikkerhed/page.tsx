@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Notice, Timeline } from '@respin/ui';
+import { Breadcrumbs, Notice, Timeline } from '@respin/ui';
 
 export const metadata: Metadata = { title: 'Tryghed og sikkerhed', description: 'Sådan beskytter re:spin dig som køber og sælger.' };
 
@@ -12,8 +12,9 @@ const TIPS = [
 
 export default function SecurityPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 pt-12 sm:px-6">
-      <h1 className="text-[34px] font-extrabold leading-[40px] tracking-[-0.02em] sm:text-[44px] sm:leading-[50px]">Tryghed og sikkerhed</h1>
+    <div className="mx-auto max-w-3xl px-4 pt-5 sm:px-6">
+      <Breadcrumbs items={[{ label: 'Forside', href: '/' }, { label: 'Tryghed og sikkerhed' }]} />
+      <h1 className="mt-6 text-h1 sm:text-[38px] sm:leading-[44px]">Tryghed og sikkerhed</h1>
       <p className="mt-3 text-[17px] leading-[26px] text-slate-700">Sådan holder vi pengene og dine oplysninger sikre.</p>
 
       <section aria-labelledby="flow-title" className="mt-12">

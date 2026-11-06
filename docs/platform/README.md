@@ -33,7 +33,7 @@ Symboler: ✅ bygget og testet · 🟡 bygget, men ikke afprøvet i drift/mod ri
 | **Login** – tilmelding, e-mailbekræftelse, login/log ud, sessioner, glemt adgangskode, skift adgangskode, step-up, aktive enheder | ✅ | `packages/auth`, `apps/web` | 28 tests + mutationstest + 23-trins browser-e2e mod produktionsbuild |
 | Delt rate limiting i Postgres | ✅ | `packages/auth` (`PgRateLimiter`) | tests 🟡 række-låsen kan ikke bevises i PGlite (én forbindelse) |
 | **Passkeys** (login uden adgangskode) og **to-trins-login** (authenticator-app + gendannelseskoder) | ✅ | `packages/auth`, `apps/web/account/security` | 30 tests med software-autentikator + 10/10 mutationer fanget + 19-trins browser-e2e med Chromiums virtuelle autentikator (dev og produktion) |
-| **Hjemmeside** (testversion på GitHub Pages) – forside med live-demo, gebyrberegner, tryghed | ✅ | `apps/site`, `.github/workflows/pages.yml` | 36 browser-tjek + axe 0 fejl + Lighthouse 100/100/100, CLS 0 (statisk eksport bag GitHub Pages-lignende server) 🟡 workflow ikke kørt på GitHub endnu |
+| **Hjemmeside** (testversion på GitHub Pages) – forside med varer og kategorier, kategorier med filtre, varesider med gennemskuelig pris, sælgerprofiler, søgning, favoritter | ✅ | `apps/site`, `.github/workflows/pages.yml` | enhedstests + browser-tests af alle 62 sider + axe 0 fejl + Lighthouse 99–100, CLS 0 🟡 eksempeldata; workflow ikke kørt på GitHub endnu |
 | Forbrugersite (`apps/web`) | 🟡 | `apps/web` | forside, login-sider, min konto, health, webhook |
 | Annoncer, søgning, upload, chat, favoritter | ⬜ | – | se roadmap |
 | Rigtige admin-funktioner (moderation, refunderinger, brugere) | ⬜ | `apps/admin` | siderne findes og er rolle-beskyttede, men tomme |
