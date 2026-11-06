@@ -13,7 +13,7 @@ NEXT_PUBLIC_BASE_PATH=/re-spin npm run build -w site   # → apps/site/out (som 
 
 | Sti | Indhold |
 |---|---|
-| `/` | Kompakt banner, tryghedslinje, kategorier, *Nyt fra medlemmerne*, populære mærker, *Mest populære*, *Fra certificerede sælgere* og en opfordring til at sælge. Ingen vare går igen på siden. |
+| `/` | Fotobanner med kort, tryghedslinje, kategorier med fotos, *Nyt fra medlemmerne*, split-banner til at sælge, *Mest populære*, populære mærker og *Fra certificerede sælgere*. Ingen vare går igen på siden. |
 | `/kategori/[slug]/` | 8 kategorier. Underkategorier som chips, filtre (størrelse, stand, pris, mærke) og sortering. Filtrene står i URL'en, så et link kan deles og overlever genindlæsning. |
 | `/vare/[id]/` | Galleri og gennemskuelig pris (pris, pris inkl. køberbeskyttelse og udfoldelig opdeling). "Køb nu" viser præcis, hvad købet koster. Desuden detaljer, beskrivelse, sælgerkort, *Flere fra sælgeren* og *Lignende varer*. På mobil er der en fast købsbjælke. |
 | `/medlem/[id]/` | Sælgerprofil: vurdering, certificering, by, svartid og varer til salg |
@@ -22,7 +22,7 @@ NEXT_PUBLIC_BASE_PATH=/re-spin npm run build -w site   # → apps/site/out (som 
 | `/saelg/`, `/saadan-virker-det/`, `/gebyrer/`, `/sikkerhed/` | Sælg-guide, sådan virker det (trin, nøgletal, FAQ), gebyrberegner og køberbeskyttelse |
 | `/licenser/` | Licenser for tredjeparts-software og skrift |
 
-Varerne og sælgerne er eksempeldata (`lib/catalog.ts`): 38 varer og 8 sælgere. Når backend'en er klar, erstattes kataloget af rigtige data. Kort, filtre og sider er uændrede.
+Varerne og sælgerne er eksempeldata (`lib/catalog.ts`): 38 varer og 8 sælgere. Fotos er fra Unsplash (Unsplash-licensen) og ligger på siden selv i `public/img` (WebP, 480/960 px, i alt ca. 2,9 MB), så ingen tredjepart får besøgendes IP-adresse. Når backend'en er klar, erstattes kataloget af rigtige data. Kort, filtre og sider er uændrede.
 
 ## Ydelse og lazy load
 
@@ -31,7 +31,8 @@ Varerne og sælgerne er eksempeldata (`lib/catalog.ts`): 38 varer og 8 sælgere.
   - Server-HTML'en og første klientvisning er identiske, så intet hopper (CLS 0).
   - Filterændringer skriver til URL'en med `history.replaceState`. Der hentes intet fra nettet.
 - **Favoritter** læses med `useSyncExternalStore` fra localStorage. Det er sikret mod blokeret lager og ugyldige data og synkroniseres mellem faner.
-- **React Bits-animationer** (`LazyBits.tsx`) hentes først, når browseren er ledig eller elementet er tæt på. Indtil da vises den endelige tekst.
+- **React Bits** (`RotatingText` i banneret) hentes først, når browseren er ledig. Indtil da vises det første ord.
+- **Fotos** har `srcset`/`sizes`, så mobilen henter den lille version. Bannerfotoet hentes med høj prioritet, resten lazy.
 - **Motion** indlæses med `LazyMotion`.
 - **Skrift:** Inter via `next/font/local`. Den er forhåndsindlæst, og en størrelsestilpasset reserveskrift sikrer, at intet flytter sig.
 - **Kategorier og stand** ligger i `lib/categories.ts`, så header og filtre ikke trækker hele kataloget med i browseren.

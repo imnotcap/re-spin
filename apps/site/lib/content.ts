@@ -13,15 +13,6 @@ export const STEPS = {
   ]
 } as const satisfies Record<string, ReadonlyArray<{ icon: IconName; title: string; text: string }>>;
 
-export const FEATURES: ReadonlyArray<{ icon: IconName; title: string; text: string; status?: string }> = [
-  { icon: 'shield', title: 'Køberbeskyttelse', text: 'Pengene frigives først, når køber har modtaget og godkendt varen – ellers automatisk efter 48 timer.' },
-  { icon: 'lock', title: 'Log ind med passkey', text: 'Face ID, fingeraftryk eller PIN i stedet for adgangskode. Kan ikke phishes. To-trins-login som alternativ.' },
-  { icon: 'chat', title: 'Chat og bud', text: 'Al kommunikation samlet ved varen. Vi advarer, hvis nogen forsøger at flytte handlen væk fra appen.', status: 'Under udvikling' },
-  { icon: 'sparkle', title: 'AI-baggrundsfjerner', text: 'Rene produktbilleder med ét tryk – behandlet på din egen telefon.', status: 'Kommer snart' },
-  { icon: 'check', title: 'Certificerede sælgere', text: 'Erfarne sælgere med bekræftet identitet betaler kun 0,5 % i gebyr.', status: 'Under udvikling' },
-  { icon: 'truck', title: 'Pakkeshop eller hjem', text: 'Fragtlabel med det samme, når varen er solgt. Følg pakken hele vejen.', status: 'Kommer snart' }
-];
-
 export const FAQ: ReadonlyArray<{ q: string; a: string }> = [
   { q: 'Hvad koster det at sælge?', a: 'Det er gratis at oprette annoncer. Når en vare sælges, går 1 % af salgsprisen til re:spin – 0,5 % hvis du er certificeret sælger.' },
   { q: 'Hvad betaler køber?', a: 'Varens pris, fragt og køberbeskyttelse på 5 % + 3 kr. Køberbeskyttelsen dækker, hvis varen ikke kommer frem eller ikke er som beskrevet.' },

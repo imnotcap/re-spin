@@ -32,7 +32,7 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, them
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="da" className={inter.variable}>
-      <body className="min-h-dvh">
+      <body className="rs-flat min-h-dvh">
         <a href="#indhold" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-lime focus:px-4 focus:py-2 focus:font-bold">
           Spring til indhold
         </a>

@@ -1,8 +1,8 @@
 'use client';
 
-import { Suspense, useId, useMemo, useState } from 'react';
+import { Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Button, Chip, EmptyState, Icon, ProductGrid, Select } from '@respin/ui';
+import { Button, Chip, Dropdown, EmptyState, ProductGrid } from '@respin/ui';
 import { ItemCard } from '../ItemCard';
 import { CATEGORIES } from '../../lib/categories';
 import {
@@ -27,9 +27,6 @@ function BrowseView({ items, opt, filters, onChange, showSeller }: { items: read
   const active = activeFilterCount(filters);
   const set = (patch: Partial<Filters>) => onChange({ ...filters, ...patch });
   const n = result.length;
-  // Mobil: filtrene ligger bag én knap, så varerne kommer hurtigt i syne. Fra tablet og op står de åbne.
-  const [showFilters, setShowFilters] = useState(false);
-  const panelId = useId();
 
   return (
     <div>
@@ -46,21 +43,15 @@ function BrowseView({ items, opt, filters, onChange, showSeller }: { items: read
         </div>
       )}
 
-      <button type="button" className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-md border border-stone-300 bg-surface text-small font-semibold sm:hidden"
-        aria-expanded={showFilters} aria-controls={panelId} onClick={() => setShowFilters((v) => !v)}>
-        <Icon name="filter" size={18} />
-        Filtre og sortering{active > 0 ? ` (${active})` : ''}
-        <Icon name={showFilters ? 'up' : 'down'} size={16} />
-      </button>
-      <div id={panelId} className={`mt-4 grid-cols-2 gap-x-3 gap-y-1 sm:mt-5 sm:grid sm:grid-cols-3 lg:grid-cols-5 ${showFilters ? 'grid' : 'hidden'}`}>
-        <Select label="Størrelse" emptyOption="Alle" options={opt.sizes} value={filters.str ?? ''} onChange={(e) => set({ str: e.target.value || undefined })} />
-        <Select label="Stand" emptyOption="Alle" options={[...opt.conditions]} value={filters.stand ?? ''} onChange={(e) => set({ stand: (e.target.value || undefined) as Filters['stand'] })} />
-        <Select label="Pris" emptyOption="Alle priser" options={PRICE_BUCKETS.map((b) => ({ value: b.value, label: b.label }))} value={filters.pris ?? ''} onChange={(e) => set({ pris: (e.target.value || undefined) as Filters['pris'] })} />
-        <Select label="Mærke" emptyOption="Alle mærker" options={opt.brands} value={filters.maerke ?? ''} onChange={(e) => set({ maerke: e.target.value || undefined })} />
-        <Select label="Sortér efter" className="col-span-2 sm:col-span-1" options={SORTS.map((s) => ({ value: s.value, label: s.label }))} value={filters.sort} onChange={(e) => set({ sort: e.target.value as Filters['sort'] })} />
+      <div className="mt-4 flex flex-wrap items-center gap-2" role="group" aria-label="Filtre og sortering">
+        <Dropdown label="Størrelse" emptyLabel="Alle størrelser" options={opt.sizes} value={filters.str ?? ''} onChange={(v) => set({ str: v || undefined })} />
+        <Dropdown label="Stand" emptyLabel="Alle" options={opt.conditions} value={filters.stand ?? ''} onChange={(v) => set({ stand: (v || undefined) as Filters['stand'] })} />
+        <Dropdown label="Pris" emptyLabel="Alle priser" options={PRICE_BUCKETS.map((b) => ({ value: b.value, label: b.label }))} value={filters.pris ?? ''} onChange={(v) => set({ pris: (v || undefined) as Filters['pris'] })} />
+        <Dropdown label="Mærke" emptyLabel="Alle mærker" options={opt.brands} value={filters.maerke ?? ''} onChange={(v) => set({ maerke: v || undefined })} />
+        <Dropdown className="sm:ml-auto" label="Sortér" highlightSelected={false} options={SORTS.map((x) => ({ value: x.value, label: x.label }))} value={filters.sort} onChange={(v) => set({ sort: v as Filters['sort'] })} />
       </div>
 
-      <div className="mt-4 flex min-h-9 items-center justify-between gap-4 border-b border-line pb-3">
+      <div className="mt-5 flex min-h-9 items-center justify-between gap-4 border-b border-line pb-3">
         <p className="text-small font-semibold" aria-live="polite" aria-atomic="true" data-testid="result-count">
           {n === 1 ? '1 vare' : `${n.toLocaleString('da-DK')} varer`}
         </p>

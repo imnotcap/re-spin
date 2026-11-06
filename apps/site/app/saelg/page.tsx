@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Breadcrumbs, Button, Icon, Notice, PriceSummary } from '@respin/ui';
+import { Breadcrumbs, Button, Icon, Notice, PriceSummary, StepList } from '@respin/ui';
 import { sellerFee, sellerPayout } from '@respin/core/fees';
 import { formatOre, fromKr } from '@respin/core/money';
 import { STEPS } from '../../lib/content';
@@ -25,25 +25,14 @@ export default function SellPage() {
 
       <div className="mt-6 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-14">
         <div>
-          <h1 className="text-h1 sm:text-[38px] sm:leading-[44px]">Sælg dit tøj – gratis</h1>
+          <h1 className="text-[32px] font-bold leading-[38px] tracking-[-0.01em] sm:text-[40px] sm:leading-[46px]">Sælg dit tøj – gratis</h1>
           <p className="mt-3 max-w-xl text-body text-muted sm:text-[17px] sm:leading-[26px]">
             Det koster ikke noget at sætte til salg. Når varen er solgt, går 1 % til re:spin – kun 0,5 %, hvis du er certificeret sælger.
           </p>
           <Notice icon="info" warn className="mt-5 max-w-xl">Appen er under udvikling. Du kan ikke oprette annoncer endnu.</Notice>
 
           <h2 className="mt-10 text-h2">Sådan gør du</h2>
-          <ol className="mt-4 grid gap-3 sm:grid-cols-3">
-            {STEPS.seller.map((s, i) => (
-              <li key={s.title} className="rounded-lg bg-surface p-5 shadow-line">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-md bg-grad-lime text-ink"><Icon name={s.icon} size={20} /></span>
-                  <span className="text-caption font-bold uppercase tracking-[0.08em] text-muted">Trin {i + 1}</span>
-                </div>
-                <h3 className="mt-3 text-h3">{s.title}</h3>
-                <p className="mt-1 text-small text-slate-700">{s.text}</p>
-              </li>
-            ))}
-          </ol>
+          <StepList className="mt-4" steps={STEPS.seller} />
 
           <h2 className="mt-10 text-h2">Gode råd til en annonce, der sælger</h2>
           <ul className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -57,13 +46,13 @@ export default function SellPage() {
         </div>
 
         <aside aria-labelledby="eksempel" className="lg:sticky lg:top-24 lg:self-start">
-          <div className="rounded-xl bg-surface p-6 shadow-line">
+          <div className="rounded-lg border border-line bg-surface p-6">
             <h2 id="eksempel" className="text-h3">Eksempel: du sælger for {formatOre(EXAMPLE)}</h2>
             <PriceSummary className="mt-4" rows={[
               ['Salgspris', formatOre(EXAMPLE)],
               ['Gebyr til re:spin (1 %)', `− ${formatOre(sellerFee(EXAMPLE, false))}`]
             ]} total={['Du får udbetalt', formatOre(sellerPayout(EXAMPLE, false))]} />
-            <p className="mt-3 text-small text-muted">Som certificeret sælger (0,5 %) får du {formatOre(sellerPayout(EXAMPLE, true))}. Køber betaler selv køberbeskyttelse og fragt.</p>
+            <p className="mt-3 text-small text-muted">Som certificeret sælger (0,5 %) får du {formatOre(sellerPayout(EXAMPLE, true))} – køber betaler selv køberbeskyttelse og fragt.</p>
             <Button href="/gebyrer/" variant="outline" full className="mt-5" iconRight="arrow">Beregn din udbetaling</Button>
           </div>
         </aside>

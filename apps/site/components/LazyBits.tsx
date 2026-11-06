@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * React Bits-komponenter, der hentes først når de behøves (lazy load):
+ * React Bits-komponent (RotatingText), der hentes først når browseren er ledig (lazy load):
  *  - Fallback er altid den endelige, rigtige tekst → indhold i HTML'en, virker uden JS, intet layout-hop.
  *  - Er elementet allerede synligt ved indlæsning (eller ønskes reduceret bevægelse), animeres det IKKE –
  *    så der hverken flimrer eller hentes unødig kode. Kun elementer man scroller hen til, animeres.
@@ -44,21 +44,7 @@ function useLazyComponent<P>(loader: () => Promise<{ default: ComponentType<P> }
   return Comp;
 }
 
-const loadCountUp = () => import('./reactbits/CountUp');
-const loadBlurText = () => import('./reactbits/BlurText');
 const loadRotatingText = () => import('./reactbits/RotatingText');
-
-export function LazyCountUp({ to, suffix = '', duration = 1.6 }: { to: number; suffix?: string; duration?: number }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const C = useLazyComponent(loadCountUp, useLoadWhen(ref, 'scroll'));
-  return <span ref={ref}>{C ? <C to={to} suffix={suffix} duration={duration} separator="." /> : `${to.toLocaleString('da-DK')}${suffix}`}</span>;
-}
-
-export function LazyBlurText({ text, className = '' }: { text: string; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const C = useLazyComponent(loadBlurText, useLoadWhen(ref, 'scroll'));
-  return <div ref={ref}>{C ? <C text={text} animateBy="words" delay={60} className={className} /> : <p className={className}>{text}</p>}</div>;
-}
 
 export function LazyRotatingText({ texts, interval = 2600 }: { texts: [string, ...string[]]; interval?: number }) {
   const ref = useRef<HTMLSpanElement>(null);

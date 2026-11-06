@@ -98,8 +98,9 @@ Værdier (ikke komponenter) ligger bevidst uden for hovedindgangen: en værdi ek
 | Visning | `Badge`, `CertifiedBadge`, `Avatar`, `Rating`, `Notice`, `Progress`, `Stepper`, `Timeline`, `PriceSummary`, `EmptyState`, `Skeleton` |
 | Formularer | `Field`, `Select` (`emptyOption` til filtre, fx "Alle"), `Textarea`, `Toggle`, `Checkbox`, `OptionCard`, `Tabs` (`segmented` / `underline`) |
 | Lister | `List`, `ListRow`, `ConversationRow`, `Tile`, `TileGrid`, `Stat` |
-| Produkt | `ProductCard` (sælger, stand, antal favoritter, pladsholder-ikon, pris inkl. køberbeskyttelse), `ProductGrid` (`app` / `responsive`), `ProductRow`, `ProductImage`, `Price`, `HScroll`, `CategoryTile` (`icon` / `card`), `SectionHeader`, `Hero`, `BalanceCard` |
-| Markedsplads (hjemmeside) | `Breadcrumbs`, `DetailList`, `SellerCard`, `PriceDetails` (gennemskuelig pris med udfoldelig opdeling, virker uden JS), `TrustBar` (`cards` / `compact`), `ProductGallery` |
+| Produkt | `ProductCard` (foto med `imageSrcSet`, sælger, stand, antal favoritter, pladsholder-ikon, pris inkl. køberbeskyttelse), `ProductGrid` (`app` / `responsive`), `ProductRow`, `ProductImage`, `Price`, `HScroll`, `CategoryTile` (`icon` / `card` / `photo`), `SectionHeader`, `Hero`, `BalanceCard` |
+| Markedsplads (hjemmeside) | `Breadcrumbs`, `DetailList`, `SellerCard`, `PriceDetails` (gennemskuelig pris med udfoldelig opdeling, virker uden JS), `TrustBar` (`cards` / `compact`), `ProductGallery`, `StepList` (nummererede trin), `Accordion` (spørgsmål og svar), `Dropdown` (knap + liste i temaets stil, fuld tastaturstyring) |
+| Flad stil | `<body class="rs-flat">`: ensfarvede knapper, tynde kanter, små radier – til hjemmesider. Appen beholder gradienterne. |
 | Navigation | `AppShell`, `Screen`, `ScreenContent`, `ScreenFooter`, `Section`, `TopBar`, `SearchBar`, `TabBar` |
 | Overlays | `BottomSheet` (fokus-fælde, Escape, animation; `placement="viewport"` på hjemmesider), `ToastProvider` + `useToast()` |
 | Chat | `ChatThread`, `ChatBubble`, `ChatDay`, `OfferCard`, `Composer` |

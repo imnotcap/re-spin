@@ -5,6 +5,7 @@ import { Breadcrumbs, DetailList, Notice, PriceDetails, ProductGallery, ProductG
 import { SHIPPING_PRICE_ORE } from '@respin/core/fees';
 import { formatKr } from '@respin/ui/utils';
 import { ItemCard } from '../../../components/ItemCard';
+import { itemImage } from '../../../lib/images';
 import { ItemActions } from '../../../components/item/ItemActions';
 import { CONDITION_HELP, ITEMS, categoryOf, getItem, itemsBySeller, sellerOf, similarTo, toCard, uploadedLabel } from '../../../lib/catalog';
 
@@ -29,16 +30,17 @@ export default async function ItemPage({ params }: Props) {
   const shippingKr = SHIPPING_PRICE_ORE[item.parcel] / 100;
   const more = itemsBySeller(seller.id).filter((i) => i.id !== item.id).slice(0, 6);
   const similar = similarTo(item, 6);
-  const images = Array.from({ length: item.photos }, (_, i) => ({ alt: `${item.title}, billede ${i + 1}`, shade: i }));
+  const photo = itemImage(item.id);
+  const images = [{ src: photo.src, srcSet: photo.srcSet, alt: `${item.title} fra ${item.brand}` }];
   const meta = `${item.brand} · str. ${item.size} · ${item.condition}`;
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
       <Breadcrumbs items={[{ label: 'Forside', href: '/' }, { label: cat.label, href: `/kategori/${cat.slug}/` }, { label: item.sub, href: `/kategori/${cat.slug}/?type=${encodeURIComponent(item.sub)}` }, { label: item.title }]} />
 
-      <div className="mt-5 grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-12">
+      <div className="mt-5 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-12">
         <div className="lg:sticky lg:top-24 lg:self-start">
-          <ProductGallery images={images} placeholderIcon={item.icon} />
+          <ProductGallery images={images} placeholderIcon={item.icon} sizes="(min-width: 1280px) 640px, (min-width: 1024px) 50vw, 100vw" />
         </div>
 
         <div>

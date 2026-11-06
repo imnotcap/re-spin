@@ -134,25 +134,27 @@ export function TrustBar({ items, variant = 'cards', className }: { items: Reado
   );
 }
 
-export interface GalleryImage { src?: string; alt: string; shade?: number }
+export interface GalleryImage { src?: string; srcSet?: string; alt: string; shade?: number }
 
 export interface ProductGalleryProps {
   images: ReadonlyArray<GalleryImage>;
+  /** Hvor bredt hovedbilledet vises (til `srcSet`) */
+  sizes?: string;
   /** Ikon i den grå pladsholder, når billeder mangler */
   placeholderIcon?: IconName;
   className?: string;
 }
 
 /** Produktgalleri med miniaturer. Miniaturerne er knapper (`aria-pressed`) – virker med tastatur. */
-export function ProductGallery({ images, placeholderIcon, className }: ProductGalleryProps) {
+export function ProductGallery({ images, placeholderIcon, sizes = '(min-width: 1024px) 50vw, 100vw', className }: ProductGalleryProps) {
   const [active, setActive] = useState(0);
   const uid = useId();
   const cur = images[Math.min(active, images.length - 1)];
   if (!cur) return null;
   const tile = (img: GalleryImage, large: boolean) => (
-    <div className={cx('rs-ph', 'rs-ph--34')} style={{ '--rs-ph-bg': `var(--rs-ph-${(Math.abs(img.shade ?? 0) % 4) + 1})` } as CSSProperties}
+    <div className={cx('rs-ph', 'rs-ph--34', img.src && 'rs-ph--photo')} style={{ '--rs-ph-bg': `var(--rs-ph-${(Math.abs(img.shade ?? 0) % 4) + 1})` } as CSSProperties}
       role={!img.src && large ? 'img' : undefined} aria-label={!img.src && large ? img.alt : undefined}>
-      {img.src ? <img src={img.src} alt={large ? img.alt : ''} loading={large ? 'eager' : 'lazy'} decoding="async" /> : placeholderIcon ? <Icon name={placeholderIcon} size={large ? 96 : 32} /> : null}
+      {img.src ? <img src={img.src} srcSet={img.srcSet} sizes={img.srcSet ? (large ? sizes : '120px') : undefined} alt={large ? img.alt : ''} loading={large ? 'eager' : 'lazy'} decoding="async" {...(large ? { fetchPriority: 'high' as const } : {})} /> : placeholderIcon ? <Icon name={placeholderIcon} size={large ? 96 : 32} /> : null}
     </div>
   );
   return (
@@ -171,6 +173,45 @@ export function ProductGallery({ images, placeholderIcon, className }: ProductGa
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+export interface Step { title: string; text: ReactNode }
+
+/** Nummererede trin (fx "Sådan sælger du"): store tal, tynde skillelinjer – ingen kort. */
+export function StepList({ steps, headingLevel = 3, className }: { steps: ReadonlyArray<Step>; headingLevel?: 3 | 4; className?: string }) {
+  const H = `h${headingLevel}` as 'h3' | 'h4';
+  return (
+    <ol className={cx('rs-steps', className)}>
+      {steps.map((s, i) => (
+        <li key={s.title} className="rs-steps__item">
+          <span className="rs-steps__n" aria-hidden="true">{i + 1}</span>
+          <div>
+            <H className="rs-steps__title">{s.title}</H>
+            <div className="rs-steps__text">{s.text}</div>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+export interface AccordionItem { title: string; content: ReactNode }
+
+/** Spørgsmål og svar m.m. Bygget på <details>, så det virker uden JavaScript og med tastatur. */
+export function Accordion({ items, className }: { items: ReadonlyArray<AccordionItem>; className?: string }) {
+  return (
+    <div className={cx('rs-acc', className)}>
+      {items.map((it) => (
+        <details key={it.title} className="rs-acc__item">
+          <summary className="rs-acc__summary">
+            <span>{it.title}</span>
+            <Icon name="down" size={20} className="rs-acc__chev" />
+          </summary>
+          <div className="rs-acc__content">{it.content}</div>
+        </details>
+      ))}
     </div>
   );
 }
