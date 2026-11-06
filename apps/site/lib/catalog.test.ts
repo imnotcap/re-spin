@@ -59,12 +59,13 @@ describe('lister og søgning', () => {
   it('søgning: mærke, flere ord (AND), store/små bogstaver, accenter og æøå', () => {
     expect(searchItems('levis').map((i) => i.brand)).toEqual(["Levi's", "Levi's"]); // apostroffen er valgfri
     expect(searchItems("levi's")).toEqual(searchItems('levis'));
-    expect(searchItems('dr martens').map((i) => i.id)).toEqual(['4004-dr-martens-1460']);
-    expect(searchItems('Dr. Martens')).toEqual(searchItems('dr martens'));
-    expect(searchItems('ADIDAS').map((i) => i.id)).toEqual(['4001-adidas-samba']);
+    expect(searchItems('red wing').map((i) => i.id)).toEqual(['4004-red-wing-stoevler']);
+    expect(searchItems('Red-Wing')).toEqual(searchItems('red wing'));
+    expect(searchItems('carhartt wip').map((i) => i.id)).toEqual(['6003-carhartt-hue']);
+    expect(searchItems('PUMA').map((i) => i.id)).toEqual(['4001-puma-sneakers']);
     expect(searchItems('jakke sort').every((i) => normalize(`${i.title} ${i.sub} ${i.color}`).includes('sort'))).toBe(true);
     expect(searchItems('kähler').map((i) => i.id)).toEqual(['7002-kaehler-vase']);
-    expect(searchItems('Mads Nørgaard').map((i) => i.id)).toEqual(['2002-mads-norgaard-strik']);
+    expect(searchItems('Mads Nørgaard').map((i) => i.id)).toEqual(['2002-mads-norgaard-sweatshirt']);
     expect(searchItems('skåret').length).toBe(0);
     expect(searchItems('   ')).toHaveLength(ITEMS.length);
     expect(searchItems('vintage').length).toBeGreaterThanOrEqual(ITEMS.filter((i) => i.vintage).length);
@@ -82,5 +83,15 @@ describe('lister og søgning', () => {
     expect(b.find((x) => x.brand === 'Vintage')).toBeUndefined();
     expect(b.find((x) => x.brand === "Levi's")?.count).toBe(2);
     expect(getItem('findes-ikke')).toBeUndefined();
+  });
+});
+
+describe('fotos', () => {
+  it('hver vare og kategori har sine fotofiler i public/img', async () => {
+    const { existsSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const root = join(__dirname, '..', 'public', 'img');
+    for (const i of ITEMS) for (const s of ['480', '960']) expect(existsSync(join(root, 'vare', `${i.id}-${s}.webp`)), `${i.id}-${s}`).toBe(true);
+    for (const c of CATEGORIES) expect(existsSync(join(root, 'kategori', `${c.slug}.webp`)), c.slug).toBe(true);
   });
 });

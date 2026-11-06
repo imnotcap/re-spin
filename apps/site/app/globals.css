@@ -16,15 +16,8 @@ html { scroll-behavior: smooth; scroll-padding-top: 80px; }
 body { background: var(--rs-bg); color: var(--rs-text); font-family: var(--rs-font); -webkit-font-smoothing: antialiased; }
 
 :focus-visible { outline: 3px solid var(--rs-forest); outline-offset: 2px; border-radius: 4px; }
-/* Udskrift: vis altid alt, også sektioner man ikke har scrollet forbi */
-@media print { [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; } }
 
 ::selection { background: var(--rs-lime); color: var(--rs-slate); }
-
-/* Print: BlurText-ord, der endnu ikke er animeret ind, skal stadig kunne læses på papir */
-@media print {
-  .blur-text span { opacity: 1 !important; filter: none !important; transform: none !important; }
-}
 
 /* Hjemmesiden har ingen bundmenu som appen: beskeder tæt på bunden */
 .rs-toast { bottom: max(24px, env(safe-area-inset-bottom)); }

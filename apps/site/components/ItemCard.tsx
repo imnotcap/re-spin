@@ -3,6 +3,7 @@
 import { ProductCard, useToast } from '@respin/ui';
 import type { IconName } from '@respin/ui';
 import { useFavorites } from '../lib/favorites';
+import { itemImage } from '../lib/images';
 
 /** Det kortet skal bruge – sendes fra serveren, så hele kataloget ikke skal med i browserens bundle. */
 export interface CardItem {
@@ -23,9 +24,10 @@ export function ItemCard({ item, showSeller = false }: { item: CardItem; showSel
   const fav = useFavorites();
   const { toast } = useToast();
   const on = fav.has(item.id);
+  const photo = itemImage(item.id);
   return (
     <ProductCard
-      product={{ id: item.id, title: item.title, brand: item.brand, size: item.size, condition: item.condition, price: item.price }}
+      product={{ id: item.id, title: item.title, brand: item.brand, size: item.size, condition: item.condition, price: item.price, imageUrl: photo.src, imageSrcSet: photo.srcSet }}
       href={`/vare/${item.id}/`}
       badge={item.vintage ? 'Vintage' : undefined}
       placeholderIcon={item.icon}

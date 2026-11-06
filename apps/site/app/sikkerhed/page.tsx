@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
-import { Breadcrumbs, Notice, Timeline } from '@respin/ui';
+import { Breadcrumbs, Notice, StepList, Timeline } from '@respin/ui';
+
+const section = 'grid grid-cols-1 gap-6 border-t border-line py-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] md:gap-12 md:py-16';
 
 export const metadata: Metadata = { title: 'Tryghed og sikkerhed', description: 'Sådan beskytter re:spin dig som køber og sælger.' };
 
@@ -12,43 +14,46 @@ const TIPS = [
 
 export default function SecurityPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 pt-5 sm:px-6">
+    <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
       <Breadcrumbs items={[{ label: 'Forside', href: '/' }, { label: 'Tryghed og sikkerhed' }]} />
-      <h1 className="mt-6 text-h1 sm:text-[38px] sm:leading-[44px]">Tryghed og sikkerhed</h1>
-      <p className="mt-3 text-[17px] leading-[26px] text-slate-700">Sådan holder vi pengene og dine oplysninger sikre.</p>
+      <header className="max-w-2xl pb-12 pt-6 md:pb-16">
+        <h1 className="text-[32px] font-bold leading-[38px] tracking-[-0.01em] sm:text-[40px] sm:leading-[46px]">Tryghed og sikkerhed</h1>
+        <p className="mt-3 text-[17px] leading-[27px] text-slate-700">Sådan holder vi pengene og dine oplysninger sikre – og sådan undgår du svindel.</p>
+      </header>
 
-      <section aria-labelledby="flow-title" className="mt-12">
-        <h2 id="flow-title" className="text-h2">Sådan virker køberbeskyttelsen</h2>
-        <div className="mt-6 rounded-lg border border-line bg-surface p-6">
-          <Timeline steps={[
-            { title: 'Du betaler i appen', description: 'Pengene holdes sikkert – sælger får dem ikke endnu.', state: 'done' },
-            { title: 'Sælger sender varen', description: 'Inden for 5 dage – ellers får du automatisk pengene tilbage.', state: 'done' },
-            { title: 'Du modtager varen', description: 'Du har 48 timer til at godkende eller melde et problem.', state: 'now' },
-            { title: 'Sælger får pengene', description: 'Når du godkender – eller automatisk efter 48 timer.' }
-          ]} />
+      <section aria-labelledby="flow-title" className={section}>
+        <div>
+          <h2 id="flow-title" className="text-[24px] font-bold leading-[30px]">Sådan virker køberbeskyttelsen</h2>
+          <p className="mt-2 text-body text-muted">Med på alle køb, der betales i appen.</p>
         </div>
+        <Timeline steps={[
+          { title: 'Du betaler i appen', description: 'Pengene holdes sikkert – sælger får dem ikke endnu.', state: 'done' },
+          { title: 'Sælger sender varen', description: 'Inden for 5 dage – ellers får du automatisk pengene tilbage.', state: 'done' },
+          { title: 'Du modtager varen', description: 'Du har 48 timer til at godkende eller melde et problem.', state: 'now' },
+          { title: 'Sælger får pengene', description: 'Når du godkender – eller automatisk efter 48 timer.' }
+        ]} />
       </section>
 
-      <section aria-labelledby="tips-title" className="mt-12">
-        <h2 id="tips-title" className="text-h2">Undgå svindel</h2>
-        <ul className="mt-6 grid gap-4 sm:grid-cols-2">
-          {TIPS.map((t) => (
-            <li key={t.title} className="rounded-lg border border-line bg-surface p-5">
-              <h3 className="text-h3">{t.title}</h3>
-              <p className="mt-2 text-body text-slate-700">{t.text}</p>
-            </li>
-          ))}
-        </ul>
+      <section aria-labelledby="tips-title" className={section}>
+        <div>
+          <h2 id="tips-title" className="text-[24px] font-bold leading-[30px]">Undgå svindel</h2>
+          <p className="mt-2 text-body text-muted">De fire vigtigste råd.</p>
+        </div>
+        <StepList steps={TIPS} />
       </section>
 
-      <section aria-labelledby="data-title" className="mt-12">
-        <h2 id="data-title" className="text-h2">Dine data</h2>
-        <ul className="mt-4 list-disc space-y-2 pl-5 text-body text-slate-700">
-          <li>Vi gemmer ingen kort- eller bankoplysninger – det håndterer vores betalingspartner.</li>
-          <li>Adgangskoder gemmes kun som en uigenkaldelig hash (Argon2id), og login kan beskyttes med passkey eller to-trins-login.</li>
-          <li>Denne hjemmeside bruger ingen cookies og ingen sporing.</li>
-        </ul>
-        <div className="mt-6"><Notice icon="info">Har du fundet et sikkerhedsproblem? Meld det fortroligt via GitHubs private sårbarhedsrapportering på projektets repository.</Notice></div>
+      <section aria-labelledby="data-title" className={section}>
+        <div>
+          <h2 id="data-title" className="text-[24px] font-bold leading-[30px]">Dine oplysninger</h2>
+        </div>
+        <div className="max-w-2xl">
+          <ul className="list-disc space-y-2 pl-5 text-body text-slate-700">
+            <li>Vi gemmer ingen kort- eller bankoplysninger – det håndterer vores betalingspartner.</li>
+            <li>Adgangskoder gemmes aldrig, så de kan læses. Du kan også logge ind med Face ID, fingeraftryk eller en kode på telefonen.</li>
+            <li>Hjemmesiden bruger ingen cookies og ingen sporing. Dine favoritter gemmes kun i din egen browser.</li>
+          </ul>
+          <Notice icon="info" className="mt-6">Har du fundet et sikkerhedsproblem? Skriv til os fortroligt via projektets side på GitHub.</Notice>
+        </div>
       </section>
     </div>
   );

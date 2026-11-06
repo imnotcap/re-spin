@@ -13,6 +13,8 @@ export interface Product {
   /** Udbudspris i kr. */
   price: number;
   imageUrl?: string;
+  /** Flere størrelser af billedet, fx "/a-480.webp 480w, /a-960.webp 960w" (browseren vælger) */
+  imageSrcSet?: string;
   /** 0–3: nuance af den neutrale grå pladsholder (default udledt af id) */
   shade?: number;
   /** Stand, fx "Næsten ny" – vises i meta-linjen */
@@ -28,6 +30,12 @@ const shadeFor = (id: string | number): number => {
 
 export interface ProductImageProps {
   src?: string;
+  /** Flere størrelser, fx "/a-480.webp 480w, /a-960.webp 960w" */
+  srcSet?: string;
+  /** Hvor bredt billedet vises, fx "(min-width: 1024px) 220px, 50vw" */
+  sizes?: string;
+  /** Vigtigste billede på siden: hentes med det samme (ikke lazy) og med høj prioritet */
+  priority?: boolean;
   alt: string;
   shade?: number;
   ratio?: '34' | 'sq' | 'wide';
@@ -41,13 +49,16 @@ export interface ProductImageProps {
  * Produktbillede. Uden billede vises en neutral grå flade (pladsholder).
  * `alt=""` betyder dekorativt: elementet skjules for skærmlæsere (i stedet for et "billede" uden navn).
  */
-export function ProductImage({ src, alt, shade = 0, ratio = '34', className, image, children }: ProductImageProps) {
+export function ProductImage({ src, srcSet, sizes, priority, alt, shade = 0, ratio = '34', className, image, children }: ProductImageProps) {
   const decorative = alt.trim() === '';
   const placeholder = !src && !image;
   return (
-    <div className={cx('rs-ph', `rs-ph--${ratio}`, className)} style={{ '--rs-ph-bg': `var(--rs-ph-${(Math.abs(shade) % 4) + 1})` } as CSSProperties}
+    <div className={cx('rs-ph', `rs-ph--${ratio}`, !placeholder && 'rs-ph--photo', className)} style={{ '--rs-ph-bg': `var(--rs-ph-${(Math.abs(shade) % 4) + 1})` } as CSSProperties}
       role={placeholder && !decorative ? 'img' : undefined} aria-label={placeholder && !decorative ? alt : undefined} aria-hidden={decorative ? true : undefined}>
-      {image ?? (src ? <img src={src} alt={alt} loading="lazy" decoding="async" /> : null)}
+      {image ?? (src ? (
+        <img src={src} srcSet={srcSet} sizes={sizes} alt={alt} loading={priority ? 'eager' : 'lazy'} decoding="async"
+          {...(priority ? { fetchPriority: 'high' as const } : {})} />
+      ) : null)}
       {children}
     </div>
   );
@@ -105,14 +116,16 @@ export interface ProductCardProps {
   variant?: 'grid' | 'scroll';
   /** Egen billedkomponent, fx next/image */
   image?: ReactNode;
+  /** Hvor bredt billedet vises (til `imageSrcSet`). Default passer til et responsivt gitter. */
+  imageSizes?: string;
 }
 
 /**
  * Produktkort: billede, titel, mærke · størrelse · stand, pris og prisen inkl. køberbeskyttelse
  * (præcis til øren – samme beregning som checkout). Hele kortet er ét link; hjertet er en separat knap.
  */
-export function ProductCard({ product, href, badge, favorite, defaultFavorite, onFavoriteChange, hideFavorite, favoriteCount, seller, placeholderIcon, variant = 'grid', image }: ProductCardProps) {
-  const { id, title, brand, size, condition, price, imageUrl, shade } = product;
+export function ProductCard({ product, href, badge, favorite, defaultFavorite, onFavoriteChange, hideFavorite, favoriteCount, seller, placeholderIcon, variant = 'grid', image, imageSizes = '(min-width: 1280px) 200px, (min-width: 640px) 25vw, 50vw' }: ProductCardProps) {
+  const { id, title, brand, size, condition, price, imageUrl, imageSrcSet, shade } = product;
   const meta = [brand, size, condition].filter(Boolean).join(' · ');
   const incl = formatKr(buyerTotal(price));
   const label = [title, meta, formatKr(price), `${incl} inkl. køberbeskyttelse`, seller && `sælges af ${seller.name}${seller.certified ? ' (certificeret)' : ''}`].filter(Boolean).join(', ');
@@ -129,7 +142,7 @@ export function ProductCard({ product, href, badge, favorite, defaultFavorite, o
       <AppLink href={href}>
         <span className="rs-sr-only">{label}</span>
         <div className="rs-card__media">
-          <ProductImage src={imageUrl} alt="" shade={shade ?? shadeFor(id)} image={image}>
+          <ProductImage src={imageUrl} srcSet={imageSrcSet} sizes={imageSrcSet ? imageSizes : undefined} alt="" shade={shade ?? shadeFor(id)} image={image}>
             {!imageUrl && !image && placeholderIcon ? <Icon name={placeholderIcon} size={64} /> : null}
           </ProductImage>
           {badge && <Badge>{badge}</Badge>}
@@ -190,11 +203,24 @@ export interface CategoryTileProps {
   href: string;
   /** Antal varer – vises under navnet i `card`-varianten */
   count?: number;
-  /** icon = lille rund genvej (app). card = større kort til hjemmesidens kategorigitter. */
-  variant?: 'icon' | 'card';
+  /** icon = lille rund genvej (app). card = kort med ikon. photo = foto med navn under (hjemmeside). */
+  variant?: 'icon' | 'card' | 'photo';
+  /** Foto til `photo`-varianten (kvadratisk) */
+  imageSrc?: string;
 }
 
-export function CategoryTile({ icon, label, href, count, variant = 'icon' }: CategoryTileProps) {
+export function CategoryTile({ icon, label, href, count, variant = 'icon', imageSrc }: CategoryTileProps) {
+  if (variant === 'photo') {
+    return (
+      <AppLink href={href} className="rs-catphoto">
+        <span className="rs-catphoto__img">
+          {imageSrc ? <img src={imageSrc} alt="" loading="lazy" decoding="async" /> : <Icon name={icon} size={40} />}
+        </span>
+        <span className="rs-catphoto__label">{label}</span>
+        {count !== undefined && <span className="rs-catphoto__count">{count.toLocaleString('da-DK')} {count === 1 ? 'vare' : 'varer'}</span>}
+      </AppLink>
+    );
+  }
   if (variant === 'card') {
     return (
       <AppLink href={href} className="rs-catcard">

@@ -33,7 +33,7 @@ export function FeeCalculator() {
   const error = raw.trim() === '' ? 'Skriv en pris.' : price === null ? `Prisen skal være et helt beløb mellem ${MIN_KR} og ${MAX_KR.toLocaleString('da-DK')} kr.` : undefined;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
       <form className="flex flex-col gap-5 rounded-lg border border-line bg-surface p-6 shadow-line" onSubmit={(e) => e.preventDefault()} noValidate aria-label="Beregn gebyrer">
         <Field label="Varens pris" name="price" inputMode="numeric" autoComplete="off" suffix="kr." value={raw} maxLength={9}
           onChange={(e) => setRaw(e.target.value)} error={error} hint={error ? undefined : 'Hele kroner'} />

@@ -18,7 +18,7 @@ export const CATEGORIES: readonly Category[] = [
   { slug: 'boern', label: 'Børn', icon: 'baby', intro: 'Børn vokser hurtigt. Køb og sælg overtøj, tøj og legetøj videre.', subs: ['Overtøj', 'Tøj', 'Legetøj'] },
   { slug: 'sko', label: 'Sko', icon: 'sneaker', intro: 'Sneakers, støvler og sandaler – mange næsten ikke brugt.', subs: ['Sneakers', 'Støvler', 'Sandaler'] },
   { slug: 'tasker', label: 'Tasker', icon: 'bag', intro: 'Skuldertasker, rygsække og punge.', subs: ['Skuldertasker', 'Rygsække', 'Punge'] },
-  { slug: 'accessories', label: 'Accessories', icon: 'gem', intro: 'Smykker, ure, tørklæder og solbriller.', subs: ['Smykker', 'Ure', 'Tørklæder', 'Solbriller'] },
+  { slug: 'accessories', label: 'Accessories', icon: 'gem', intro: 'Smykker, ure, huer og solbriller.', subs: ['Smykker', 'Ure', 'Huer', 'Tørklæder', 'Solbriller'] },
   { slug: 'bolig', label: 'Bolig', icon: 'home', intro: 'Lamper, møbler og ting til køkkenet med historie.', subs: ['Lamper', 'Møbler', 'Køkken', 'Dekoration'] },
   { slug: 'sport', label: 'Sport', icon: 'ball', intro: 'Udstyr til løb, cykling og en tur i bjergene.', subs: ['Løb', 'Cykling', 'Outdoor'] }
 ] as const;
