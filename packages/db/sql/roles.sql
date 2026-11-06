@@ -37,6 +37,15 @@ GRANT UPDATE ON orders, outbox, stripe_events, listing_images, listings TO respi
 GRANT INSERT ON order_events, ledger_transactions, ledger_entries, audit_log, outbox TO respin_worker;
 GRANT UPDATE (stripe_account_id, payouts_enabled, kyc_status) ON seller_profiles TO respin_worker;
 
+-- ---------- auth ----------
+GRANT SELECT, INSERT, UPDATE ON user_passwords, sessions, auth_tokens TO respin_web;
+GRANT SELECT, INSERT, UPDATE, DELETE ON rate_limits TO respin_web, respin_worker;
+-- Admin kan se og tilbagekalde sessioner, men ALDRIG læse adgangskode-hashes eller engangstokens
+-- (Tabel-rettigheder fra "GRANT SELECT ON ALL TABLES" ovenfor fjernes først – en kolonne-REVOKE er ikke nok)
+REVOKE ALL ON user_passwords, auth_tokens, sessions FROM respin_admin, respin_worker;
+GRANT SELECT (id, user_id, created_at, last_seen_at, expires_at, revoked_at, ip, user_agent) ON sessions TO respin_admin;
+GRANT UPDATE (revoked_at) ON sessions TO respin_admin;
+
 -- ---------- sekvenser (bigserial) ----------
 GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO respin_web, respin_admin, respin_worker;
 

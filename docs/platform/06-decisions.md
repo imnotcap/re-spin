@@ -17,11 +17,11 @@ Format: **Beslutning · Hvorfor · Alternativer · Konsekvenser · Status.** Skr
 **Status:** Besluttet i princippet · kerne implementeret og testet · **afventer afklaring af pengemodel**.
 
 ## ADR-003 · Auth
-**Beslutning (forslag):** Egen auth i vores database med **passkeys som primær login**, adgangskode som fallback, MFA og step-up. Anbefalet bibliotek: **Better Auth** (TypeScript, sessioner i egen DB, Drizzle-adapter, passkey/2FA-udvidelser). *Verificér bibliotekets aktuelle status og funktioner før valg (Auth.js er i bevægelse).*
-**Hvorfor:** Sessioner og brugere i samme database gør "log alle ud" og spærring enkle; ingen leverandør-lock-in på identiteter.
-**Alternativer:** Managed (Clerk, WorkOS: hurtigere og færre sikkerhedsfejl at begå, men løbende pris og lock-in), Auth.js.
-**Konsekvenser:** Vi ejer sikkerheden for login. Kræver rate limiting, lækket-adgangskode-tjek, gendannelsesflow og ekstern gennemgang.
-**Status:** Åben – **kræver din beslutning** ([04](04-roadmap.md#beslutninger-der-kræver-dig)).
+**Beslutning:** Egen auth i `packages/auth` oven på vores egen database: e-mail + adgangskode (Argon2id), sessioner med kun token-hash i DB, engangslinks, step-up og delt rate limiting i Postgres. **Passkeys** (WebAuthn, fx `@simplewebauthn/server`) og MFA tilføjes som næste trin oven på samme sessioner.
+**Hvorfor:** Brugere, sessioner og rettigheder i samme database (log ud overalt, spærring og databaseroller virker direkte); fuld testbarhed (28 tests, mutationstest, browser-e2e); ingen lock-in på identiteter; forsvar mod pre-hijacking og enumerering præcis som vi vil.
+**Alternativer:** Better Auth/Auth.js (færre linjer egen kode, men eget skema og abstraktioner), managed (Clerk/WorkOS: hurtigere, løbende pris og lock-in).
+**Konsekvenser:** Vi ejer sikkerheden for login → kræver ekstern gennemgang før lancering, og mutationstest ved ændringer. Kun primitiver fra velafprøvede biblioteker (Argon2 via `@node-rs/argon2`, Node crypto).
+**Status:** Besluttet · e-mail/adgangskode implementeret og testet · passkeys/MFA planlagt.
 
 ## ADR-004 · Admin som separat app på eget subdomæne bag Cloudflare Access
 **Beslutning:** `apps/admin` på `admin.respin.dk`; Cloudflare Access (SSO+MFA) foran; IP-allowlist som ekstra lag; appen verificerer Access-JWT og rolle **selv**, i proxy **og** i hver side.

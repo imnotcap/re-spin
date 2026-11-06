@@ -44,13 +44,15 @@ Skelet og plan for hele platformen ligger i `docs/platform/` (**start med [READM
 | `packages/db` | Drizzle-skema (PostgreSQL), migrationer med integritets-triggers, roller med mindste privilegium |
 | `packages/security` | CSP/headers, IP-allowlist, RBAC + fire-øjne, rate limiter, upload-validering, Cloudflare Access-JWT, admin-vagt |
 | `packages/payments` | Checkout, ordre-overgange, Stripe-webhooks (idempotente), outbox |
-| `apps/web` | Forbrugersite (`respin.dk`): skelet + Stripe-webhook |
+| `packages/auth` | Login: Argon2id, sessioner, e-mailbekræftelse, glemt adgangskode, step-up, delt rate limiting |
+| `apps/web` | Forbrugersite (`respin.dk`): login-sider, min konto, Stripe-webhook |
 | `apps/admin` | Medarbejderside (`admin.respin.dk`): Cloudflare Access + IP + roller |
 
 ```bash
 npm test            # alle tests (ingen database nødvendig – bruger PGlite)
 npm run typecheck
-npm run dev:web     # http://localhost:3000
+npm run db:dev      # lokal Postgres (PGlite) uden Docker
+npm run dev:web     # http://localhost:3000 (se docs/platform/README.md for miljøvariabler)
 ```
 
 ## UI-kit til Next.js / TypeScript

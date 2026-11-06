@@ -49,4 +49,12 @@ describe('database-roller (mindste privilegium)', () => {
     expect(await as('respin_admin', `UPDATE listings SET moderation_status = 'rejected'`)).toBeNull();
     expect(await as('respin_admin', `UPDATE listings SET price_ore = 1`)).toMatch(/permission denied/);
   });
+  it('admin kan ALDRIG læse adgangskode-hashes, engangstokens eller sessionstokens', async () => {
+    expect(await as('respin_admin', `SELECT * FROM user_passwords`)).toMatch(/permission denied/);
+    expect(await as('respin_admin', `SELECT * FROM auth_tokens`)).toMatch(/permission denied/);
+    expect(await as('respin_admin', `SELECT token_hash FROM sessions`)).toMatch(/permission denied/);
+    expect(await as('respin_admin', `SELECT id, user_id, ip FROM sessions`)).toBeNull();
+    expect(await as('respin_admin', `UPDATE sessions SET revoked_at = now()`)).toBeNull();
+    expect(await as('respin_worker', `SELECT * FROM user_passwords`)).toMatch(/permission denied/);
+  });
 });

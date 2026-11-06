@@ -26,10 +26,10 @@ Symboler: ✅ implementeret **og** testet · 🟡 implementeret, men ikke afprø
 | # | Trussel | Konsekvens | Kontrol | Hvor | Status |
 |---|---|---|---|---|---|
 | **Konti og identitet** | | | | | |
-| T01 | Credential stuffing / brute force på login | Kontoovertagelse | Rate limit (`LIMITS.login`), tjek mod lækkede adgangskoder, passkeys, besked ved ny enhed | `security/ratelimit` (bibliotek) · auth ikke bygget | 🟡 / ⬜ |
-| T02 | Kontoovertagelse (phishing, SIM-swap, sessionstyveri) | Tab af penge og data | Passkeys + MFA; **step-up** før ændring af udbetalingskonto/e-mail; HttpOnly+Secure+SameSite-cookies; sessionrotation | Auth (se ADR-003) | ⬜ |
-| T03 | Misbrug af kontogenoprettelse | Overtagelse via support/e-mail | Ingen SMS-kun-gendannelse; engangslink med kort levetid; udbetalingspause efter gendannelse | Auth | ⬜ |
-| T04 | Brugerenumerering (login/reset-svar, ordre-id'er) | Kortlægning af brugere | Ens svar; uuid'er; fremmed ordre = "findes ikke" | `payments/orders` | ✅ ordrer · ⬜ login |
+| T01 | Credential stuffing / brute force på login | Kontoovertagelse | Delt rate limit i Postgres pr. IP **og** pr. konto; Argon2id; tjek mod lækkede adgangskoder (HIBP k-anonymitet); min. 12 tegn. Mangler: passkeys, besked ved ny enhed | `auth` | ✅ · ⬜ passkeys |
+| T02 | Kontoovertagelse (phishing, SIM-swap, sessionstyveri) | Tab af penge og data | `__Host-`-cookie (Secure, HttpOnly, SameSite=Lax, intet Domain); kun token-hash i DB; nyt token ved login; inaktiv (7 d) + absolut (30 d) udløb; log ud overalt; **step-up** (`reauthenticate`/`isElevated`). Mangler: passkeys + MFA | `auth`, `apps/web` | ✅ · ⬜ passkeys/MFA |
+| T03 | Misbrug af kontogendannelse / **account pre-hijacking** | Overtagelse | Nulstillingslink: kun hash gemmes, 30 min., engangsbrug, ældre links ugyldige, alle sessioner tilbagekaldes, besked på mail. Aktivering kræver link **og** adgangskode (angriber der opretter kontoen først, får aldrig adgang). Mangler: udbetalingspause efter gendannelse | `auth` | ✅ |
+| T04 | Brugerenumerering (login/reset-svar, ordre-id'er) | Kortlægning af brugere | Ens svar ved tilmelding, login og "glemt adgangskode"; dummy-hash ved ukendt e-mail; uuid'er. **Rest:** e-mail sendes synkront, så svartiden ved "glemt adgangskode" kan afsløre en konto → send via kø | `auth`, `payments/orders` | ✅ · 🟡 timing |
 | T05 | Falske konti og bots | Spam, svindel | Turnstile, rate limits, e-mailbekræftelse | Cloudflare + auth | ⬜ |
 | **Adgangskontrol** | | | | | |
 | T06 | IDOR: læse/ændre andres ordrer, beskeder, annoncer | Datalæk, svindel | Ejerskab tjekkes **inde i** `applyOrderEvent`; samme svar for "findes ikke"/"ikke din". **Samme mønster skal bruges til beskeder og annoncer** | `payments/orders` | ✅ ordrer · ⬜ øvrige |
@@ -73,9 +73,10 @@ Symboler: ✅ implementeret **og** testet · 🟡 implementeret, men ikke afprø
 
 ## 4. Identitet og adgang
 
-### Forbrugere (kommer i fase 1)
+### Forbrugere (✅ e-mail + adgangskode bygget · ⬜ passkeys/MFA)
 
-- **Passkeys som primær login**, adgangskode som fallback. Adgangskoder: minimum 10 tegn, tjek mod lækkede adgangskoder (k-anonymitet), Argon2id (eller leverandørens tilsvarende).
+- Bygget: tilmelding → bekræftelseslink (24 t) + adgangskode → login; Argon2id (m=19 MiB, t=2, p=1, opgraderes ved login); min. 12 / maks. 128 tegn uden tvungne specialtegn; afvisning af lækkede (HIBP, fail-open) og åbenlyst svage adgangskoder; glemt adgangskode (30 min., engangslink); skift adgangskode; aktive enheder; log ud overalt.
+- Næste: **passkeys som primær login** og MFA (TOTP/passkey) for sælgere med udbetalinger.
 - **Step-up (genbekræftelse)** før: ændring af e-mail, udbetalingskonto, adgangskode, sletning af konto, og første udbetaling efter gendannelse.
 - **Sessioner:** HttpOnly, Secure, SameSite=Lax, host-only (intet `Domain=`), rotation ved login/rettighedsændring, serverside-tilbagekaldelse, "log ud overalt".
 - **Notifikation** (e-mail/push) ved ny enhed, ændret e-mail, ny udbetalingskonto.
@@ -187,8 +188,10 @@ Fejlsporing (fx Sentry) **med PII-scrubbing** og `redactForLog` før data sendes
 
 ## 12. Kendte begrænsninger i skelettet (ærligt)
 
-- **Auth er ikke bygget.** Forbrugersitet har ingen login endnu; admin bruger Cloudflare Access (verificeret i tests med egne nøgler, **ikke mod Cloudflares rigtige nøgler**).
-- Rate limiteren er **in-memory** (`MemoryRateLimiter`). Den virker ikke på tværs af instanser og skal erstattes af Redis/Upstash bag samme interface.
+- **Login mangler passkeys og MFA**, og der er ingen rigtig mailudbyder (kun konsol-mail, som afvises i produktion). Admin bruger Cloudflare Access (verificeret i tests med egne nøgler, **ikke mod Cloudflares rigtige nøgler**).
+- E-mails sendes synkront i requesten. Det giver en målbar tidsforskel ved "glemt adgangskode" for kendte/ukendte e-mails. Flyt afsendelse til outbox/kø.
+- `PgRateLimiter` bruger en række-lås, der er nødvendig i rigtig Postgres; PGlite (én forbindelse) kan ikke bevise den. Test mod rigtig Postgres i CI.
+- Ingen besked ved login fra ny enhed, og ingen udbetalingspause efter nulstilling endnu.
 - `style-src-attr 'unsafe-inline'` er slået til, fordi UI-kittet bruger `style`-attributter. Scripts er strengt nonce-beskyttede. Kan strammes ved at flytte inline-styles til CSS-klasser.
 - Webhook-håndteringen dækker `payment_intent.succeeded` og `.canceled`. Disputes, refunds, `account.updated` (Connect-onboarding) og payout-events mangler.
 - Web-rollens `UPDATE` på `users` er ikke kolonnebegrænset (fx `status`). Stram når auth-tabellerne er på plads.

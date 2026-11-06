@@ -9,7 +9,7 @@ Designsystem og UI-kit, domæne (penge/ordre/ledger), database med integritetsre
 ## Fase 1 · Kernemarked (L–XL)
 
 **Leverancer**
-- Auth: passkeys + adgangskode, e-mailbekræftelse, sessioner, gendannelse, step-up (se ADR-003). *(L)*
+- Auth: ✅ e-mail + adgangskode, bekræftelse, sessioner, gendannelse, step-up, aktive enheder · ⬜ passkeys, MFA, mailudbyder, besked ved ny enhed (se ADR-003). *(L)*
 - Profiler, sælgerprofil, følg sælgere, favoritter.
 - Annoncer: opret/redigér/slet, **upload-pipeline** (omkodning, pixelloft, scanning, separat CDN-domæne), moderation (automatisk + kø).
 - Feed, kategorier, søgning og filtre (Postgres), gemte søgninger.
@@ -80,7 +80,7 @@ Dedikeret søgemaskine, læse-replika, partitionering af store tabeller, udskiln
 | 2 | Stripe-konto + godkendelse til Connect-markedsplads | Ansøg tidligt – godkendelse kan tage tid | Fase 2 |
 | 3 | Pengemodel (separate charges and transfers) kontra alternativer | Afklar med Stripe + jurist nu | Fase 2 |
 | 4 | Domænenavn (`respin.dk`?) og separat CDN-domæne | Registrér begge; slå registrar-lås og 2FA til | Subdomæner, Access |
-| 5 | Auth-løsning ([ADR-003](06-decisions.md)) | Better Auth (egen DB, passkeys) – verificér aktuel status før valg | Fase 1 |
+| 5 | Mailudbyder (transaktionel, EU, DKIM) | Vælg en med EU-datacenter og databehandleraftale | Login i produktion |
 | 6 | MitID-formidler (til certificering/KYC) | Udvælg efter pris/dækning; ikke nødvendigt før certificering | Certificering |
 | 7 | Hosting og budget (Vercel + managed Postgres i EU?) | Start enkelt; hold data i EU | Fase 1 |
 | 8 | Teamstørrelse og on-call | Mindst to personer med adgang til alt kritisk | Drift |

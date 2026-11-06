@@ -29,8 +29,11 @@ Symboler: ✅ bygget og testet · 🟡 bygget, men ikke afprøvet i drift/mod ri
 | Cloudflare Access-JWT-verifikation (alg=none, nøgleforveksling, forkert audience …) | ✅ | `packages/security` | tests med egne nøgler 🟡 ikke mod Cloudflares rigtige nøgler |
 | Admin-adgangskæde (host → IP → identitet → rolle), dobbeltforsvar | ✅ | `apps/admin` | HTTP-tests mod produktionsbuild, inkl. bypass-forsøg og fjernet proxy |
 | Checkout, ordre-overgange, Stripe-webhook, outbox | ✅ | `packages/payments` | integrationstests (Postgres + ægte webhook-signaturer) 🟡 ikke mod Stripes API |
-| Forbrugersite (`apps/web`) | 🟡 | `apps/web` | kun skelet: forside, health, webhook-endpoint |
-| Login/konti (auth), annoncer, søgning, upload, chat, favoritter | ⬜ | – | se roadmap |
+| **Login** – tilmelding, e-mailbekræftelse, login/log ud, sessioner, glemt adgangskode, skift adgangskode, step-up, aktive enheder | ✅ | `packages/auth`, `apps/web` | 28 tests + mutationstest + 23-trins browser-e2e mod produktionsbuild |
+| Delt rate limiting i Postgres | ✅ | `packages/auth` (`PgRateLimiter`) | tests 🟡 række-låsen kan ikke bevises i PGlite (én forbindelse) |
+| Passkeys og MFA | ⬜ | – | næste trin |
+| Forbrugersite (`apps/web`) | 🟡 | `apps/web` | forside, login-sider, min konto, health, webhook |
+| Annoncer, søgning, upload, chat, favoritter | ⬜ | – | se roadmap |
 | Rigtige admin-funktioner (moderation, refunderinger, brugere) | ⬜ | `apps/admin` | siderne findes og er rolle-beskyttede, men tomme |
 | Worker-proces der kører `runOutbox` | ⬜ | – | funktionen er klar og testet |
 | CI (typecheck, tests, build, audit, CodeQL, secret-scan) | ✅ | `.github/workflows` | hele sekvensen kørt i ren kopi 🟡 workflows ikke kørt på GitHub endnu |
@@ -41,11 +44,13 @@ Symboler: ✅ bygget og testet · 🟡 bygget, men ikke afprøvet i drift/mod ri
 npm install
 npm test                 # alle tests (kræver ingen database – bruger PGlite)
 npm run typecheck
-npm run dev:web          # http://localhost:3000
+npm run db:dev           # lokal Postgres (PGlite) på port 5433 med alle migrationer – ingen Docker
+APP_URL=http://localhost:3000 DATABASE_URL=postgres://postgres@127.0.0.1:5433/postgres DB_POOL_MAX=1 PWNED_CHECK=off npm run dev:web
+# → http://localhost:3000/signup (bekræftelseslinket skrives i serverloggen)
 ADMIN_DEV_EMAIL=dig@respin.dk ADMIN_DEV_ROLE=admin npm run dev:admin   # http://localhost:3001 (dev-login kun uden for produktion)
 ```
 
 ## Det jeg ikke ved, og som du skal tage stilling til
 
 Se [04-roadmap.md → Beslutninger](04-roadmap.md#beslutninger-der-kræver-dig). Kort: virksomhedsform/CVR og Stripe-konto, domænenavn,
-valg af auth-løsning og MitID-leverandør, hosting og budget, teamstørrelse, og hvordan I vil stille jer til at holde kunders penge (Stripe Connect vs. egen licens).
+mailudbyder, MitID-leverandør, hosting og budget, teamstørrelse, og hvordan I vil stille jer til at holde kunders penge (Stripe Connect vs. egen licens).

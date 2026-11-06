@@ -3,6 +3,7 @@
 /packages/security/                @imnotcap
 /packages/payments/                @imnotcap
 /packages/db/                      @imnotcap
+/packages/auth/                    @imnotcap
 /packages/core/src/ledger.ts       @imnotcap
 /packages/core/src/fees.ts         @imnotcap
 /apps/admin/                       @imnotcap

@@ -9,7 +9,7 @@
  *  - Auth-bibliotekets egne tabeller (sessions/accounts/passkeys) tilføjes når auth-valget er truffet (se docs/platform/adr).
  */
 import { sql } from 'drizzle-orm';
-import { bigserial, boolean, check, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { bigserial, boolean, check, doublePrecision, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { CATEGORIES, CONDITIONS, ORDER_STATUSES, SHIPPING_SIZES } from '@respin/core';
 
 const id = () => uuid('id').primaryKey().defaultRandom();
@@ -40,6 +40,8 @@ export const users = pgTable('users', {
   emailNormalized: text('email_normalized').notNull().unique(),
   displayName: text('display_name').notNull(),
   status: userStatus('status').notNull().default('active'),
+  /** Login kræver bekræftet e-mail */
+  emailVerifiedAt: ts('email_verified_at'),
   createdAt: createdAt(),
   deletedAt: ts('deleted_at')
 }, (t) => [check('users_email_normalized_lower', sql`${t.emailNormalized} = lower(${t.emailNormalized})`)]);
@@ -265,3 +267,47 @@ export const outbox = pgTable('outbox', {
   createdAt: createdAt(),
   doneAt: ts('done_at')
 }, (t) => [index('outbox_due_idx').on(t.status, t.runAfter)]);
+
+/* --------------------------------- Auth --------------------------------- */
+/**
+ * Adgangskode-hash (Argon2id) i egen tabel: kommer aldrig med i en `SELECT * FROM users`,
+ * og admin-rollen har slet ingen adgang til den (se sql/roles.sql).
+ */
+export const userPasswords = pgTable('user_passwords', {
+  userId: uuid('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
+  hash: text('hash').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+}, (t) => [check('user_passwords_argon2id', sql`${t.hash} LIKE '$argon2id$%'`)]);
+
+/** Sessioner. Kun SHA-256 af tokenet gemmes – et læk af tabellen giver ikke adgang til nogen konto. */
+export const sessions = pgTable('sessions', {
+  id: id(),
+  tokenHash: text('token_hash').notNull().unique(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: createdAt(),
+  lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: ts('expires_at').notNull(),
+  /** Genbekræftet med adgangskode indtil – kræves før følsomme handlinger (step-up) */
+  elevatedUntil: ts('elevated_until'),
+  revokedAt: ts('revoked_at'),
+  ip: text('ip'),
+  userAgent: text('user_agent')
+}, (t) => [index('sessions_user_idx').on(t.userId), check('sessions_token_hash_len', sql`char_length(${t.tokenHash}) = 64`)]);
+
+export const authTokenPurpose = pgEnum('auth_token_purpose', ['verify_email', 'reset_password']);
+/** Engangstokens (e-mailbekræftelse, nulstilling). Kun hash gemmes; korte levetider; kan kun bruges én gang. */
+export const authTokens = pgTable('auth_tokens', {
+  tokenHash: text('token_hash').primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  purpose: authTokenPurpose('purpose').notNull(),
+  expiresAt: ts('expires_at').notNull(),
+  usedAt: ts('used_at'),
+  createdAt: createdAt()
+}, (t) => [index('auth_tokens_user_idx').on(t.userId, t.purpose)]);
+
+/** Delt rate limiting (token bucket) på tværs af server-instanser. Nøglen er en hash – ingen IP/e-mail i klartekst. */
+export const rateLimits = pgTable('rate_limits', {
+  key: text('key').primaryKey(),
+  tokens: doublePrecision('tokens').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull()
+});

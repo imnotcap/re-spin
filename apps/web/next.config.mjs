@@ -4,6 +4,6 @@ export default {
   poweredByHeader: false, // skjul "X-Powered-By: Next.js"
   productionBrowserSourceMaps: false,
   // Interne workspace-pakker er TypeScript-kildekode og skal oversættes af Next
-  transpilePackages: ['@respin/core', '@respin/db', '@respin/security', '@respin/payments', '@respin/ui'],
-  serverExternalPackages: ['postgres', 'stripe']
+  transpilePackages: ['@respin/core', '@respin/db', '@respin/security', '@respin/payments', '@respin/auth', '@respin/ui'],
+  serverExternalPackages: ['postgres', 'stripe', '@node-rs/argon2']
 };

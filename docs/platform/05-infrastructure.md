@@ -87,6 +87,9 @@ CREATE USER respin_worker_app LOGIN PASSWORD '…' IN ROLE respin_worker;
 | `ADMIN_ALLOWED_HOSTS`, `ADMIN_IP_ALLOWLIST`, `ADMIN_IP_HEADER` | | ✅ | | Tom allowlist i produktion = nægt alle |
 | `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` | | ✅ | | Fra Cloudflare Access |
 | `CSP_IMG_SRC` | ✅ | | | CDN-domæne til billeder |
+| `APP_URL` | ✅ | | | Kanonisk https-adresse til links i mails (aldrig fra Host-headeren) |
+| `MAIL_TRANSPORT` | ✅ | | | `console` afvises i produktion – mailudbyder skal tilføjes |
+| `PWNED_CHECK`, `TRUSTED_IP_HEADER`, `TRUSTED_PROXIES` | ✅ | | | HIBP kræver udgående adgang til `api.pwnedpasswords.com` |
 | `ADMIN_DEV_EMAIL`, `ADMIN_DEV_ROLE` | | dev | | **Afvises i produktion** (appen starter ikke) |
 
 ## Observabilitet og drift

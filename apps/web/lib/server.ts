@@ -4,20 +4,21 @@ import { loadEnv } from '@respin/security';
 import { createDb, type Db } from '@respin/db';
 import { createStripe, stripeGateway, type StripeGateway } from '@respin/payments';
 
-const envSchema = z.object({
-  DATABASE_URL: z.string().min(10),
-  STRIPE_SECRET_KEY: z.string().regex(/^(sk|rk)_(test|live)_/),
-  STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_')
-});
+const g = globalThis as unknown as { __respinDb?: Db; __respinGw?: StripeGateway };
 
-interface Services { db: Db; gateway: StripeGateway }
-const g = globalThis as unknown as { __respin?: Services };
-
-/** Lazy og cachet: konfigurationen valideres første gang den bruges (ikke ved build), og appen nægter at køre med ugyldig konfiguration. */
-export function getServices(): Services {
-  if (!g.__respin) {
-    const env = loadEnv(envSchema);
-    g.__respin = { db: createDb({ url: env.DATABASE_URL }).db, gateway: stripeGateway(createStripe(env.STRIPE_SECRET_KEY), env.STRIPE_WEBHOOK_SECRET) };
+/** Database (lazy; konfiguration valideres første gang den bruges, ikke ved build) */
+export function getDb(): Db {
+  if (!g.__respinDb) {
+    const env = loadEnv(z.object({ DATABASE_URL: z.string().min(10), DB_POOL_MAX: z.coerce.number().int().min(1).max(50).default(10) }));
+    g.__respinDb = createDb({ url: env.DATABASE_URL, max: env.DB_POOL_MAX }).db;
   }
-  return g.__respin;
+  return g.__respinDb;
+}
+
+export function getStripeGateway(): StripeGateway {
+  if (!g.__respinGw) {
+    const env = loadEnv(z.object({ STRIPE_SECRET_KEY: z.string().regex(/^(sk|rk)_(test|live)_/), STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_') }));
+    g.__respinGw = stripeGateway(createStripe(env.STRIPE_SECRET_KEY), env.STRIPE_WEBHOOK_SECRET);
+  }
+  return g.__respinGw;
 }
