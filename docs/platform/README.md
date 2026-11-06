@@ -11,6 +11,7 @@ Læs i rækkefølge, eller hop direkte til det, du skal bruge.
 | [04-roadmap.md](04-roadmap.md) | Faser med leverancer, sikkerhedsporte og afslutningskriterier; risici; beslutninger der kræver dig |
 | [05-infrastructure.md](05-infrastructure.md) | Miljøer, hosting, Cloudflare, DNS, database-drift, CI/CD |
 | [06-decisions.md](06-decisions.md) | Arkitekturbeslutninger (ADR) med begrundelse |
+| [07-tools-and-costs.md](07-tools-and-costs.md) | **Værktøjer, priser og månedlige omkostninger pr. fase**, økonomi pr. ordre, opgraderingsplan når I vokser |
 
 ## Status: hvad er bygget
 
