@@ -66,13 +66,14 @@ export function PriceSummary({ rows, total, className }: PriceSummaryProps) {
   );
 }
 
-export interface EmptyStateProps { icon?: IconName; title: string; description?: string; action?: ReactNode; className?: string }
+export interface EmptyStateProps { icon?: IconName; title: string; description?: string; action?: ReactNode; className?: string; /** Overskriftsniveau – brug 1, når tom-tilstanden er hele sidens indhold (fx 404) */ headingLevel?: 1 | 2 | 3 }
 
-export function EmptyState({ icon = 'heart', title, description, action, className }: EmptyStateProps) {
+export function EmptyState({ icon = 'heart', title, description, action, className, headingLevel = 2 }: EmptyStateProps) {
+  const Heading = `h${headingLevel}` as 'h1' | 'h2' | 'h3';
   return (
     <div className={cx('rs-empty', className)}>
       <div className="rs-empty__icon"><Icon name={icon} size={40} /></div>
-      <h2 className="rs-t-h2">{title}</h2>
+      <Heading className="rs-t-h2">{title}</Heading>
       {description && <p className="rs-t-muted">{description}</p>}
       {action}
     </div>

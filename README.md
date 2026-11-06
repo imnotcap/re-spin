@@ -55,6 +55,16 @@ npm run db:dev      # lokal Postgres (PGlite) uden Docker
 npm run dev:web     # http://localhost:3000 (se docs/platform/README.md for miljøvariabler)
 ```
 
+## Hjemmeside (testversion): <https://imnotcap.github.io/re-spin/>
+
+`apps/site` er den offentlige præsentationsside. Den er bygget i Next.js, TypeScript, Tailwind og `@respin/ui`, med Motion og React Bits, og eksporteres statisk til GitHub Pages. Siden har en live-demo af appen, en gebyrberegner (samme regler som checkout) og en side om tryghed. Den er lazy-loaded og målt til 100 i Lighthouse (ydelse, tilgængelighed, best practices) med CLS 0.
+
+```bash
+npm run dev:site   # http://localhost:3030
+```
+
+Udgives automatisk af `.github/workflows/pages.yml` ved push til `main`. Se `apps/site/README.md`.
+
 ## UI-kit til Next.js / TypeScript
 
 `packages/ui` er **`@respin/ui`**: samme design som skelettet, men som typede React-komponenter, tokens og forretningsregler (gebyrer, formatering). `apps/showcase` er en Next.js-app, der viser alle komponenter (`/`) og en lille app-demo (`/demo`).

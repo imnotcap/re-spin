@@ -1,0 +1,63 @@
+name: Hjemmeside (GitHub Pages)
+
+# Bygger apps/site som statisk eksport og udgiver den på GitHub Pages (testversion).
+# Kræver én gang: Settings → Pages → Source: "GitHub Actions".
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/site/**
+      - packages/ui/**
+      - packages/core/**
+      - package-lock.json
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+# Mindste rettigheder som udgangspunkt; kun deploy-jobbet får skriveadgang til Pages
+permissions:
+  contents: read
+
+# Én udgivelse ad gangen; en igangværende udgivelse afbrydes ikke halvvejs
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - id: pages
+        uses: actions/configure-pages@v5
+      - run: npm run build:ui
+      - name: Byg hjemmesiden (statisk eksport)
+        run: npm run build -w site
+        env:
+          # "/re-spin" på imnotcap.github.io/re-spin – tom ved eget domæne
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          NEXT_TELEMETRY_DISABLED: '1'
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/site/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write      # udgiv til Pages
+      id-token: write   # bevis over for Pages, at udgivelsen kommer fra dette workflow (OIDC)
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

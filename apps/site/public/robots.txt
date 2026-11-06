@@ -1,0 +1,3 @@
+# Testversion – må ikke indekseres
+User-agent: *
+Disallow: /

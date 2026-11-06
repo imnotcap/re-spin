@@ -1,7 +1,7 @@
 {
   "name": "respin",
   "private": true,
-  "description": "re:spin \u2013 design-skelet, UI-kit (@respin/ui) og Next.js showcase",
+  "description": "re:spin – platform-skelet, UI-kit (@respin/ui), apps (web, admin, showcase) og hjemmeside (site)",
   "workspaces": [
     "packages/*",
     "apps/*"
@@ -11,10 +11,11 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build": "npm run build:ui && npm run build -w web && npm run build -w admin && npm run build -w showcase",
+    "build": "npm run build:ui && npm run build -w web && npm run build -w admin && npm run build -w showcase && npm run build -w site",
     "dev:showcase": "npm run build:ui && npm run dev -w showcase",
     "dev:web": "npm run dev -w web",
     "dev:admin": "npm run dev -w admin",
+    "dev:site": "npm run build:ui && npm run dev -w site",
     "db:generate": "npm run generate -w @respin/db",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "db:dev": "npm run dev -w @respin/db"

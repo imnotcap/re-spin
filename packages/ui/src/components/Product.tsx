@@ -35,11 +35,17 @@ export interface ProductImageProps {
   children?: ReactNode;
 }
 
-/** Produktbillede. Uden billede vises en neutral grå flade (pladsholder). */
+/**
+ * Produktbillede. Uden billede vises en neutral grå flade (pladsholder).
+ * `alt=""` betyder dekorativt: elementet skjules for skærmlæsere (i stedet for et "billede" uden navn).
+ */
 export function ProductImage({ src, alt, shade = 0, ratio = '34', className, image, children }: ProductImageProps) {
+  const decorative = alt.trim() === '';
+  const placeholder = !src && !image;
   return (
-    <div className={cx('rs-ph', `rs-ph--${ratio}`, className)} style={{ '--rs-ph-bg': `var(--rs-ph-${(shade % 4) + 1})` } as CSSProperties} role={src || image ? undefined : 'img'} aria-label={src || image ? undefined : alt}>
-      {image ?? (src ? <img src={src} alt={alt} loading="lazy" /> : null)}
+    <div className={cx('rs-ph', `rs-ph--${ratio}`, className)} style={{ '--rs-ph-bg': `var(--rs-ph-${(Math.abs(shade) % 4) + 1})` } as CSSProperties}
+      role={placeholder && !decorative ? 'img' : undefined} aria-label={placeholder && !decorative ? alt : undefined} aria-hidden={decorative ? true : undefined}>
+      {image ?? (src ? <img src={src} alt={alt} loading="lazy" decoding="async" /> : null)}
       {children}
     </div>
   );

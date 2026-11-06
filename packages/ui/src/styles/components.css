@@ -314,7 +314,7 @@
 :where(input[class^="rs-"], select[class^="rs-"], textarea[class^="rs-"], .rs-searchbar input) { font-family: var(--rs-font); color: var(--rs-text); }
 .rs-icon { display: block; flex: none; }
 .rs-t-display, .rs-t-h1, .rs-t-h2, .rs-t-h3, .rs-t-body, .rs-t-small, .rs-t-caption,
-.rs-topbar__title, .rs-sheet__head h2, .rs-empty h2, .rs-empty p, .rs-section-head h2 { margin: 0; }
+.rs-topbar__title, .rs-sheet__head h2, .rs-empty h1, .rs-empty h2, .rs-empty h3, .rs-empty p, .rs-section-head h2 { margin: 0; }
 .rs-ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .rs-searchbar__ph { flex: 1; min-width: 0; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 a.rs-searchbar { cursor: pointer; }

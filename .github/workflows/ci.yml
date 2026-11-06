@@ -32,6 +32,7 @@ jobs:
       - run: npm run build -w web
       - run: npm run build -w admin
       - run: npm run build -w showcase
+      - run: npm run build -w site       # statisk eksport (GitHub Pages)
 
   dependency-audit:
     runs-on: ubuntu-latest

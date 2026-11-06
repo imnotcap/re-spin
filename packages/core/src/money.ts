@@ -28,8 +28,8 @@ export function percentOf(amount: Ore, basisPoints: number): Ore {
   return ore(Math.floor((amount * basisPoints + 5_000) / 10_000));
 }
 
-/** 45000 → "450 kr." · 44550 → "445,50 kr." (kun til visning) */
+/** 45000 → "450 kr." · 44550 → "445,50 kr." (kun til visning; hårdt mellemrum, så tal og "kr." aldrig deles over to linjer) */
 export function formatOre(amount: Ore): string {
   const kr = amount / 100;
-  return `${kr.toLocaleString('da-DK', { minimumFractionDigits: Number.isInteger(kr) ? 0 : 2, maximumFractionDigits: 2 })} kr.`;
+  return `${kr.toLocaleString('da-DK', { minimumFractionDigits: Number.isInteger(kr) ? 0 : 2, maximumFractionDigits: 2 })}\u00A0kr.`;
 }

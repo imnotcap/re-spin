@@ -1,6 +1,8 @@
 node_modules/
 dist/
 .next/
+# Statisk eksport (apps/site → GitHub Pages)
+out/
 *.tsbuildinfo
 next-env.d.ts
 
