@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.next/
+*.tsbuildinfo
+next-env.d.ts
+
+# Hemmeligheder: commit ALDRIG rigtige nøgler. Kun *.example må committes.
+.env
+.env.*
+!.env.example
+*.pem
+*.key

@@ -1,0 +1,10 @@
+# Ændringer i sikkerhedskritisk kode kræver review fra ejeren (slå "Require review from Code Owners" til i branch protection)
+*                                  @imnotcap
+/packages/security/                @imnotcap
+/packages/payments/                @imnotcap
+/packages/db/                      @imnotcap
+/packages/auth/                    @imnotcap
+/packages/core/src/ledger.ts       @imnotcap
+/packages/core/src/fees.ts         @imnotcap
+/apps/admin/                       @imnotcap
+/.github/                          @imnotcap

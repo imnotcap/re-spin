@@ -1,0 +1,27 @@
+/* re:spin – typografi- og layout-hjælpere (prefix rs-) */
+/* Typografi-skala */
+.rs-t-display { font-size: var(--rs-fs-display); line-height: var(--rs-lh-display); font-weight: 800; letter-spacing: -.02em; }
+.rs-t-h1 { font-size: var(--rs-fs-h1); line-height: var(--rs-lh-h1); font-weight: 800; letter-spacing: -.015em; }
+.rs-t-h2 { font-size: var(--rs-fs-h2); line-height: var(--rs-lh-h2); font-weight: 700; letter-spacing: -.01em; }
+.rs-t-h3 { font-size: var(--rs-fs-h3); line-height: var(--rs-lh-h3); font-weight: 700; }
+.rs-t-body { font-size: var(--rs-fs-body); line-height: var(--rs-lh-body); }
+.rs-t-small { font-size: var(--rs-fs-small); line-height: var(--rs-lh-small); }
+.rs-t-caption { font-size: var(--rs-fs-caption); line-height: var(--rs-lh-caption); }
+.rs-t-muted { color: var(--rs-text-muted); }
+.rs-t-bold { font-weight: 700; }
+.rs-t-center { text-align: center; }
+.rs-t-price { font-weight: 800; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+.rs-t-link { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Layout-hjælpere */
+.rs-stack { display: flex; flex-direction: column; }
+.rs-row-flex { display: flex; align-items: center; }
+.rs-gap-1 { gap: var(--rs-s-1); } .rs-gap-2 { gap: var(--rs-s-2); } .rs-gap-3 { gap: var(--rs-s-3); }
+.rs-gap-4 { gap: var(--rs-s-4); } .rs-gap-6 { gap: var(--rs-s-6); }
+.rs-grow { flex: 1; min-width: 0; }
+.rs-px { padding-left: var(--rs-gutter); padding-right: var(--rs-gutter); }
+.rs-py-4 { padding-top: var(--rs-s-4); padding-bottom: var(--rs-s-4); }
+.rs-mt-2 { margin-top: var(--rs-s-2); } .rs-mt-4 { margin-top: var(--rs-s-4); } .rs-mt-6 { margin-top: var(--rs-s-6); } .rs-mt-8 { margin-top: var(--rs-s-8); }
+.rs-mb-2 { margin-bottom: var(--rs-s-2); } .rs-mb-4 { margin-bottom: var(--rs-s-4); }
+.rs-divider { height: 1px; background: var(--rs-border); border: 0; margin: var(--rs-s-4) 0; }
+.rs-divider--thick { height: 8px; background: var(--rs-surface-sunk); margin: var(--rs-s-6) 0; }

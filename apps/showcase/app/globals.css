@@ -1,0 +1,7 @@
+@import "tailwindcss";
+/* Kit-komponenterne ligger i Tailwinds `components`-lag, så utilities (className="rounded-pill") altid vinder */
+@import "@respin/ui/styles.css" layer(components);
+/* Tailwind-tema: farver, typografi, radier, skygger, gradienter */
+@import "@respin/ui/tailwind.css";
+
+/* Tailwind scanner automatisk appen – tilføj kit-kilden hvis du vil bruge klasser fra den i pakken */

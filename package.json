@@ -1,0 +1,29 @@
+{
+  "name": "respin",
+  "private": true,
+  "description": "re:spin \u2013 design-skelet, UI-kit (@respin/ui) og Next.js showcase",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build:ui": "npm run build -w @respin/ui",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "npm run build:ui && npm run build -w web && npm run build -w admin && npm run build -w showcase",
+    "dev:showcase": "npm run build:ui && npm run dev -w showcase",
+    "dev:web": "npm run dev -w web",
+    "dev:admin": "npm run dev -w admin",
+    "db:generate": "npm run generate -w @respin/db",
+    "audit:prod": "npm audit --omit=dev --audit-level=high",
+    "db:dev": "npm run dev -w @respin/db"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.0",
+    "typescript": "~5.9.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
