@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Mindste rettigheder: workflowet kan kun læse koden
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false   # token efterlades ikke på disken
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts    # reproducerbart; kør ikke afhængigheders install-scripts
+      - run: npm run build:ui
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build -w web
+      - run: npm run build -w admin
+      - run: npm run build -w showcase
+
+  dependency-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run audit:prod        # fejler ved kendte sårbarheder (high+) i produktions-afhængigheder

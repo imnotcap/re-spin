@@ -1,0 +1,29 @@
+{
+  "name": "admin",
+  "private": true,
+  "version": "0.1.0",
+  "description": "re:spin administration (admin.respin.dk) \u2013 kun for medarbejdere",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@respin/core": "*",
+    "@respin/db": "*",
+    "@respin/security": "*",
+    "@respin/ui": "*",
+    "next": "^16.4.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^4.6.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "~5.9.3"
+  }
+}

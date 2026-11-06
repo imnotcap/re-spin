@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 10
+    groups:
+      next-react: { patterns: [next, react, react-dom, '@types/react*'] }
+      stripe: { patterns: [stripe] }
+      drizzle: { patterns: [drizzle-orm, drizzle-kit] }
+  - package-ecosystem: github-actions   # holder action-versioner opdateret (og kan pinne til SHA)
+    directory: /
+    schedule: { interval: weekly }

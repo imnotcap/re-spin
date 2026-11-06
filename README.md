@@ -34,6 +34,25 @@ Komponenter: Button (primary/buy/outline/dark/forest/ghost, sm/md/lg) · IconBut
 - **Køb:** betaling (adresse, fragt, betaling, live-total), ordre bekræftet, mine ordrer, ordredetaljer m. tidslinje
 - **Mig:** profil, rediger profil, saldo/udbetaling, indstillinger, hjælp/FAQ
 
+## Platform: backend, betaling, admin og sikkerhed
+
+Skelet og plan for hele platformen ligger i `docs/platform/` (**start med [README](docs/platform/README.md)**):
+
+| Pakke/app | Indhold |
+|---|---|
+| `packages/core` | Domæne uden I/O: penge (øre), gebyrer, ordre-tilstandsmaskine, dobbelt bogholderi, validering, svindel-heuristik |
+| `packages/db` | Drizzle-skema (PostgreSQL), migrationer med integritets-triggers, roller med mindste privilegium |
+| `packages/security` | CSP/headers, IP-allowlist, RBAC + fire-øjne, rate limiter, upload-validering, Cloudflare Access-JWT, admin-vagt |
+| `packages/payments` | Checkout, ordre-overgange, Stripe-webhooks (idempotente), outbox |
+| `apps/web` | Forbrugersite (`respin.dk`): skelet + Stripe-webhook |
+| `apps/admin` | Medarbejderside (`admin.respin.dk`): Cloudflare Access + IP + roller |
+
+```bash
+npm test            # alle tests (ingen database nødvendig – bruger PGlite)
+npm run typecheck
+npm run dev:web     # http://localhost:3000
+```
+
 ## UI-kit til Next.js / TypeScript
 
 `packages/ui` er **`@respin/ui`**: samme design som skelettet, men som typede React-komponenter, tokens og forretningsregler (gebyrer, formatering). `apps/showcase` er en Next.js-app, der viser alle komponenter (`/`) og en lille app-demo (`/demo`).

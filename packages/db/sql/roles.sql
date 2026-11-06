@@ -1,0 +1,44 @@
+-- Mindste-privilegium-roller. Kør som migrator/ejer EFTER migrationerne.
+-- Rollerne er NOLOGIN her: infrastrukturen opretter login-brugere (adgangskoder fra secret manager) og giver dem én rolle hver:
+--   CREATE USER respin_web_app LOGIN PASSWORD '…' IN ROLE respin_web;
+-- Pointen: hvis en app kompromitteres (SQL-injektion, lækket DATABASE_URL), kan angriberen kun det, appens rolle må.
+
+CREATE ROLE respin_web NOLOGIN;     -- forbrugersitet + webhooks
+CREATE ROLE respin_admin NOLOGIN;   -- admin-app (medarbejdere)
+CREATE ROLE respin_worker NOLOGIN;  -- baggrundsjobs/outbox
+
+GRANT USAGE ON SCHEMA public TO respin_web, respin_admin, respin_worker;
+
+-- ---------- web ----------
+GRANT SELECT, INSERT, UPDATE ON users, listings, listing_images, conversations, messages, offers TO respin_web;
+GRANT SELECT, INSERT ON seller_profiles TO respin_web;
+-- Web må ALDRIG selv sætte certificering (0,5 % gebyr) eller KYC-status – kun admin/system
+GRANT UPDATE (stripe_account_id, payouts_enabled, kyc_status) ON seller_profiles TO respin_web;
+GRANT SELECT, INSERT, DELETE ON favorites TO respin_web;
+GRANT SELECT, INSERT, UPDATE ON orders TO respin_web;
+GRANT SELECT, INSERT ON order_events, ledger_transactions, outbox, reports TO respin_web;
+GRANT INSERT ON ledger_entries, audit_log TO respin_web;
+GRANT SELECT, INSERT, UPDATE ON stripe_events TO respin_web;
+
+-- ---------- admin ----------
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO respin_admin;
+GRANT UPDATE (status) ON users TO respin_admin;
+GRANT UPDATE (status, moderation_status) ON listings TO respin_admin;
+GRANT UPDATE (status, handled_by, handled_at) ON reports TO respin_admin;
+GRANT UPDATE (certified, certified_at) ON seller_profiles TO respin_admin;   -- kun admin-appen kan certificere
+GRANT INSERT ON audit_log, order_events, ledger_transactions, outbox TO respin_admin;
+GRANT INSERT ON ledger_entries TO respin_admin;
+GRANT UPDATE ON orders TO respin_admin;
+GRANT INSERT, UPDATE ON staff_users TO respin_admin;
+
+-- ---------- worker ----------
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO respin_worker;
+GRANT UPDATE ON orders, outbox, stripe_events, listing_images, listings TO respin_worker;
+GRANT INSERT ON order_events, ledger_transactions, ledger_entries, audit_log, outbox TO respin_worker;
+GRANT UPDATE (stripe_account_id, payouts_enabled, kyc_status) ON seller_profiles TO respin_worker;
+
+-- ---------- sekvenser (bigserial) ----------
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO respin_web, respin_admin, respin_worker;
+
+-- Belt and braces (udover append-only-triggers): ingen kan ændre eller slette historik
+REVOKE UPDATE, DELETE, TRUNCATE ON audit_log, ledger_entries, ledger_transactions, order_events FROM respin_web, respin_admin, respin_worker;
