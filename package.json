@@ -20,7 +20,7 @@
     "db:dev": "npm run dev -w @respin/db"
   },
   "devDependencies": {
-    "vitest": "^3.2.0",
+    "vitest": "^5.1.0",
     "typescript": "~5.9.3"
   },
   "engines": {
