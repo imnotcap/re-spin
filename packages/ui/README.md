@@ -5,6 +5,7 @@ re:spin UI-kit til **React + TypeScript**, bygget til **Next.js (App Router)**. 
 - 40+ komponenter (knapper, formularer, produktkort, navigation, bundark, toasts, chat …)
 - Design tokens som CSS-variabler (`--rs-*`) **og** som TypeScript (`@respin/ui/tokens`)
 - Alle CSS-klasser har prefix `rs-`, så kittet ikke støder ind i din egen CSS
+- Tailwind-tema til både v3 (preset) og v4 (`@theme`)
 - Ingen runtime-afhængigheder udover `react`/`react-dom`
 - `next/link`-integration via én provider (klient-navigation uden at kittet afhænger af Next)
 
@@ -76,13 +77,15 @@ export default function Home() {
 
 > Komponenter med event handlers (`onClick`, `onChange` …) kan kun få dem fra en **client component**. Kittet selv er markeret `"use client"`, så du kan bruge det overalt, men du kan ikke sende funktioner ind fra en server component.
 
-## Tre indgange
+## Indgange
 
 | Import | Indhold | Bruges i |
 |---|---|---|
 | `@respin/ui` | Komponenter (`"use client"`) | server **og** client components |
 | `@respin/ui/utils` | `formatKr`, `buyerFee`, `sellerFee`, `RESPIN_TABS`, `ICON_NAMES`, `cx` | server **og** client |
-| `@respin/ui/tokens` | `colors`, `gradients`, `spacing`, `radius`, `fontSizes` | server **og** client |
+| `@respin/ui/tokens` | `colors`, `gradients`, `shadows`, `typeScale`, `spacing`, `radius`, `fontSizes` | server **og** client |
+| `@respin/ui/tailwind-preset` | `respinPreset` (Tailwind v3) | `tailwind.config.ts` |
+| `@respin/ui/tailwind.css` | `@theme` + gradient-utilities (Tailwind v4) | din `globals.css` |
 
 Værdier (ikke komponenter) ligger bevidst uden for hovedindgangen: en værdi eksporteret fra en `"use client"`-modul kan ikke bruges i en server component.
 
@@ -129,6 +132,48 @@ const tabs = RESPIN_TABS.items.map((t) => (t.id === 'messages' ? { ...t, badge: 
 | Køberbeskyttelse 5 % + 3 kr. | `buyerFee(price)`, `buyerTotal(price, shipping)` |
 | Gebyr til re:spin: 1 % (0,5 % for certificerede) | `sellerFee(price, certified)`, `sellerPayout(price, certified)` |
 | Formatering | `formatKr(450)` → `450 kr.` · `formatKrDecimals(445.5)` → `445,5 kr.` |
+
+## Tailwind
+
+Kittet har et Tailwind-tema, så du kan bygge nye skærme med de samme tokens. Samme klassenavne i v3 og v4.
+
+**Tailwind v4** (CSS-first, anbefalet) – i din `globals.css`:
+
+```css
+@import "tailwindcss";
+@import "@respin/ui/styles.css" layer(components);  /* kit-CSS i components-laget, så utilities altid vinder */
+@import "@respin/ui/tailwind.css";                  /* @theme: farver, typografi, radier, skygger, gradienter */
+```
+
+**Tailwind v3** – preset i `tailwind.config.ts` (og `import '@respin/ui/styles.css'` i layout):
+
+```ts
+import type { Config } from 'tailwindcss';
+import { respinPreset } from '@respin/ui/tailwind-preset';
+
+export default { presets: [respinPreset], content: ['./app/**/*.{ts,tsx}'] } satisfies Config;
+```
+
+Klasser (begge versioner):
+
+| Hvad | Klasser |
+|---|---|
+| Brandfarver | `bg-forest` `bg-forest-700` `bg-forest-900` `bg-lime` `bg-lime-600` `bg-coral` `bg-coral-600` `bg-cream` `bg-slate` … samt `stone-50…400`, `cream-200/300`, `slate-300/500/700` |
+| Semantiske farver (følger temaet) | `bg-canvas` `bg-surface` `bg-sunken` `text-ink` `text-muted` `border-line` `text-brand` `bg-action` `bg-buy` `text-danger` |
+| Typografi | `text-display` `text-h1` `text-h2` `text-h3` `text-body` `text-small` `text-caption` (inkl. line-height, vægt og letter-spacing) |
+| Radier | `rounded-sm` (6) `rounded-md` (10) `rounded-lg` (14) `rounded-xl` (20) `rounded-pill` |
+| Skygger | `shadow-line` `shadow-raised` `shadow-float` |
+| Gradienter | `bg-grad-ink` `bg-grad-lime` `bg-grad-forest` `bg-grad-deep` `bg-grad-accent` `bg-grad-card` `bg-grad-stone` `bg-grad-energy` |
+| Mål | `p-gutter` (16px) · `h-tap` / `min-h-tap` (44px) · `pb-tabbar` |
+| Motion | `ease-respin` `ease-spring` (v3 også `duration-fast/base/slow`) |
+
+Gode at vide:
+
+- `rounded-sm/md/lg/xl` **overskriver** Tailwinds standard med re:spins radier (6/10/14/20 px).
+- Brand-farver kan bruge opacity-modifikatorer (`bg-forest/50`). I v3 er de hex-værdier, i v4 følger de CSS-variablerne.
+- Du behøver ikke `reset.css` sammen med Tailwind (preflight klarer det).
+- I v4 giver `layer(components)`, at `className="rounded-pill"` på en kit-`Button` vinder over komponentens egen radius. Uden lag-importen vil kit-CSS'en (ulagret) slå Tailwind-klasser.
+- Tailwind v4-filen `tailwind.css` genereres ved build ud fra `tokens.ts`, så alle tre steder (CSS, TypeScript, Tailwind) holdes ens.
 
 ## Tokens og tilpasning
 

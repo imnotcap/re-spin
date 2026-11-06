@@ -65,6 +65,7 @@
   --rs-grad-card:   linear-gradient(160deg, #ffffff 0%, #f3f0ea 100%);                             /* kort / lister */
   --rs-grad-stone:  linear-gradient(160deg, #f4f2ee 0%, #dedbd4 100%);                             /* neutrale flader */
   --rs-glow-lime:   radial-gradient(60% 80% at 100% 0%, rgba(210,255,50,.38), transparent 70%);
+  --rs-grad-energy: var(--rs-gradient-energy);
   --rs-gradient-energy: linear-gradient(100deg, #0e5a2f 0%, #0a8a78 30%, #d2ff32 62%, #ff5a5f 92%);
 
   /* ---- Typografi ---- */

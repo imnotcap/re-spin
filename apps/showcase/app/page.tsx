@@ -7,6 +7,7 @@ import {
 import { colors, gradients } from '@respin/ui/tokens';
 import { ICON_NAMES, buyerFee, formatKr, formatKrDecimals, sellerFee } from '@respin/ui/utils';
 import { GalleryInteractive } from '../components/GalleryInteractive';
+import { TailwindDemo } from '../components/TailwindDemo';
 import { items } from '../lib/data';
 
 const Section = ({ title, children }: { title: string; children: ReactNode }) => (
@@ -86,6 +87,10 @@ export default function Gallery() {
           <EmptyState icon="heart" title="Ingen favoritter" description="Tryk på hjertet for at gemme." />
           <Skeleton style={{ height: 64 }} />
         </div>
+      </Section>
+
+      <Section title="Tailwind-preset">
+        <TailwindDemo />
       </Section>
 
       <Section title={`Ikoner (${ICON_NAMES.length})`}>
