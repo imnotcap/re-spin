@@ -18,8 +18,12 @@ import { createAuditor, maskEmail, type BucketConfig, type RateLimiter } from '@
 import { randomToken, sha256Hex } from './crypto';
 import { argon2Hasher, checkPasswordPolicy, PASSWORD_MAX, type PasswordHasher, type PasswordProblem, type PwnedChecker } from './password';
 import { templates, type Mailer } from './mailer';
+import { parseKey } from './secretbox';
+import { createMfa, MFA_PENDING_TTL_MS } from './mfa';
+import { createPasskeys } from './passkeys';
+import type { Internals } from './internals';
 
-const { users, userPasswords, sessions, authTokens, auditLog } = schema;
+const { users, userPasswords, sessions, authTokens, auditLog, mfaTotp, mfaPending } = schema;
 
 export const SESSION_TTL_MS = 30 * 24 * 3_600_000;   // absolut levetid
 export const SESSION_IDLE_MS = 7 * 24 * 3_600_000;   // udløber efter 7 dages inaktivitet
@@ -36,9 +40,11 @@ export const AUTH_LIMITS = {
   verifyIp: { capacity: 10, refillPerSecond: 10 / 900 },
   resetIp: { capacity: 5, refillPerSecond: 5 / 3600 },
   resetAccount: { capacity: 3, refillPerSecond: 3 / 3600 },
-  reauth: { capacity: 5, refillPerSecond: 5 / 900 }
+  reauth: { capacity: 5, refillPerSecond: 5 / 900 },
+  mfaUser: { capacity: 10, refillPerSecond: 10 / 900 },
+  passkeyIp: { capacity: 30, refillPerSecond: 30 / 900 }
 } as const satisfies Record<string, BucketConfig>;
-type LimitName = keyof typeof AUTH_LIMITS;
+export type LimitName = keyof typeof AUTH_LIMITS;
 
 export const normalizeEmail = (email: string): string => email.normalize('NFC').trim().toLowerCase();
 const emailSchema = z.string().max(254).transform(normalizeEmail).pipe(z.email());
@@ -55,6 +61,10 @@ export interface AuthDeps {
   hasher?: PasswordHasher;
   now?: () => Date;
   onError?: (e: unknown) => void;
+  /** 32-byte nøgle (base64) til kryptering af TOTP-hemmeligheder. Uden den kan MFA ikke slås til. */
+  mfaKey?: string;
+  /** Navn vist i passkey-dialogen */
+  rpName?: string;
 }
 
 export interface RequestContext { ip?: string | null; userAgent?: string | null }
@@ -65,7 +75,7 @@ export interface CurrentSession {
 }
 
 export type SignUpError = 'invalid_input' | 'rate_limited' | 'breached_password' | PasswordProblem;
-export type SignInError = 'invalid_credentials' | 'email_not_verified' | 'account_disabled' | 'rate_limited' | 'invalid_input';
+export type SignInError = 'invalid_credentials' | 'email_not_verified' | 'account_disabled' | 'rate_limited' | 'invalid_input' | 'mfa_required';
 
 export function createAuth(deps: AuthDeps) {
   const hasher = deps.hasher ?? argon2Hasher;
@@ -110,11 +120,11 @@ export function createAuth(deps: AuthDeps) {
     return row ?? null;
   }
 
-  async function createSession(userId: string, ctx: RequestContext, elevated = false): Promise<IssuedSession> {
+  async function createSession(userId: string, ctx: RequestContext, elevated = false, method = 'password'): Promise<IssuedSession> {
     const token = randomToken();
     const t = now();
     const expiresAt = new Date(t.getTime() + SESSION_TTL_MS);
-    await db.insert(sessions).values({ tokenHash: sha256Hex(token), userId, expiresAt, lastSeenAt: t, createdAt: t, elevatedUntil: elevated ? new Date(t.getTime() + STEP_UP_MS) : null, ip: ctx.ip ?? null, userAgent: ctx.userAgent?.slice(0, 256) ?? null });
+    await db.insert(sessions).values({ tokenHash: sha256Hex(token), userId, expiresAt, lastSeenAt: t, createdAt: t, elevatedUntil: elevated ? new Date(t.getTime() + STEP_UP_MS) : null, authMethod: method, ip: ctx.ip ?? null, userAgent: ctx.userAgent?.slice(0, 256) ?? null });
     return { token, expiresAt };
   }
 
@@ -124,7 +134,7 @@ export function createAuth(deps: AuthDeps) {
     return row ?? null;
   }
 
-  return {
+  const core = {
     /** Svarer { ok: true } både for ny og eksisterende e-mail (ingen enumerering). */
     async signUp(input: { email: string; password: string; displayName: string }, ctx: RequestContext = {}): Promise<{ ok: true } | { ok: false; error: SignUpError }> {
       const parsed = z.object({ email: emailSchema, password: passwordInput, displayName: z.string().max(200).transform(normalizeUserText).pipe(z.string().min(2).max(40)) }).safeParse(input);
@@ -179,7 +189,7 @@ export function createAuth(deps: AuthDeps) {
       return { ok: true, session: await createSession(row.userId, ctx) };
     },
 
-    async signIn(input: { email: string; password: string }, ctx: RequestContext = {}): Promise<{ ok: true; session: IssuedSession } | { ok: false; error: SignInError }> {
+    async signIn(input: { email: string; password: string }, ctx: RequestContext = {}): Promise<{ ok: true; session: IssuedSession } | { ok: false; error: SignInError; mfaToken?: string }> {
       const parsed = z.object({ email: emailSchema, password: passwordInput }).safeParse(input);
       if (!parsed.success) return { ok: false, error: 'invalid_credentials' };
       const { email, password } = parsed.data;
@@ -198,6 +208,14 @@ export function createAuth(deps: AuthDeps) {
         return { ok: false, error: 'email_not_verified' };
       }
       if (hasher.needsRehash(user.hash!)) await db.update(userPasswords).set({ hash: await hasher.hash(password), updatedAt: now() }).where(eq(userPasswords.userId, user.id));
+      // To-trins-login: adgangskoden er godkendt, men der oprettes INGEN session før anden faktor er verificeret
+      const [totp] = await db.select({ enabledAt: mfaTotp.enabledAt }).from(mfaTotp).where(eq(mfaTotp.userId, user.id));
+      if (totp?.enabledAt) {
+        const mfaToken = randomToken();
+        await db.insert(mfaPending).values({ tokenHash: sha256Hex(mfaToken), userId: user.id, expiresAt: new Date(now().getTime() + MFA_PENDING_TTL_MS) });
+        await audit('auth.login.mfa_required', ctx, user.id);
+        return { ok: false, error: 'mfa_required', mfaToken };
+      }
       await audit('auth.login', ctx, user.id);
       return { ok: true, session: await createSession(user.id, ctx) };
     },
@@ -310,6 +328,14 @@ export function createAuth(deps: AuthDeps) {
       return { ok: true, session: await createSession(cur.user.id, ctx, true) };
     }
   };
+
+  const internals: Internals = {
+    db, now, appUrl, link, limit, audit, send, createSession, hasher,
+    isElevated: (cur) => core.isElevated(cur),
+    mfaKey: deps.mfaKey ? parseKey(deps.mfaKey) : null,
+    rpName: deps.rpName ?? 're:spin'
+  };
+  return Object.assign(core, { mfa: createMfa(internals), passkeys: createPasskeys(internals) });
 }
 
 export type Auth = ReturnType<typeof createAuth>;

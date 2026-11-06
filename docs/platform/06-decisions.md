@@ -21,7 +21,7 @@ Format: **Beslutning · Hvorfor · Alternativer · Konsekvenser · Status.** Skr
 **Hvorfor:** Brugere, sessioner og rettigheder i samme database (log ud overalt, spærring og databaseroller virker direkte); fuld testbarhed (28 tests, mutationstest, browser-e2e); ingen lock-in på identiteter; forsvar mod pre-hijacking og enumerering præcis som vi vil.
 **Alternativer:** Better Auth/Auth.js (færre linjer egen kode, men eget skema og abstraktioner), managed (Clerk/WorkOS: hurtigere, løbende pris og lock-in).
 **Konsekvenser:** Vi ejer sikkerheden for login → kræver ekstern gennemgang før lancering, og mutationstest ved ændringer. Kun primitiver fra velafprøvede biblioteker (Argon2 via `@node-rs/argon2`, Node crypto).
-**Status:** Besluttet · e-mail/adgangskode implementeret og testet · passkeys/MFA planlagt.
+**Status:** Besluttet · e-mail/adgangskode, passkeys (`@simplewebauthn/server`) og TOTP (egen RFC 6238-implementering, testet mod RFC-vektorer) implementeret og testet.
 
 ## ADR-004 · Admin som separat app på eget subdomæne bag Cloudflare Access
 **Beslutning:** `apps/admin` på `admin.respin.dk`; Cloudflare Access (SSO+MFA) foran; IP-allowlist som ekstra lag; appen verificerer Access-JWT og rolle **selv**, i proxy **og** i hver side.

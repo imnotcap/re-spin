@@ -16,7 +16,9 @@ const envSchema = z.object({
   PWNED_CHECK: z.enum(['on', 'off']).default('on'),
   /** Header som den betroede proxy sætter med klientens IP */
   TRUSTED_IP_HEADER: z.enum(['cf-connecting-ip', 'x-real-ip', 'x-forwarded-for']).default('x-forwarded-for'),
-  TRUSTED_PROXIES: z.coerce.number().int().min(1).max(5).default(1)
+  TRUSTED_PROXIES: z.coerce.number().int().min(1).max(5).default(1),
+  /** 32 byte (base64) til kryptering af TOTP-hemmeligheder. Lav med: openssl rand -base64 32. Skift ALDRIG uden migrering. */
+  MFA_ENCRYPTION_KEY: z.string().refine((v) => Buffer.from(v, 'base64').length === 32, 'skal være 32 byte base64')
 }).superRefine((e, ctx) => {
   if (!isProd) return;
   if (!e.APP_URL.startsWith('https://')) ctx.addIssue({ code: 'custom', path: ['APP_URL'], message: 'skal være https i produktion' });
@@ -36,6 +38,7 @@ function boot() {
       mailer: new ConsoleMailer(),
       limiter: (cfg) => new PgRateLimiter(db, cfg),
       pwned: env.PWNED_CHECK === 'on' ? createPwnedChecker() : undefined,
+      mfaKey: env.MFA_ENCRYPTION_KEY,
       onError: (e) => console.error('auth-fejl', e instanceof Error ? e.message : 'ukendt')
     });
     g.__respinAuth = { auth, env };

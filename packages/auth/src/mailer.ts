@@ -33,6 +33,10 @@ export const templates = {
     subject: 'Nulstil din adgangskode til re:spin',
     text: `Hej!\n\nVælg en ny adgangskode her:\n${link}\n\nLinket virker i 30 minutter og kan kun bruges én gang. Bad du ikke om det, kan du se bort fra denne mail – din adgangskode er uændret.\n\n– re:spin`
   }),
+  securityChange: (what: string, resetLink: string): Omit<Mail, 'to'> => ({
+    subject: `Sikkerhedsændring på din konto: ${what}`,
+    text: `Hej!\n\nDer er lige foretaget en sikkerhedsændring på din re:spin-konto: ${what}.\n\nVar det ikke dig? Nulstil din adgangskode straks: ${resetLink}\n\n– re:spin`
+  }),
   passwordChanged: (resetLink: string): Omit<Mail, 'to'> => ({
     subject: 'Din adgangskode er ændret',
     text: `Hej!\n\nAdgangskoden til din re:spin-konto er lige blevet ændret, og du er logget ud på alle andre enheder.\n\nVar det ikke dig? Nulstil straks: ${resetLink}\n\n– re:spin`

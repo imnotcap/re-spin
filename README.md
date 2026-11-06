@@ -44,7 +44,7 @@ Skelet og plan for hele platformen ligger i `docs/platform/` (**start med [READM
 | `packages/db` | Drizzle-skema (PostgreSQL), migrationer med integritets-triggers, roller med mindste privilegium |
 | `packages/security` | CSP/headers, IP-allowlist, RBAC + fire-øjne, rate limiter, upload-validering, Cloudflare Access-JWT, admin-vagt |
 | `packages/payments` | Checkout, ordre-overgange, Stripe-webhooks (idempotente), outbox |
-| `packages/auth` | Login: Argon2id, sessioner, e-mailbekræftelse, glemt adgangskode, step-up, delt rate limiting |
+| `packages/auth` | Login: Argon2id, sessioner, e-mailbekræftelse, glemt adgangskode, step-up, passkeys, to-trins-login (TOTP), delt rate limiting |
 | `apps/web` | Forbrugersite (`respin.dk`): login-sider, min konto, Stripe-webhook |
 | `apps/admin` | Medarbejderside (`admin.respin.dk`): Cloudflare Access + IP + roller |
 

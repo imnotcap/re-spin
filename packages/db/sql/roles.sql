@@ -46,6 +46,15 @@ REVOKE ALL ON user_passwords, auth_tokens, sessions FROM respin_admin, respin_wo
 GRANT SELECT (id, user_id, created_at, last_seen_at, expires_at, revoked_at, ip, user_agent) ON sessions TO respin_admin;
 GRANT UPDATE (revoked_at) ON sessions TO respin_admin;
 
+-- ---------- passkeys / MFA ----------
+GRANT SELECT, INSERT, UPDATE, DELETE ON webauthn_credentials, webauthn_challenges, mfa_totp, mfa_recovery_codes TO respin_web;
+GRANT SELECT, INSERT, UPDATE ON mfa_pending TO respin_web;
+-- Admin og worker må hverken se hemmeligheder, koder eller offentlige nøgler. (Support-nulstilling af MFA er et
+-- højrisiko-flow for social engineering og skal bygges med fire-øjne + identitetstjek – ikke som en databaserettighed.)
+REVOKE ALL ON webauthn_credentials, webauthn_challenges, mfa_totp, mfa_recovery_codes, mfa_pending FROM respin_admin, respin_worker;
+GRANT SELECT (id, user_id, name, device_type, created_at, last_used_at) ON webauthn_credentials TO respin_admin;
+GRANT SELECT (user_id, enabled_at) ON mfa_totp TO respin_admin;
+
 -- ---------- sekvenser (bigserial) ----------
 GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO respin_web, respin_admin, respin_worker;
 

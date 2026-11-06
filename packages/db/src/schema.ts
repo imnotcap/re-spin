@@ -9,7 +9,7 @@
  *  - Auth-bibliotekets egne tabeller (sessions/accounts/passkeys) tilføjes når auth-valget er truffet (se docs/platform/adr).
  */
 import { sql } from 'drizzle-orm';
-import { bigserial, boolean, check, doublePrecision, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { bigint, bigserial, boolean, check, doublePrecision, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { CATEGORIES, CONDITIONS, ORDER_STATUSES, SHIPPING_SIZES } from '@respin/core';
 
 const id = () => uuid('id').primaryKey().defaultRandom();
@@ -290,6 +290,8 @@ export const sessions = pgTable('sessions', {
   /** Genbekræftet med adgangskode indtil – kræves før følsomme handlinger (step-up) */
   elevatedUntil: ts('elevated_until'),
   revokedAt: ts('revoked_at'),
+  /** Hvordan sessionen blev oprettet: password | password+totp | password+recovery | passkey */
+  authMethod: text('auth_method').notNull().default('password'),
   ip: text('ip'),
   userAgent: text('user_agent')
 }, (t) => [index('sessions_user_idx').on(t.userId), check('sessions_token_hash_len', sql`char_length(${t.tokenHash}) = 64`)]);
@@ -311,3 +313,62 @@ export const rateLimits = pgTable('rate_limits', {
   tokens: doublePrecision('tokens').notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull()
 });
+
+/* ------------------------------ Passkeys / MFA ------------------------------ */
+/** WebAuthn-legitimationer (passkeys). Kun den OFFENTLIGE nøgle gemmes – den private forlader aldrig brugerens enhed. */
+export const webauthnCredentials = pgTable('webauthn_credentials', {
+  /** Credential ID (base64url) fra autentikatoren */
+  id: text('id').primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  publicKey: text('public_key').notNull(),
+  /** Signaturtæller – falder den, kan nøglen være klonet */
+  counter: bigint('counter', { mode: 'number' }).notNull().default(0),
+  transports: jsonb('transports').notNull().default([]),
+  deviceType: text('device_type').notNull(),
+  backedUp: boolean('backed_up').notNull().default(false),
+  name: text('name').notNull(),
+  createdAt: createdAt(),
+  lastUsedAt: ts('last_used_at')
+}, (t) => [index('webauthn_user_idx').on(t.userId)]);
+
+export const webauthnPurpose = pgEnum('webauthn_purpose', ['register', 'login']);
+/** Engangs-challenges (5 min.). Forbruges ved første brug, så et opfanget svar ikke kan genafspilles. */
+export const webauthnChallenges = pgTable('webauthn_challenges', {
+  id: id(),
+  challenge: text('challenge').notNull().unique(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  purpose: webauthnPurpose('purpose').notNull(),
+  expiresAt: ts('expires_at').notNull(),
+  usedAt: ts('used_at'),
+  createdAt: createdAt()
+});
+
+/** TOTP (authenticator-app). Hemmeligheden er krypteret (AES-256-GCM, bundet til bruger-id) – et DB-læk giver ikke koderne. */
+export const mfaTotp = pgTable('mfa_totp', {
+  userId: uuid('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
+  secretEnc: text('secret_enc').notNull(),
+  /** null = opsætning påbegyndt, men ikke bekræftet med en kode */
+  enabledAt: ts('enabled_at'),
+  /** Sidst brugte tidstrin – samme kode kan ikke bruges to gange */
+  lastUsedStep: bigint('last_used_step', { mode: 'number' }).notNull().default(0),
+  createdAt: createdAt()
+});
+
+/** Gendannelseskoder (engangs). Kun SHA-256 gemmes; 80 bits entropi pr. kode. */
+export const mfaRecoveryCodes = pgTable('mfa_recovery_codes', {
+  id: id(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  codeHash: text('code_hash').notNull().unique(),
+  usedAt: ts('used_at'),
+  createdAt: createdAt()
+}, (t) => [index('mfa_recovery_user_idx').on(t.userId)]);
+
+/** Login hvor adgangskoden er godkendt, men anden faktor mangler (5 min., maks. 5 forsøg). */
+export const mfaPending = pgTable('mfa_pending', {
+  tokenHash: text('token_hash').primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  expiresAt: ts('expires_at').notNull(),
+  attempts: integer('attempts').notNull().default(0),
+  usedAt: ts('used_at'),
+  createdAt: createdAt()
+}, (t) => [check('mfa_pending_attempts', sql`${t.attempts} BETWEEN 0 AND 5`)]);

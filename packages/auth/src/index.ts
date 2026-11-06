@@ -4,3 +4,7 @@ export * from './mailer';
 export * from './ratelimit-pg';
 export * from './cookies';
 export { randomToken, sha256Hex } from './crypto';
+export * from './totp';
+export { MFA_MAX_ATTEMPTS, RECOVERY_CODE_COUNT } from './mfa';
+export { MAX_PASSKEYS } from './passkeys';
+export { parseKey, seal, open } from './secretbox';

@@ -32,6 +32,8 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         {list.length > 1 && <form action={signOutOthersAction} style={{ marginTop: 12 }}><Button type="submit" variant="outline" full>Log ud på alle andre enheder</Button></form>}
       </section>
 
+      <Button href="/account/security" variant="outline" full icon="shield">Login og sikkerhed (passkeys, to-trins-login)</Button>
+
       <section>
         <Text variant="h3" style={{ marginBottom: 8 }}>Adgangskode</Text>
         <ChangePasswordForm />

@@ -9,7 +9,7 @@ Designsystem og UI-kit, domæne (penge/ordre/ledger), database med integritetsre
 ## Fase 1 · Kernemarked (L–XL)
 
 **Leverancer**
-- Auth: ✅ e-mail + adgangskode, bekræftelse, sessioner, gendannelse, step-up, aktive enheder · ⬜ passkeys, MFA, mailudbyder, besked ved ny enhed (se ADR-003). *(L)*
+- Auth: ✅ e-mail + adgangskode, bekræftelse, sessioner, gendannelse, step-up, aktive enheder · ✅ passkeys og to-trins-login · ⬜ mailudbyder, besked ved ny enhed, MFA-krav for sælgere (se ADR-003). *(L)*
 - Profiler, sælgerprofil, følg sælgere, favoritter.
 - Annoncer: opret/redigér/slet, **upload-pipeline** (omkodning, pixelloft, scanning, separat CDN-domæne), moderation (automatisk + kø).
 - Feed, kategorier, søgning og filtre (Postgres), gemte søgninger.

@@ -57,4 +57,13 @@ describe('database-roller (mindste privilegium)', () => {
     expect(await as('respin_admin', `UPDATE sessions SET revoked_at = now()`)).toBeNull();
     expect(await as('respin_worker', `SELECT * FROM user_passwords`)).toMatch(/permission denied/);
   });
+  it('admin kan se OM en bruger har MFA/passkeys (support), men aldrig hemmeligheder, koder eller nøgler', async () => {
+    expect(await as('respin_admin', `SELECT secret_enc FROM mfa_totp`)).toMatch(/permission denied/);
+    expect(await as('respin_admin', `SELECT user_id, enabled_at FROM mfa_totp`)).toBeNull();
+    expect(await as('respin_admin', `SELECT * FROM mfa_recovery_codes`)).toMatch(/permission denied/);
+    expect(await as('respin_admin', `SELECT public_key FROM webauthn_credentials`)).toMatch(/permission denied/);
+    expect(await as('respin_admin', `SELECT name, last_used_at FROM webauthn_credentials`)).toBeNull();
+    expect(await as('respin_admin', `UPDATE mfa_totp SET enabled_at = NULL`)).toMatch(/permission denied/);
+    expect(await as('respin_worker', `SELECT * FROM mfa_pending`)).toMatch(/permission denied/);
+  });
 });

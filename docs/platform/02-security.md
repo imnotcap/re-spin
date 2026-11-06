@@ -26,8 +26,8 @@ Symboler: ✅ implementeret **og** testet · 🟡 implementeret, men ikke afprø
 | # | Trussel | Konsekvens | Kontrol | Hvor | Status |
 |---|---|---|---|---|---|
 | **Konti og identitet** | | | | | |
-| T01 | Credential stuffing / brute force på login | Kontoovertagelse | Delt rate limit i Postgres pr. IP **og** pr. konto; Argon2id; tjek mod lækkede adgangskoder (HIBP k-anonymitet); min. 12 tegn. Mangler: passkeys, besked ved ny enhed | `auth` | ✅ · ⬜ passkeys |
-| T02 | Kontoovertagelse (phishing, SIM-swap, sessionstyveri) | Tab af penge og data | `__Host-`-cookie (Secure, HttpOnly, SameSite=Lax, intet Domain); kun token-hash i DB; nyt token ved login; inaktiv (7 d) + absolut (30 d) udløb; log ud overalt; **step-up** (`reauthenticate`/`isElevated`). Mangler: passkeys + MFA | `auth`, `apps/web` | ✅ · ⬜ passkeys/MFA |
+| T01 | Credential stuffing / brute force på login | Kontoovertagelse | Delt rate limit i Postgres pr. IP **og** pr. konto; Argon2id; tjek mod lækkede adgangskoder (HIBP k-anonymitet); min. 12 tegn. Mangler: passkeys, besked ved ny enhed | `auth` | ✅ |
+| T02 | Kontoovertagelse (phishing, SIM-swap, sessionstyveri) | Tab af penge og data | `__Host-`-cookie (Secure, HttpOnly, SameSite=Lax, intet Domain); kun token-hash i DB; nyt token ved login; inaktiv (7 d) + absolut (30 d) udløb; log ud overalt; **step-up** (`reauthenticate`/`isElevated`); **passkeys** (phishing-sikre, kræver brugerverifikation, tjek af signaturtæller); **to-trins-login** (TOTP, krypteret hemmelighed, engangskoder, maks. 5 forsøg, ingen genbrug af koder) | `auth`, `apps/web` | ✅ |
 | T03 | Misbrug af kontogendannelse / **account pre-hijacking** | Overtagelse | Nulstillingslink: kun hash gemmes, 30 min., engangsbrug, ældre links ugyldige, alle sessioner tilbagekaldes, besked på mail. Aktivering kræver link **og** adgangskode (angriber der opretter kontoen først, får aldrig adgang). Mangler: udbetalingspause efter gendannelse | `auth` | ✅ |
 | T04 | Brugerenumerering (login/reset-svar, ordre-id'er) | Kortlægning af brugere | Ens svar ved tilmelding, login og "glemt adgangskode"; dummy-hash ved ukendt e-mail; uuid'er. **Rest:** e-mail sendes synkront, så svartiden ved "glemt adgangskode" kan afsløre en konto → send via kø | `auth`, `payments/orders` | ✅ · 🟡 timing |
 | T05 | Falske konti og bots | Spam, svindel | Turnstile, rate limits, e-mailbekræftelse | Cloudflare + auth | ⬜ |
@@ -73,10 +73,17 @@ Symboler: ✅ implementeret **og** testet · 🟡 implementeret, men ikke afprø
 
 ## 4. Identitet og adgang
 
-### Forbrugere (✅ e-mail + adgangskode bygget · ⬜ passkeys/MFA)
+### Forbrugere (✅ bygget)
 
 - Bygget: tilmelding → bekræftelseslink (24 t) + adgangskode → login; Argon2id (m=19 MiB, t=2, p=1, opgraderes ved login); min. 12 / maks. 128 tegn uden tvungne specialtegn; afvisning af lækkede (HIBP, fail-open) og åbenlyst svage adgangskoder; glemt adgangskode (30 min., engangslink); skift adgangskode; aktive enheder; log ud overalt.
-- Næste: **passkeys som primær login** og MFA (TOTP/passkey) for sælgere med udbetalinger.
+- **Passkeys (WebAuthn):** login uden adgangskode og uden kode. Kræver brugerverifikation (Face ID/fingeraftryk/PIN) og tæller derfor som to faktorer. Engangs-challenges (5 min., bundet til formål og bruger), afvisning af falsk origin/RP ID, faldende signaturtæller (klonet nøgle) logges og afvises. Maks. 10 pr. bruger.
+- **To-trins-login (TOTP):** authenticator-app, hemmelighed krypteret med AES-256-GCM (bundet til bruger-id), 10 engangs-gendannelseskoder (kun hash gemt), ventende login 5 min./maks. 5 forsøg, samme kode kan ikke bruges to gange (også ved samtidige forsøg).
+- Opsætning, fjernelse af passkeys og fravalg af MFA kræver genbekræftelse (og for MFA også en gyldig kode). Hver ændring giver en sikkerhedsmail.
+- **Næste:** kræv MFA eller passkey for sælgere før første udbetaling; besked ved login fra ny enhed.
+
+**Nøglehåndtering:** `MFA_ENCRYPTION_KEY` ligger i secret store, **skal sikkerhedskopieres separat** (mistes den, kan ingen bruge TOTP – de må logge ind med passkey eller gendannelseskode) og kan kun skiftes med en migrering, der dekrypterer og krypterer alle hemmeligheder igen.
+
+**Support-nulstilling af MFA** (bruger har mistet telefon OG gendannelseskoder) er det klassiske angreb via social engineering. Det må kun ske med identitetstjek (fx MitID) og fire-øjne i admin – det er bevidst ikke bygget som en databaserettighed.
 - **Step-up (genbekræftelse)** før: ændring af e-mail, udbetalingskonto, adgangskode, sletning af konto, og første udbetaling efter gendannelse.
 - **Sessioner:** HttpOnly, Secure, SameSite=Lax, host-only (intet `Domain=`), rotation ved login/rettighedsændring, serverside-tilbagekaldelse, "log ud overalt".
 - **Notifikation** (e-mail/push) ved ny enhed, ændret e-mail, ny udbetalingskonto.
@@ -188,7 +195,7 @@ Fejlsporing (fx Sentry) **med PII-scrubbing** og `redactForLog` før data sendes
 
 ## 12. Kendte begrænsninger i skelettet (ærligt)
 
-- **Login mangler passkeys og MFA**, og der er ingen rigtig mailudbyder (kun konsol-mail, som afvises i produktion). Admin bruger Cloudflare Access (verificeret i tests med egne nøgler, **ikke mod Cloudflares rigtige nøgler**).
+- Der er ingen rigtig mailudbyder (kun konsol-mail, som afvises i produktion), og intet support-flow til nulstilling af MFA. Admin bruger Cloudflare Access (verificeret i tests med egne nøgler, **ikke mod Cloudflares rigtige nøgler**).
 - E-mails sendes synkront i requesten. Det giver en målbar tidsforskel ved "glemt adgangskode" for kendte/ukendte e-mails. Flyt afsendelse til outbox/kø.
 - `PgRateLimiter` bruger en række-lås, der er nødvendig i rigtig Postgres; PGlite (én forbindelse) kan ikke bevise den. Test mod rigtig Postgres i CI.
 - Ingen besked ved login fra ny enhed, og ingen udbetalingspause efter nulstilling endnu.

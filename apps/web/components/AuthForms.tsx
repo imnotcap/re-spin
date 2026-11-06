@@ -2,20 +2,42 @@
 
 import { useActionState } from 'react';
 import { Button, Field, Notice } from '@respin/ui';
-import { changePasswordAction, forgotPasswordAction, resetPasswordAction, signInAction, signUpAction, verifyEmailAction, type FormState } from '../app/actions';
+import { changePasswordAction, forgotPasswordAction, resetPasswordAction, signInAction, signUpAction, verifyEmailAction, verifyMfaAction, type FormState } from '../app/actions';
+import { PasskeyLoginButton } from './Security';
 
 const Error = ({ state }: { state: FormState }) => (state?.error ? <Notice icon="info" warn role="alert" data-testid="form-error">{state.error}</Notice> : null);
 const form = { display: 'flex', flexDirection: 'column', gap: 16 } as const;
 
 export function LoginForm({ next }: { next: string }) {
   const [state, action, pending] = useActionState(signInAction, undefined);
+  if (state?.mfaToken) return <MfaStep mfaToken={state.mfaToken} next={state.next ?? next} />;
   return (
+    <>
+    <PasskeyLoginButton next={next} />
+    <div className="rs-row-flex rs-gap-3 rs-t-muted rs-t-small"><hr className="rs-divider rs-grow" style={{ margin: 0 }} />eller<hr className="rs-divider rs-grow" style={{ margin: 0 }} /></div>
     <form action={action} style={form} noValidate>
       <Error state={state} />
       <input type="hidden" name="next" value={next} />
       <Field label="E-mail" name="email" type="email" icon="mail" autoComplete="username" required defaultValue={state?.values?.email} />
       <Field label="Adgangskode" name="password" type="password" icon="lock" autoComplete="current-password" required />
       <Button type="submit" size="lg" full disabled={pending}>{pending ? 'Logger ind…' : 'Log ind'}</Button>
+    </form>
+    </>
+  );
+}
+
+/** Andet trin: kode fra authenticator-app eller gendannelseskode */
+function MfaStep({ mfaToken, next }: { mfaToken: string; next: string }) {
+  const [state, action, pending] = useActionState(verifyMfaAction, { mfaToken, next });
+  if (!state?.mfaToken) return <><Error state={state} /><Button href="/login" variant="outline" full>Log ind igen</Button></>;
+  return (
+    <form action={action} style={form} noValidate>
+      <Notice icon="lock">Indtast koden fra din authenticator-app. Har du ikke telefonen, kan du bruge en gendannelseskode.</Notice>
+      <Error state={state} />
+      <input type="hidden" name="mfaToken" value={state.mfaToken} />
+      <input type="hidden" name="next" value={state.next ?? next} />
+      <Field label="Kode" name="code" inputMode="text" autoComplete="one-time-code" required autoFocus maxLength={24} />
+      <Button type="submit" size="lg" full disabled={pending}>Bekræft</Button>
     </form>
   );
 }

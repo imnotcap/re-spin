@@ -31,7 +31,7 @@ Symboler: ✅ bygget og testet · 🟡 bygget, men ikke afprøvet i drift/mod ri
 | Checkout, ordre-overgange, Stripe-webhook, outbox | ✅ | `packages/payments` | integrationstests (Postgres + ægte webhook-signaturer) 🟡 ikke mod Stripes API |
 | **Login** – tilmelding, e-mailbekræftelse, login/log ud, sessioner, glemt adgangskode, skift adgangskode, step-up, aktive enheder | ✅ | `packages/auth`, `apps/web` | 28 tests + mutationstest + 23-trins browser-e2e mod produktionsbuild |
 | Delt rate limiting i Postgres | ✅ | `packages/auth` (`PgRateLimiter`) | tests 🟡 række-låsen kan ikke bevises i PGlite (én forbindelse) |
-| Passkeys og MFA | ⬜ | – | næste trin |
+| **Passkeys** (login uden adgangskode) og **to-trins-login** (authenticator-app + gendannelseskoder) | ✅ | `packages/auth`, `apps/web/account/security` | 30 tests med software-autentikator + 10/10 mutationer fanget + 19-trins browser-e2e med Chromiums virtuelle autentikator (dev og produktion) |
 | Forbrugersite (`apps/web`) | 🟡 | `apps/web` | forside, login-sider, min konto, health, webhook |
 | Annoncer, søgning, upload, chat, favoritter | ⬜ | – | se roadmap |
 | Rigtige admin-funktioner (moderation, refunderinger, brugere) | ⬜ | `apps/admin` | siderne findes og er rolle-beskyttede, men tomme |
@@ -45,7 +45,7 @@ npm install
 npm test                 # alle tests (kræver ingen database – bruger PGlite)
 npm run typecheck
 npm run db:dev           # lokal Postgres (PGlite) på port 5433 med alle migrationer – ingen Docker
-APP_URL=http://localhost:3000 DATABASE_URL=postgres://postgres@127.0.0.1:5433/postgres DB_POOL_MAX=1 PWNED_CHECK=off npm run dev:web
+APP_URL=http://localhost:3000 DATABASE_URL=postgres://postgres@127.0.0.1:5433/postgres DB_POOL_MAX=1 PWNED_CHECK=off MFA_ENCRYPTION_KEY=$(openssl rand -base64 32) npm run dev:web
 # → http://localhost:3000/signup (bekræftelseslinket skrives i serverloggen)
 ADMIN_DEV_EMAIL=dig@respin.dk ADMIN_DEV_ROLE=admin npm run dev:admin   # http://localhost:3001 (dev-login kun uden for produktion)
 ```

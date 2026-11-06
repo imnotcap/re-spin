@@ -89,6 +89,7 @@ CREATE USER respin_worker_app LOGIN PASSWORD '…' IN ROLE respin_worker;
 | `CSP_IMG_SRC` | ✅ | | | CDN-domæne til billeder |
 | `APP_URL` | ✅ | | | Kanonisk https-adresse til links i mails (aldrig fra Host-headeren) |
 | `MAIL_TRANSPORT` | ✅ | | | `console` afvises i produktion – mailudbyder skal tilføjes |
+| `MFA_ENCRYPTION_KEY` | ✅ | | | 32 byte (`openssl rand -base64 32`). Sikkerhedskopiér separat; skift kun med migrering |
 | `PWNED_CHECK`, `TRUSTED_IP_HEADER`, `TRUSTED_PROXIES` | ✅ | | | HIBP kræver udgående adgang til `api.pwnedpasswords.com` |
 | `ADMIN_DEV_EMAIL`, `ADMIN_DEV_ROLE` | | dev | | **Afvises i produktion** (appen starter ikke) |
 
