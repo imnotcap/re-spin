@@ -15,9 +15,8 @@ export const CATEGORIES = ['vintage', 'gadestil', 'sneakers', 'tasker', 'bolig',
 export const CONDITIONS = ['new_with_tag', 'like_new', 'almost_new', 'used'] as const;
 export const SHIPPING_SIZES = ['small', 'medium'] as const;
 
-/** 1 kr. – 100.000 kr. i øre. Loftet begrænser skade ved kontoovertagelse og hvidvask. */
-export const MIN_PRICE_ORE = 100;
-export const MAX_PRICE_ORE = 10_000_000;
+import { MIN_PRICE_ORE, MAX_PRICE_ORE } from './limits';
+export { MIN_PRICE_ORE, MAX_PRICE_ORE };
 
 export const createListingInput = z.object({
   title: text(3, 80),

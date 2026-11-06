@@ -14,8 +14,8 @@ describe('money', () => {
     expect(percentOf(ore(99), 100)).toBe(1);           // 0,99 øre → 1
   });
   it('formaterer til dansk', () => {
-    expect(formatOre(ore(45_000))).toBe('450 kr.');
-    expect(formatOre(fromKr(445.5))).toBe('445,50 kr.');
+    expect(formatOre(ore(45_000))).toBe('450\u00A0kr.');
+    expect(formatOre(fromKr(445.5))).toBe('445,50\u00A0kr.');
   });
   it('lægger sammen uden float-fejl', () => {
     expect(add(ore(10), ore(20), ore(30))).toBe(60);

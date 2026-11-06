@@ -1,0 +1,28 @@
+{
+  "name": "site",
+  "private": true,
+  "version": "0.1.0",
+  "description": "re:spin offentlig hjemmeside – statisk eksport til GitHub Pages (test)",
+  "scripts": {
+    "dev": "next dev -p 3030",
+    "build": "next build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@respin/core": "*",
+    "@respin/ui": "*",
+    "motion": "^12.23.12",
+    "next": "^16.4.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "postcss": "^8.5.32",
+    "tailwindcss": "^4.3.0",
+    "typescript": "~5.9.3"
+  }
+}

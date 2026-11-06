@@ -125,7 +125,7 @@
 @keyframes rs-pop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
 
 .rs-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--rs-s-5) var(--rs-s-3); padding: 0 var(--rs-gutter); }
-.rs-hscroll { display: flex; gap: var(--rs-s-3); overflow-x: auto; padding: 0 var(--rs-gutter); scroll-snap-type: x proximity; scrollbar-width: none; }
+.rs-hscroll { display: flex; gap: var(--rs-s-3); overflow-x: auto; padding: 0 var(--rs-gutter); scroll-padding-inline: var(--rs-gutter); scroll-snap-type: x proximity; scrollbar-width: none; }
 .rs-hscroll::-webkit-scrollbar { display: none; }
 .rs-hscroll > * { scroll-snap-align: start; }
 
@@ -314,7 +314,7 @@
 :where(input[class^="rs-"], select[class^="rs-"], textarea[class^="rs-"], .rs-searchbar input) { font-family: var(--rs-font); color: var(--rs-text); }
 .rs-icon { display: block; flex: none; }
 .rs-t-display, .rs-t-h1, .rs-t-h2, .rs-t-h3, .rs-t-body, .rs-t-small, .rs-t-caption,
-.rs-topbar__title, .rs-sheet__head h2, .rs-empty h2, .rs-empty p, .rs-section-head h2 { margin: 0; }
+.rs-topbar__title, .rs-sheet__head h2, .rs-empty h1, .rs-empty h2, .rs-empty h3, .rs-empty p, .rs-section-head h2 { margin: 0; }
 .rs-ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .rs-searchbar__ph { flex: 1; min-width: 0; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 a.rs-searchbar { cursor: pointer; }
@@ -327,3 +327,115 @@ a.rs-searchbar { cursor: pointer; }
   .rs-shell { height: min(900px, calc(100dvh - 48px)); margin-block: 24px; border-radius: 32px; box-shadow: var(--rs-shadow-3), 0 0 0 1px var(--rs-border); }
 }
 .rs-shell--bare { max-width: none; height: auto; min-height: 100dvh; overflow: visible; border-radius: 0; box-shadow: none; margin: 0; }
+
+/* ==========================================================================
+   Markedsplads (hjemmeside): produktkort-tillæg, gitre, kategorikort, brødkrummer,
+   detaljer, sælgerkort, gennemskuelig pris, tryghedslinje, galleri
+   ========================================================================== */
+.rs-card__seller { display: flex; align-items: center; gap: var(--rs-s-2); height: 28px; margin-bottom: var(--rs-s-2); font-size: 13px; font-weight: 600; min-width: 0; }
+.rs-card__seller-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rs-card__cert { color: var(--rs-forest); flex: none; }
+.rs-card__fav--seller { top: 40px; }
+.rs-card__likes { position: absolute; right: 8px; bottom: 8px; display: inline-flex; align-items: center; gap: 3px; height: 22px; padding: 0 7px; border-radius: var(--rs-r-sm); background: rgba(255,255,255,.92); color: var(--rs-slate-700); font-size: 11px; font-weight: 600; }
+.rs-card__likes svg { color: var(--rs-coral-600); fill: currentColor; stroke: none; }
+.rs-card__incl { display: flex; align-items: center; gap: 4px; margin-top: 1px; font-size: 12px; font-weight: 500; color: var(--rs-forest); }
+.rs-card__incl svg { flex: none; }
+.rs-card > a:focus-visible { outline: 3px solid var(--rs-forest); outline-offset: 2px; border-radius: var(--rs-r-md); }
+@media (hover: hover) {
+  .rs-card .rs-card__media .rs-ph { transition: transform var(--rs-t-base) var(--rs-ease); }
+  .rs-card:hover .rs-card__media .rs-ph { transform: scale(1.03); }
+  .rs-card:hover .rs-card__title { text-decoration: underline; text-underline-offset: 2px; }
+}
+.rs-ph > svg { color: var(--rs-slate-500); opacity: .35; width: 34%; }
+
+.rs-grid-auto { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--rs-s-6) var(--rs-s-3); }
+@media (min-width: 640px) { .rs-grid-auto { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--rs-s-8) var(--rs-s-4); } }
+
+.rs-catcard { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: var(--rs-s-4); border-radius: var(--rs-r-lg); background: var(--rs-surface); box-shadow: var(--rs-shadow-1); transition: box-shadow var(--rs-t-fast), transform var(--rs-t-fast) var(--rs-ease); min-width: 0; }
+.rs-catcard__icon { display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; margin-bottom: var(--rs-s-2); border-radius: var(--rs-r-md); background: var(--rs-grad-stone); color: var(--rs-slate); }
+.rs-catcard__label { font-size: 15px; font-weight: 700; }
+.rs-catcard__count { font-size: 12px; color: var(--rs-text-muted); }
+@media (hover: hover) { .rs-catcard:hover { box-shadow: var(--rs-shadow-2), 0 0 0 1px var(--rs-stone-300); transform: translateY(-2px); } }
+.rs-catcard:focus-visible { outline: 3px solid var(--rs-forest); outline-offset: 2px; }
+
+.rs-section-head { gap: var(--rs-s-4); align-items: flex-end; }
+.rs-section-head__desc { margin: 2px 0 0; font-size: 14px; color: var(--rs-text-muted); }
+.rs-section-head__action { display: inline-flex; align-items: center; gap: 2px; flex: none; white-space: nowrap; }
+@media (hover: hover) { .rs-section-head__action:hover { text-decoration: underline; text-underline-offset: 3px; } }
+
+.rs-crumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--rs-text-muted); }
+.rs-crumbs li { display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
+.rs-crumbs a { color: var(--rs-text-muted); text-decoration: underline; text-decoration-color: var(--rs-stone-300); text-underline-offset: 3px; }
+.rs-crumbs a:hover { color: var(--rs-text); text-decoration-color: currentColor; }
+.rs-crumbs [aria-current="page"] { color: var(--rs-text); font-weight: 600; }
+.rs-crumbs__sep { color: var(--rs-slate-300); }
+
+.rs-details { margin: 0; display: grid; }
+.rs-details__row { display: grid; grid-template-columns: minmax(110px, 40%) 1fr; gap: var(--rs-s-4); padding: 10px 0; border-bottom: 1px solid var(--rs-border); font-size: 14px; }
+.rs-details__row:last-child { border-bottom: 0; }
+.rs-details dt { color: var(--rs-text-muted); }
+.rs-details dd { margin: 0; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+
+.rs-seller { padding: var(--rs-s-4); border-radius: var(--rs-r-lg); background: var(--rs-surface); box-shadow: var(--rs-shadow-1); }
+.rs-seller__head { display: flex; align-items: center; gap: var(--rs-s-3); }
+.rs-seller .rs-avatar--lg { width: 56px; height: 56px; font-size: 21px; }
+.rs-seller__name { margin: 0 0 4px; font-size: 16px; line-height: 22px; font-weight: 700; }
+.rs-seller__name a { text-decoration: underline; text-decoration-color: var(--rs-stone-300); text-underline-offset: 3px; }
+.rs-seller__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--rs-s-2); }
+.rs-seller__facts { margin: var(--rs-s-3) 0 0; padding: var(--rs-s-3) 0 0; border-top: 1px solid var(--rs-border); list-style: none; display: grid; gap: 6px; font-size: 13px; color: var(--rs-slate-700); }
+.rs-seller__facts li { display: flex; align-items: center; gap: var(--rs-s-2); }
+.rs-seller__facts svg { color: var(--rs-text-muted); flex: none; }
+
+.rs-pricedetails__price { margin: 0; font-size: 30px; line-height: 36px; }
+.rs-pricedetails__more { margin-top: 2px; }
+.rs-pricedetails__more > summary { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; cursor: pointer; list-style: none; font-size: 14px; color: var(--rs-forest); border-radius: var(--rs-r-sm); }
+.rs-pricedetails__more > summary::-webkit-details-marker { display: none; }
+.rs-pricedetails__more > summary b { font-weight: 700; }
+.rs-pricedetails__chev { transition: transform var(--rs-t-fast); }
+.rs-pricedetails__more[open] .rs-pricedetails__chev { transform: rotate(180deg); }
+.rs-pricedetails__rows { margin: var(--rs-s-2) 0 0; padding: var(--rs-s-3) var(--rs-s-4); border-radius: var(--rs-r-md); background: var(--rs-surface-sunk); font-size: 14px; }
+.rs-pricedetails__rows > div { display: flex; justify-content: space-between; gap: var(--rs-s-4); padding: 4px 0; }
+.rs-pricedetails__rows dt { color: var(--rs-slate-700); }
+.rs-pricedetails__rows dd { margin: 0; font-weight: 600; white-space: nowrap; }
+.rs-pricedetails__total { border-top: 1px solid var(--rs-stone-300); margin-top: 4px; padding-top: 8px !important; font-weight: 700; }
+.rs-pricedetails__total dt { color: var(--rs-text) !important; }
+.rs-pricedetails__note { margin: var(--rs-s-2) 0 0; font-size: 12px; line-height: 17px; color: var(--rs-text-muted); }
+
+.rs-trust { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: var(--rs-s-3); margin: 0; padding: 0; list-style: none; }
+.rs-trust__item { display: flex; align-items: flex-start; gap: var(--rs-s-3); padding: var(--rs-s-3) var(--rs-s-4); border-radius: var(--rs-r-md); background: var(--rs-surface); box-shadow: var(--rs-shadow-1); font-size: 14px; line-height: 20px; height: 100%; }
+a.rs-trust__item:hover { box-shadow: var(--rs-shadow-2), 0 0 0 1px var(--rs-stone-300); }
+.rs-trust__icon { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--rs-r-sm); background: var(--rs-forest-50); color: var(--rs-forest); flex: none; }
+.rs-trust__item b { display: block; font-weight: 700; }
+.rs-trust__text { display: block; color: var(--rs-text-muted); font-size: 13px; }
+
+.rs-gallery { display: grid; gap: var(--rs-s-3); align-content: start; }
+.rs-gallery__main { position: relative; border-radius: var(--rs-r-lg); overflow: hidden; }
+.rs-gallery__count { position: absolute; right: 12px; bottom: 12px; height: 26px; padding: 0 10px; border-radius: var(--rs-r-pill); background: rgba(28,28,28,.72); color: #fff; font-size: 12px; font-weight: 600; line-height: 26px; }
+.rs-gallery__thumbs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--rs-s-2); }
+.rs-gallery__thumb { border-radius: var(--rs-r-sm); overflow: hidden; outline: 2px solid transparent; outline-offset: 2px; transition: outline-color var(--rs-t-fast); }
+.rs-gallery__thumb[aria-pressed="true"] { outline-color: var(--rs-slate); }
+.rs-gallery__thumb:focus-visible { outline-color: var(--rs-forest); }
+
+/* Bundark i browservinduet (hjemmeside): fast placering; centreret dialog fra tablet og op */
+.rs-backdrop--fixed { position: fixed; z-index: 70; }
+.rs-sheet--fixed { position: fixed; z-index: 71; max-height: 88dvh; }
+@media (min-width: 640px) {
+  .rs-sheet--fixed { inset: 0; margin: auto; width: min(480px, calc(100% - 48px)); height: fit-content; max-height: min(720px, 85dvh); border-radius: var(--rs-r-xl); box-shadow: var(--rs-shadow-3); animation-name: rs-dialog-in; }
+  .rs-sheet--fixed .rs-sheet__handle { display: none; }
+  .rs-sheet--fixed .rs-sheet__head { padding-top: var(--rs-s-3); }
+  .rs-closing.rs-sheet--fixed { animation-name: rs-dialog-out; }
+}
+@keyframes rs-dialog-in { from { opacity: 0; transform: translateY(16px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes rs-dialog-out { to { opacity: 0; transform: translateY(8px) scale(.98); } }
+
+/* Tryghedslinje, kompakt: én linje uden kort; vandret scroll på smalle skærme */
+.rs-trust--compact { display: flex; gap: var(--rs-s-2) var(--rs-s-6); overflow-x: auto; scrollbar-width: none; justify-content: space-between; }
+.rs-trust--compact::-webkit-scrollbar { display: none; }
+.rs-trust--compact > li { flex: none; }
+.rs-trust--compact .rs-trust__item { align-items: center; gap: var(--rs-s-2); padding: 6px 0; background: none; box-shadow: none; font-size: 13px; white-space: nowrap; }
+.rs-trust--compact a.rs-trust__item:hover { box-shadow: none; text-decoration: underline; text-underline-offset: 3px; }
+.rs-trust--compact .rs-trust__icon { width: 30px; height: 30px; }
+.rs-trust--compact .rs-trust__item b { font-weight: 600; }
+
+/* Kun for skærmlæsere */
+.rs-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

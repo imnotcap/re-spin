@@ -96,11 +96,12 @@ Værdier (ikke komponenter) ligger bevidst uden for hovedindgangen: en værdi ek
 | Grundlag | `Text`, `Icon` (57 ikoner, typet `IconName`), `LogoMark`, `Wordmark`, `RespinProvider` |
 | Handlinger | `Button` (`primary` · `buy` · `forest` · `dark` · `outline` · `ghost`), `IconButton`, `Chip`, `FavoriteButton` |
 | Visning | `Badge`, `CertifiedBadge`, `Avatar`, `Rating`, `Notice`, `Progress`, `Stepper`, `Timeline`, `PriceSummary`, `EmptyState`, `Skeleton` |
-| Formularer | `Field`, `Select`, `Textarea`, `Toggle`, `Checkbox`, `OptionCard`, `Tabs` (`segmented` / `underline`) |
+| Formularer | `Field`, `Select` (`emptyOption` til filtre, fx "Alle"), `Textarea`, `Toggle`, `Checkbox`, `OptionCard`, `Tabs` (`segmented` / `underline`) |
 | Lister | `List`, `ListRow`, `ConversationRow`, `Tile`, `TileGrid`, `Stat` |
-| Produkt | `ProductCard`, `ProductGrid`, `ProductRow`, `ProductImage`, `Price`, `HScroll`, `CategoryTile`, `SectionHeader`, `Hero`, `BalanceCard` |
+| Produkt | `ProductCard` (sælger, stand, antal favoritter, pladsholder-ikon, pris inkl. køberbeskyttelse), `ProductGrid` (`app` / `responsive`), `ProductRow`, `ProductImage`, `Price`, `HScroll`, `CategoryTile` (`icon` / `card`), `SectionHeader`, `Hero`, `BalanceCard` |
+| Markedsplads (hjemmeside) | `Breadcrumbs`, `DetailList`, `SellerCard`, `PriceDetails` (gennemskuelig pris med udfoldelig opdeling, virker uden JS), `TrustBar` (`cards` / `compact`), `ProductGallery` |
 | Navigation | `AppShell`, `Screen`, `ScreenContent`, `ScreenFooter`, `Section`, `TopBar`, `SearchBar`, `TabBar` |
-| Overlays | `BottomSheet` (fokus-fælde, Escape, animation), `ToastProvider` + `useToast()` |
+| Overlays | `BottomSheet` (fokus-fælde, Escape, animation; `placement="viewport"` på hjemmesider), `ToastProvider` + `useToast()` |
 | Chat | `ChatThread`, `ChatBubble`, `ChatDay`, `OfferCard`, `Composer` |
 
 Se dem alle live i showcase-appen (`apps/showcase`, rute `/`) og et eksempel på en lille app på `/demo`.
@@ -131,7 +132,9 @@ const tabs = RESPIN_TABS.items.map((t) => (t.id === 'messages' ? { ...t, badge: 
 |---|---|
 | Køberbeskyttelse 5 % + 3 kr. | `buyerFee(price)`, `buyerTotal(price, shipping)` |
 | Gebyr til re:spin: 1 % (0,5 % for certificerede) | `sellerFee(price, certified)`, `sellerPayout(price, certified)` |
-| Formatering | `formatKr(450)` → `450 kr.` · `formatKrDecimals(445.5)` → `445,5 kr.` |
+| Formatering | `formatKr(450)` → `450 kr.` · `formatKr(475.5)` → `475,50 kr.` (øre kun når der er nogen; hårdt mellemrum før "kr.") |
+
+Gebyrerne regnes i hele øre med samme afrunding som `@respin/core` (kilde til sandhed). En test sammenligner kittet med core for alle priser fra 1 til 100.000 kr.
 
 ## Tailwind
 

@@ -10,15 +10,21 @@ export interface BottomSheetProps {
   children?: ReactNode;
   /** Fast bund (knapper) */
   footer?: ReactNode;
+  /**
+   * screen (default): placeres i forhold til app-skærmen (<Screen>).
+   * viewport: fast i browservinduet (hjemmeside) – låser scroll bagved og vises som centreret dialog på store skærme.
+   */
+  placement?: 'screen' | 'viewport';
 }
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
  * Bundark. Lukker på Escape og tryk på baggrunden, fanger fokus mens det er åbent
- * og animerer ind/ud. Placér det inde i <Screen> (positioneres i forhold til skærmen).
+ * og animerer ind/ud. Placér det inde i <Screen> (positioneres i forhold til skærmen), eller brug
+ * `placement="viewport"` på en almindelig hjemmeside.
  */
-export function BottomSheet({ open, onClose, title, children, footer }: BottomSheetProps) {
+export function BottomSheet({ open, onClose, title, children, footer, placement = 'screen' }: BottomSheetProps) {
   const [mounted, setMounted] = useState(open);
   const [closing, setClosing] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -39,8 +45,18 @@ export function BottomSheet({ open, onClose, title, children, footer }: BottomSh
     return () => previous?.focus?.();
   }, [open, mounted]);
 
+  // Hjemmeside: siden bagved må ikke scrolle, mens arket er åbent
+  useEffect(() => {
+    if (placement !== 'viewport' || !open) return;
+    const root = document.documentElement;
+    const prev = root.style.overflow;
+    root.style.overflow = 'hidden';
+    return () => { root.style.overflow = prev; };
+  }, [placement, open]);
+
   if (!mounted) return null;
 
+  const fixed = placement === 'viewport';
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Escape') { e.stopPropagation(); onClose(); return; }
     if (e.key !== 'Tab') return;
@@ -53,8 +69,8 @@ export function BottomSheet({ open, onClose, title, children, footer }: BottomSh
 
   return (
     <>
-      <div className={closing ? 'rs-backdrop rs-closing' : 'rs-backdrop'} onClick={onClose} />
-      <div ref={sheetRef} className={closing ? 'rs-sheet rs-closing' : 'rs-sheet'} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} onKeyDown={onKeyDown}>
+      <div className={['rs-backdrop', fixed && 'rs-backdrop--fixed', closing && 'rs-closing'].filter(Boolean).join(' ')} onClick={onClose} />
+      <div ref={sheetRef} className={['rs-sheet', fixed && 'rs-sheet--fixed', closing && 'rs-closing'].filter(Boolean).join(' ')} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} onKeyDown={onKeyDown}>
         <div className="rs-sheet__handle" />
         <div className="rs-sheet__head">
           <h2 id={titleId} className="rs-t-h2">{title}</h2>
@@ -96,12 +112,15 @@ export function ToastProvider({ children }: { children?: ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      {state && (
-        <div key={state.id} className={state.out ? 'rs-toast rs-out' : 'rs-toast'} role="status" aria-live="polite">
-          <Icon name={state.icon} size={18} />
-          {state.message}
-        </div>
-      )}
+      {/* Live-regionen findes altid, så skærmlæsere pålideligt læser nye beskeder op */}
+      <div role="status" aria-live="polite" aria-atomic="true">
+        {state && (
+          <div key={state.id} className={state.out ? 'rs-toast rs-out' : 'rs-toast'}>
+            <Icon name={state.icon} size={18} />
+            {state.message}
+          </div>
+        )}
+      </div>
     </ToastContext.Provider>
   );
 }

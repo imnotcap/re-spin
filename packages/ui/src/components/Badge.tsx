@@ -63,11 +63,13 @@ export function Avatar({ name, size = 'md', online, src, className, ...rest }: A
 }
 
 export function Rating({ value, count, className }: { value: number; count?: number | string; className?: string }) {
+  const v = value.toLocaleString('da-DK', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const c = count === undefined ? '' : typeof count === 'number' ? count.toLocaleString('da-DK') : count;
   return (
-    <span className={cx('rs-rating', className)} aria-label={`Vurdering ${value.toFixed(1)} af 5`}>
+    <span className={cx('rs-rating', className)} role="img" aria-label={`Vurdering ${v} af 5${c ? `, ${c}` : ''}`}>
       <Icon name="star" size={14} />
-      {value.toFixed(1)}
-      {count !== undefined && <span className="rs-count">({count})</span>}
+      <span aria-hidden="true">{v}</span>
+      {c && <span className="rs-count" aria-hidden="true">({c})</span>}
     </span>
   );
 }

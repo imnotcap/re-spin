@@ -2,8 +2,8 @@ import { useState, type CSSProperties, type HTMLAttributes, type ReactNode } fro
 import { AppLink } from '../provider';
 import { Icon } from '../icons/Icon';
 import type { IconName } from '../icons/paths';
-import { buyerFee, cx, formatKr } from '../utils';
-import { Badge } from './Badge';
+import { buyerTotal, cx, formatKr } from '../utils';
+import { Avatar, Badge } from './Badge';
 
 export interface Product {
   id: string | number;
@@ -15,6 +15,8 @@ export interface Product {
   imageUrl?: string;
   /** 0–3: nuance af den neutrale grå pladsholder (default udledt af id) */
   shade?: number;
+  /** Stand, fx "Næsten ny" – vises i meta-linjen */
+  condition?: string;
 }
 
 const shadeFor = (id: string | number): number => {
@@ -35,11 +37,17 @@ export interface ProductImageProps {
   children?: ReactNode;
 }
 
-/** Produktbillede. Uden billede vises en neutral grå flade (pladsholder). */
+/**
+ * Produktbillede. Uden billede vises en neutral grå flade (pladsholder).
+ * `alt=""` betyder dekorativt: elementet skjules for skærmlæsere (i stedet for et "billede" uden navn).
+ */
 export function ProductImage({ src, alt, shade = 0, ratio = '34', className, image, children }: ProductImageProps) {
+  const decorative = alt.trim() === '';
+  const placeholder = !src && !image;
   return (
-    <div className={cx('rs-ph', `rs-ph--${ratio}`, className)} style={{ '--rs-ph-bg': `var(--rs-ph-${(shade % 4) + 1})` } as CSSProperties} role={src || image ? undefined : 'img'} aria-label={src || image ? undefined : alt}>
-      {image ?? (src ? <img src={src} alt={alt} loading="lazy" /> : null)}
+    <div className={cx('rs-ph', `rs-ph--${ratio}`, className)} style={{ '--rs-ph-bg': `var(--rs-ph-${(Math.abs(shade) % 4) + 1})` } as CSSProperties}
+      role={placeholder && !decorative ? 'img' : undefined} aria-label={placeholder && !decorative ? alt : undefined} aria-hidden={decorative ? true : undefined}>
+      {image ?? (src ? <img src={src} alt={alt} loading="lazy" decoding="async" /> : null)}
       {children}
     </div>
   );
@@ -80,47 +88,78 @@ export function Price({ amount, className, ...rest }: { amount: number } & HTMLA
 export interface ProductCardProps {
   product: Product;
   href: string;
-  /** Lille label på billedet, fx stand ("Næsten ny") */
+  /** Lille label på billedet, fx "Ny med mærke" eller "Certificeret" */
   badge?: string;
   favorite?: boolean;
   defaultFavorite?: boolean;
   onFavoriteChange?: (favorite: boolean) => void;
   /** Skjul hjertet */
   hideFavorite?: boolean;
+  /** Antal der har gemt varen – vises nederst på billedet */
+  favoriteCount?: number;
+  /** Sælgeren over billedet (som i et feed) */
+  seller?: { name: string; certified?: boolean };
+  /** Ikon i den grå pladsholder, når varen ikke har et billede (fx "shirt", "sneaker") */
+  placeholderIcon?: IconName;
   /** scroll = fast bredde til vandrette rækker */
   variant?: 'grid' | 'scroll';
   /** Egen billedkomponent, fx next/image */
   image?: ReactNode;
 }
 
-/** Produktkort: billede, titel, brand · størrelse og pris (inkl. køberbeskyttelse). */
-export function ProductCard({ product, href, badge, favorite, defaultFavorite, onFavoriteChange, hideFavorite, variant = 'grid', image }: ProductCardProps) {
-  const { id, title, brand, size, price, imageUrl, shade } = product;
-  const meta = [brand, size].filter(Boolean).join(' · ');
+/**
+ * Produktkort: billede, titel, mærke · størrelse · stand, pris og prisen inkl. køberbeskyttelse
+ * (præcis til øren – samme beregning som checkout). Hele kortet er ét link; hjertet er en separat knap.
+ */
+export function ProductCard({ product, href, badge, favorite, defaultFavorite, onFavoriteChange, hideFavorite, favoriteCount, seller, placeholderIcon, variant = 'grid', image }: ProductCardProps) {
+  const { id, title, brand, size, condition, price, imageUrl, shade } = product;
+  const meta = [brand, size, condition].filter(Boolean).join(' · ');
+  const incl = formatKr(buyerTotal(price));
+  const label = [title, meta, formatKr(price), `${incl} inkl. køberbeskyttelse`, seller && `sælges af ${seller.name}${seller.certified ? ' (certificeret)' : ''}`].filter(Boolean).join(', ');
   return (
     <article className={cx('rs-card', variant === 'scroll' && 'rs-card--h')}>
-      <AppLink href={href} aria-label={`${title}, ${formatKr(price)}`}>
+      {seller && (
+        <div className="rs-card__seller" aria-hidden="true">
+          <Avatar name={seller.name} size="sm" />
+          <span className="rs-card__seller-name">{seller.name}</span>
+          {seller.certified && <Icon name="check" size={14} className="rs-card__cert" />}
+        </div>
+      )}
+      {/* Linkets navn er skjult tekst + synligt indhold (fx mærkaten) – intet aria-label, så navn og synlig tekst altid stemmer */}
+      <AppLink href={href}>
+        <span className="rs-sr-only">{label}</span>
         <div className="rs-card__media">
-          <ProductImage src={imageUrl} alt={title} shade={shade ?? shadeFor(id)} image={image} />
+          <ProductImage src={imageUrl} alt="" shade={shade ?? shadeFor(id)} image={image}>
+            {!imageUrl && !image && placeholderIcon ? <Icon name={placeholderIcon} size={64} /> : null}
+          </ProductImage>
           {badge && <Badge>{badge}</Badge>}
+          {favoriteCount !== undefined && favoriteCount > 0 && (
+            <span className="rs-card__likes" aria-hidden="true"><Icon name="heart" size={12} />{favoriteCount}</span>
+          )}
         </div>
       </AppLink>
       {!hideFavorite && (
-        <div className="rs-card__fav">
+        <div className={cx('rs-card__fav', seller && 'rs-card__fav--seller')}>
           <FavoriteButton pressed={favorite} defaultPressed={defaultFavorite} onPressedChange={onFavoriteChange} />
         </div>
       )}
       <AppLink href={href} tabIndex={-1} aria-hidden="true">
         <div className="rs-card__title">{title}</div>
         {meta && <div className="rs-card__meta">{meta}</div>}
-        <div className="rs-card__price rs-t-price">{formatKr(price)}<small>{formatKr(price + buyerFee(price))} inkl.</small></div>
+        <div className="rs-card__price rs-t-price">{formatKr(price)}</div>
+        <div className="rs-card__incl"><Icon name="shield" size={12} />{incl} inkl.</div>
       </AppLink>
     </article>
   );
 }
 
-export function ProductGrid({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cx('rs-grid-2', className)} {...rest} />;
+export interface ProductGridProps extends HTMLAttributes<HTMLDivElement> {
+  /** app = altid 2 kolonner med sidemargen (mobilapp). responsive = så mange kolonner, der er plads til (hjemmeside). */
+  layout?: 'app' | 'responsive';
+}
+
+export function ProductGrid({ layout = 'app', className, ...rest }: ProductGridProps) {
+  return <div className={cx(layout === 'app' ? 'rs-grid-2' : 'rs-grid-auto', className)} {...rest} />;
 }
 
 /** Vandret scroll-række (kategorier, produktkort). */
@@ -145,7 +184,26 @@ export function ProductRow({ product, href, trailing }: { product: Product; href
   return href ? <AppLink href={href} className="rs-card--row">{body}</AppLink> : <div className="rs-card--row">{body}</div>;
 }
 
-export function CategoryTile({ icon, label, href }: { icon: IconName; label: string; href: string }) {
+export interface CategoryTileProps {
+  icon: IconName;
+  label: string;
+  href: string;
+  /** Antal varer – vises under navnet i `card`-varianten */
+  count?: number;
+  /** icon = lille rund genvej (app). card = større kort til hjemmesidens kategorigitter. */
+  variant?: 'icon' | 'card';
+}
+
+export function CategoryTile({ icon, label, href, count, variant = 'icon' }: CategoryTileProps) {
+  if (variant === 'card') {
+    return (
+      <AppLink href={href} className="rs-catcard">
+        <span className="rs-catcard__icon"><Icon name={icon} size={32} /></span>
+        <span className="rs-catcard__label">{label}</span>
+        {count !== undefined && <span className="rs-catcard__count">{count.toLocaleString('da-DK')} {count === 1 ? 'vare' : 'varer'}</span>}
+      </AppLink>
+    );
+  }
   return (
     <AppLink href={href} className="rs-cat">
       <span className="rs-cat__icon"><Icon name={icon} size={28} /></span>
@@ -154,11 +212,24 @@ export function CategoryTile({ icon, label, href }: { icon: IconName; label: str
   );
 }
 
-export function SectionHeader({ title, action }: { title: string; action?: { label: string; href: string } }) {
+export interface SectionHeaderProps {
+  title: string;
+  /** Kort forklaring under titlen */
+  description?: string;
+  action?: { label: string; href: string };
+  /** Id på overskriften – brug til `aria-labelledby` på sektionen */
+  id?: string;
+  className?: string;
+}
+
+export function SectionHeader({ title, description, action, id, className }: SectionHeaderProps) {
   return (
-    <div className="rs-section-head">
-      <h2 className="rs-t-h2">{title}</h2>
-      {action && <AppLink href={action.href}>{action.label}</AppLink>}
+    <div className={cx('rs-section-head', className)}>
+      <div>
+        <h2 id={id} className="rs-t-h2">{title}</h2>
+        {description && <p className="rs-section-head__desc">{description}</p>}
+      </div>
+      {action && <AppLink href={action.href} className="rs-section-head__action">{action.label}<Icon name="next" size={16} /></AppLink>}
     </div>
   );
 }
