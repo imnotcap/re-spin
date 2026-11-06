@@ -1,13 +1,31 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: /
+    directory: /            # dækker alle workspaces (apps/* og packages/*)
     schedule: { interval: weekly }
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     groups:
       next-react: { patterns: [next, react, react-dom, '@types/react*'] }
       stripe: { patterns: [stripe] }
       drizzle: { patterns: [drizzle-orm, drizzle-kit] }
-  - package-ecosystem: github-actions   # holder action-versioner opdateret (og kan pinne til SHA)
+      # Alle små opdateringer samles i én PR i stedet for én pr. pakke
+      minor-og-patch:
+        update-types: [minor, patch]
+    ignore:
+      # TypeScript 7 (Go-versionen) har intet JavaScript-API endnu. Next.js' typetjek og tsup's
+      # .d.ts-generering bruger det, så bygget fejler. Opgrader når Next.js og tsup understøtter 7.
+      - dependency-name: typescript
+        versions: ['>=7']
+      # postgres v4 (omskrevet driver, okt. 2026) fejler med "unnamed prepared statement does not
+      # exist" sammen med drizzle-orm 0.45 og prepare:false i vores login-e2e. v3 består samme test.
+      # Prøv igen, når drizzle-orm officielt understøtter v4.
+      - dependency-name: postgres
+        versions: ['>=4']
+      # Typerne skal følge den Node-version, vi kører (22 i CI og drift). Hæves sammen med Node.
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
+  - package-ecosystem: github-actions   # holder action-versioner opdateret
     directory: /
     schedule: { interval: weekly }
+    groups:
+      actions: { patterns: ['*'] }
