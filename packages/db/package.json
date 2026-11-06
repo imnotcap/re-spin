@@ -26,6 +26,6 @@
     "@electric-sql/pglite": "^0.5.15",
     "@electric-sql/pglite-socket": "^0.2.18",
     "drizzle-kit": "^0.31.0",
-    "typescript": "~5.9.3"
+    "typescript": "~6.0.3"
   }
 }

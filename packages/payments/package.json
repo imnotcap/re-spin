@@ -9,5 +9,5 @@
   "exports": { ".": "./src/index.ts" },
   "scripts": { "typecheck": "tsc --noEmit" },
   "dependencies": { "@respin/core": "*", "@respin/db": "*", "drizzle-orm": "^0.45.0", "stripe": "^23.0.0" },
-  "devDependencies": { "typescript": "~5.9.3" }
+  "devDependencies": { "typescript": "~6.0.3" }
 }
