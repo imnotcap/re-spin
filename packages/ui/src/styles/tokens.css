@@ -1,0 +1,109 @@
+/* ==========================================================================
+   re:spin — DESIGN TOKENS
+   Eneste sted hvor farver, typografi, afstande, radier og motion defineres.
+   Alt andet (components.css, app) refererer kun til disse variabler.
+   ========================================================================== */
+
+:root, .rs-theme {
+  /* ---- Brand colors (fra brand identity) ---- */
+  --rs-forest-900: #07301a;
+  --rs-forest-700: #0b4725;
+  --rs-forest:     #0e5a2f;   /* Deep Forestgrøn */
+  --rs-forest-100: #e1eee6;
+  --rs-forest-50:  #f0f6f2;
+
+  --rs-lime:       #d2ff32;   /* Electric Lime – primær handling */
+  --rs-lime-600:   #b9e610;
+  --rs-lime-100:   #f2ffbd;
+
+  --rs-coral:      #ff5a5f;   /* Sunset Coral – køb / hjerte / notifikation */
+  --rs-coral-600:  #d93a41;   /* mørkere variant: hvid tekst består kontrast (≥4.5:1) */
+  --rs-coral-100:  #ffe8e8;
+
+  --rs-cream:      #fdfbf7;   /* Warm Cream – baggrund */
+  --rs-cream-200:  #f5f1e9;
+  --rs-cream-300:  #e9e4d8;
+
+  /* Neutrale (varme grå) – bruges til flader, linjer og pladsholdere */
+  --rs-stone-50:   #f8f7f4;
+  --rs-stone-100:  #f0eeea;
+  --rs-stone-200:  #e4e2dd;
+  --rs-stone-300:  #d3d1cb;
+  --rs-stone-400:  #b4b2ab;
+  --rs-ph-1: #e3e2de; --rs-ph-2: #dad9d5; --rs-ph-3: #e8e7e4; --rs-ph-4: #d6d5d1;  /* produkt-pladsholdere */
+
+  --rs-slate:      #1c1c1c;   /* Slate Dark – tekst */
+  --rs-slate-700:  #3b3b38;
+  --rs-slate-500:  #6a6a64;   /* dæmpet tekst (5:1 på cream) */
+  --rs-slate-300:  #a9a79f;
+  --rs-white:      #ffffff;
+
+  /* ---- Semantiske farver (brug DISSE i komponenter) ---- */
+  --rs-bg:            var(--rs-cream);
+  --rs-surface:       var(--rs-white);
+  --rs-surface-sunk:  var(--rs-stone-100);
+  --rs-text:          var(--rs-slate);
+  --rs-text-muted:    var(--rs-slate-500);
+  --rs-text-inverse:  var(--rs-cream);
+  --rs-border:        var(--rs-stone-200);
+  --rs-border-strong: var(--rs-slate);
+  --rs-brand:         var(--rs-forest);
+  --rs-action:        var(--rs-lime);
+  --rs-action-text:   var(--rs-slate);      /* tekst på lime – ALDRIG hvid */
+  --rs-buy:           var(--rs-slate);
+  --rs-danger:        #c62828;
+  --rs-success:       var(--rs-forest);
+  --rs-warning:       #b26a00;
+  --rs-focus-ring:    0 0 0 2px var(--rs-bg), 0 0 0 4px var(--rs-forest);
+
+  /* Gradienter – samme brandfarver. Alle dele med tekst holder kontrast (lime på forest ≥ 4.5:1). */
+  --rs-grad-lime:   linear-gradient(125deg, #f1ff8f 0%, #d2ff32 38%, #8fe86a 72%, #4fcf8e 100%);   /* kampagne / primær */
+  --rs-grad-ink:    linear-gradient(145deg, #3a3a36 0%, #262624 55%, #1c1c1c 100%);                /* neutral mørk: valgt / køb / saldo */
+  --rs-grad-forest: linear-gradient(135deg, #052818 0%, #0e5a2f 45%, #0a7a63 100%);                /* valgt / køb / mørke bokse */
+  --rs-grad-deep:   linear-gradient(160deg, #0a7a63 0%, #0e5a2f 38%, #07301a 85%);                 /* velkomst / store flader */
+  --rs-grad-accent: linear-gradient(90deg, #1c1c1c 0%, #55554f 100%);                 /* fremdrift / understregning */
+  --rs-grad-card:   linear-gradient(160deg, #ffffff 0%, #f3f0ea 100%);                             /* kort / lister */
+  --rs-grad-stone:  linear-gradient(160deg, #f4f2ee 0%, #dedbd4 100%);                             /* neutrale flader */
+  --rs-glow-lime:   radial-gradient(60% 80% at 100% 0%, rgba(210,255,50,.38), transparent 70%);
+  --rs-gradient-energy: linear-gradient(100deg, #0e5a2f 0%, #0a8a78 30%, #d2ff32 62%, #ff5a5f 92%);
+
+  /* ---- Typografi ---- */
+  --rs-font: var(--rs-font-brand, "Satoshi"), "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --rs-fs-display: 32px;  --rs-lh-display: 36px;
+  --rs-fs-h1: 26px;       --rs-lh-h1: 32px;
+  --rs-fs-h2: 20px;       --rs-lh-h2: 26px;
+  --rs-fs-h3: 17px;       --rs-lh-h3: 24px;
+  --rs-fs-body: 15px;     --rs-lh-body: 22px;
+  --rs-fs-small: 13px;    --rs-lh-small: 18px;
+  --rs-fs-caption: 12px;  --rs-lh-caption: 16px;
+
+  /* ---- Spacing (4pt) ---- */
+  --rs-s-1: 4px;  --rs-s-2: 8px;  --rs-s-3: 12px; --rs-s-4: 16px;
+  --rs-s-5: 20px; --rs-s-6: 24px; --rs-s-8: 32px; --rs-s-10: 40px; --rs-s-12: 48px;
+  --rs-gutter: 16px;
+
+  /* ---- Radius ---- */
+  --rs-r-sm: 6px; --rs-r-md: 10px; --rs-r-lg: 14px; --rs-r-xl: 20px; --rs-r-pill: 999px;
+
+  /* ---- Elevation ---- */
+  --rs-shadow-1: 0 0 0 1px rgba(28,28,28,.06);
+  --rs-shadow-2: 0 2px 8px rgba(28,28,28,.08);
+  --rs-shadow-3: 0 8px 24px rgba(28,28,28,.14);
+
+  /* ---- Motion ---- */
+  --rs-ease: cubic-bezier(.2, .8, .2, 1);
+  --rs-ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --rs-t-fast: 120ms; --rs-t-base: 220ms; --rs-t-slow: 340ms;
+
+  /* ---- Layout ---- */
+  --rs-tap: 44px;                         /* minimum touch-target */
+  --rs-safe-top: env(safe-area-inset-top, 0px);
+  --rs-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --rs-tabbar-h: 60px;
+  --rs-tabbar-pad: max(var(--rs-safe-bottom), 10px);
+  --rs-z-bar: 10; --rs-z-tabbar: 20; --rs-z-sheet: 40; --rs-z-toast: 60;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --rs-t-fast: 1ms; --rs-t-base: 1ms; --rs-t-slow: 1ms; }
+}

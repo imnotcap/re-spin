@@ -1,0 +1,12 @@
+{
+  "name": "respin",
+  "private": true,
+  "description": "re:spin – design-skelet, UI-kit (@respin/ui) og Next.js showcase",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "build:ui": "npm run build -w @respin/ui",
+    "typecheck": "npm run typecheck -w @respin/ui && npm run typecheck -w showcase",
+    "dev": "npm run build:ui && npm run dev -w showcase",
+    "build": "npm run build:ui && npm run build -w showcase"
+  }
+}

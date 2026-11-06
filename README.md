@@ -34,6 +34,17 @@ Komponenter: Button (primary/buy/outline/dark/forest/ghost, sm/md/lg) · IconBut
 - **Køb:** betaling (adresse, fragt, betaling, live-total), ordre bekræftet, mine ordrer, ordredetaljer m. tidslinje
 - **Mig:** profil, rediger profil, saldo/udbetaling, indstillinger, hjælp/FAQ
 
+## UI-kit til Next.js / TypeScript
+
+`packages/ui` er **`@respin/ui`**: samme design som skelettet, men som typede React-komponenter, tokens og forretningsregler (gebyrer, formatering). `apps/showcase` er en Next.js-app, der viser alle komponenter (`/`) og en lille app-demo (`/demo`).
+
+```bash
+npm install
+npm run dev        # bygger kittet og starter showcase på http://localhost:3000
+```
+
+Se `packages/ui/README.md` for opsætning, komponentliste og regler.
+
 ## UX-principper bag skelettet
 
 Se `docs/ux-principper.md`.
