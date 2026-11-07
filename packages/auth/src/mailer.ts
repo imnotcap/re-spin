@@ -31,8 +31,23 @@ export interface ResendMailerOptions {
   timeoutMs?: number;
 }
 
-const ADDRESS = /^[^\s@<>"(),;:]+@[^\s@<>"(),;:]+\.[^\s@<>"(),;:]+$/;
-const FROM = /^(?:[^<>\r\n"]{1,60} )?<[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+>$|^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
+/**
+ * Én adresse: lokal-del@domæne med mindst ét punktum inde i domænet. Lineær tid (ingen regex med
+ * overlappende gentagelser, som kan bruges til ReDoS) og højst 254 tegn (RFC 5321).
+ */
+const ADDRESS_SHAPE = /^[^\s@<>"(),;:]+@[^\s@<>"(),;:]+$/;
+export function isSingleAddress(s: string): boolean {
+  if (s.length > 254 || !ADDRESS_SHAPE.test(s)) return false;
+  const domain = s.slice(s.indexOf('@') + 1);
+  const dot = domain.indexOf('.', 1);
+  return dot !== -1 && dot < domain.length - 1;
+}
+/** Afsender: "Navn <adresse>" (navn højst 60 tegn, uden linjeskift) eller blot adressen */
+const NAMED = /^(?:([^<>\r\n"]{1,60}) )?<([^<>]{1,254})>$/;
+function isValidFrom(s: string): boolean {
+  const m = NAMED.exec(s);
+  return isSingleAddress(m ? m[2]! : s);
+}
 
 /**
  * Sender via Resends HTTPS-API (https://resend.com/docs/api-reference/emails/send-email).
@@ -43,12 +58,12 @@ export class ResendMailer implements Mailer {
   private readonly o: Required<Omit<ResendMailerOptions, 'fetch'>> & { fetch: typeof fetch };
   constructor(o: ResendMailerOptions) {
     if (!/^re_[A-Za-z0-9_-]{8,}$/.test(o.apiKey)) throw new Error('RESEND_API_KEY har et ugyldigt format');
-    if (!FROM.test(o.from)) throw new Error('MAIL_FROM skal være "Navn <adresse@domæne>" eller en adresse');
+    if (!isValidFrom(o.from)) throw new Error('MAIL_FROM skal være "Navn <adresse@domæne>" eller en adresse');
     this.o = { endpoint: 'https://api.resend.com/emails', timeoutMs: 10_000, fetch: globalThis.fetch.bind(globalThis), ...o };
   }
 
   async send(mail: Mail): Promise<void> {
-    if (!ADDRESS.test(mail.to) || /[\r\n]/.test(mail.subject) || mail.subject.length > 200) throw new Error('Ugyldig modtager eller emne');
+    if (!isSingleAddress(mail.to) || /[\r\n]/.test(mail.subject) || mail.subject.length > 200) throw new Error('Ugyldig modtager eller emne');
     let res: Response;
     try {
       res = await this.o.fetch(this.o.endpoint, {

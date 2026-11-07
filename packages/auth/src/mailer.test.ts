@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ResendMailer } from './mailer';
+import { ResendMailer, isSingleAddress } from './mailer';
 
 const KEY = 're_test_abcdefghijklmnop';
 const ok = () => vi.fn(async () => new Response('{"id":"x"}', { status: 200 }));
@@ -52,5 +52,15 @@ describe('ResendMailer', () => {
     expect(() => new ResendMailer({ apiKey: KEY, from: 'noreply@respin.dk\r\nBcc: x@evil.dk' })).toThrow('MAIL_FROM');
     expect(() => new ResendMailer({ apiKey: KEY, from: 're:spin' })).toThrow('MAIL_FROM');
     expect(() => new ResendMailer({ apiKey: KEY, from: 're:spin <noreply@respin.dk>' })).not.toThrow();
+  });
+
+  it('adressetjek: korrekte grænser og lineær tid på ondsindet input (ReDoS)', () => {
+    for (const ok of ['a@b.dk', 'mette.hansen+test@mail.example.dk', 'a@b..dk', 'a@b.c']) expect(isSingleAddress(ok)).toBe(true);
+    for (const bad of ['', 'a@b', 'a@.dk', 'a@dk.', 'a@b@c.dk', '@b.dk', 'a b@c.dk', 'a@b.dk,c@d.dk', '<a@b.dk>', 'a@b.dk\n', `${'a'.repeat(250)}@b.dk`]) expect(isSingleAddress(bad)).toBe(false);
+    const evil = '!@!.' + '!.'.repeat(50_000) + ' '; // den gamle regex brugte ~2 s på denne streng (kvadratisk)
+    const t = performance.now();
+    expect(isSingleAddress(evil)).toBe(false);
+    expect(() => new ResendMailer({ apiKey: KEY, from: '<!@!.' + '!.'.repeat(50_000) + ' ' })).toThrow('MAIL_FROM');
+    expect(performance.now() - t).toBeLessThan(50);
   });
 });
