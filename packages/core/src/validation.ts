@@ -11,9 +11,13 @@ export function normalizeUserText(input: string): string {
 
 const text = (min: number, max: number) => z.string().max(max * 4).transform(normalizeUserText).pipe(z.string().min(min).max(max));
 
-export const CATEGORIES = ['vintage', 'gadestil', 'sneakers', 'tasker', 'bolig', 'born', 'sport', 'smykker'] as const;
-export const CONDITIONS = ['new_with_tag', 'like_new', 'almost_new', 'used'] as const;
+/** Samme kategorier som hjemmesiden (apps/web/lib/categories.ts) */
+export const CATEGORIES = ['kvinder', 'maend', 'boern', 'sko', 'tasker', 'accessories', 'bolig', 'sport'] as const;
+/** Fra bedst til mindst god: Ny med mærke · Ny uden mærke · Meget god · God · Tilfredsstillende */
+export const CONDITIONS = ['new_with_tag', 'new_without_tag', 'very_good', 'good', 'satisfactory'] as const;
 export const SHIPPING_SIZES = ['small', 'medium'] as const;
+export type ListingCategory = (typeof CATEGORIES)[number];
+export type ListingCondition = (typeof CONDITIONS)[number];
 
 import { MIN_PRICE_ORE, MAX_PRICE_ORE } from './limits';
 export { MIN_PRICE_ORE, MAX_PRICE_ORE };
@@ -22,6 +26,8 @@ export const createListingInput = z.object({
   title: text(3, 80),
   description: text(0, 2000),
   category: z.enum(CATEGORIES),
+  /** Underkategori fra kategoriens liste (tjekkes af appen, der kender listen) */
+  subcategory: text(0, 40).optional(),
   brand: text(0, 60).optional(),
   size: text(0, 20).optional(),
   condition: z.enum(CONDITIONS),

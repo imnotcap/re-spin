@@ -17,6 +17,9 @@ export interface CardItem {
   icon: IconName;
   vintage?: boolean;
   seller?: { name: string; certified: boolean };
+  /** Medlemmernes annoncer: eget foto og egen side (eksempelvarerne bruger /vare/ og fotos i public/img) */
+  image?: { src: string; srcSet?: string } | null;
+  href?: string;
 }
 
 /** Kittets produktkort koblet til favoritterne. Tælleren inkluderer dit eget hjerte, når du har gemt varen. */
@@ -24,11 +27,11 @@ export function ItemCard({ item, showSeller = false }: { item: CardItem; showSel
   const fav = useFavorites();
   const { toast } = useToast();
   const on = fav.has(item.id);
-  const photo = itemImage(item.id);
+  const photo = item.image ?? itemImage(item.id);
   return (
     <ProductCard
       product={{ id: item.id, title: item.title, brand: item.brand, size: item.size, condition: item.condition, price: item.price, imageUrl: photo.src, imageSrcSet: photo.srcSet }}
-      href={`/vare/${item.id}/`}
+      href={item.href ?? `/vare/${item.id}/`}
       badge={item.vintage ? 'Vintage' : undefined}
       placeholderIcon={item.icon}
       favoriteCount={item.favorites + (on ? 1 : 0)}

@@ -29,7 +29,9 @@ export default function SellPage() {
           <p className="mt-3 max-w-xl text-body text-muted sm:text-[17px] sm:leading-[26px]">
             Det koster ikke noget at sætte til salg. Når varen er solgt, går 1 % til re:spin – kun 0,5 %, hvis du er certificeret sælger.
           </p>
-          <Notice icon="info" warn className="mt-5 max-w-xl">Appen er under udvikling. Du kan ikke oprette annoncer endnu.</Notice>
+          {process.env.NEXT_PUBLIC_AUTH_ENABLED === '1'
+            ? <Button href="/saelg/ny/" size="lg" icon="plus" className="mt-6">Sæt en vare til salg</Button>
+            : <Notice icon="info" warn className="mt-5 max-w-xl">Dette er en testversion. Her kan du ikke oprette annoncer.</Notice>}
 
           <h2 className="mt-10 text-h2">Sådan gør du</h2>
           <StepList className="mt-4" steps={STEPS.seller} />

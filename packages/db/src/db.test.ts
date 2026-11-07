@@ -11,7 +11,7 @@ afterAll(async () => { await close(); });
 
 let n = 0;
 const user = async (name: string) => (await db.insert(s.users).values({ email: `${name}${++n}@x.dk`, emailNormalized: `${name}${n}@x.dk`, displayName: name }).returning())[0]!;
-const listing = async (sellerId: string, priceOre = 45_000) => (await db.insert(s.listings).values({ sellerId, title: 'Ganni uldjakke', category: 'vintage', condition: 'almost_new', priceOre, shippingSize: 'small' }).returning())[0]!;
+const listing = async (sellerId: string, priceOre = 45_000) => (await db.insert(s.listings).values({ sellerId, title: 'Ganni uldjakke', category: 'kvinder', condition: 'very_good', priceOre, shippingSize: 'small' }).returning())[0]!;
 const orderValues = (listingId: string, buyerId: string, sellerId: string) => {
   const a = computeOrderAmounts({ price: fromKr(450), shipping: fromKr(39), sellerCertified: false });
   return { listingId, buyerId, sellerId, priceOre: a.price, buyerFeeOre: a.buyerFee, sellerFeeOre: a.sellerFee, shippingOre: a.shipping, buyerTotalOre: a.buyerTotal, sellerPayoutOre: a.sellerPayout };

@@ -20,7 +20,7 @@ export function SellBanner() {
             ))}
           </ul>
           <div className="mt-7 flex flex-wrap gap-2">
-            <Button href="/saelg/">Sælg nu</Button>
+            <Button href={process.env.NEXT_PUBLIC_AUTH_ENABLED === '1' ? '/saelg/ny/' : '/saelg/'}>Sælg nu</Button>
             <Button href="/gebyrer/" variant="outline">Beregn din udbetaling</Button>
           </div>
         </div>

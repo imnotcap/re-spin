@@ -13,14 +13,18 @@ const isStatic = process.env.STATIC_EXPORT === '1';
 const basePath = isStatic ? (process.env.NEXT_PUBLIC_BASE_PATH ?? '') : '';
 if (basePath && !/^\/[A-Za-z0-9._-]+$/.test(basePath)) throw new Error(`Ugyldig NEXT_PUBLIC_BASE_PATH: ${basePath}`);
 
+/** Medlemmernes annoncer: rigtig database-udgave i server-bygget, tom udgave i det statiske (se components/listings/live.tsx) */
+const liveImpl = isStatic ? './components/listings/live.tsx' : './components/listings/live.server-impl.tsx';
+
 /** @type {import('next').NextConfig} */
 export default {
+  turbopack: { resolveAlias: { '@respin-live': liveImpl } },
   ...(isStatic
     ? { output: 'export', basePath, images: { unoptimized: true }, pageExtensions: ['tsx', 'ts'] }
     : {
         // Server-filer tages med; *.server.* skal stå først, så "page.server.tsx" læses som "page"
         pageExtensions: ['server.tsx', 'server.ts', 'tsx', 'ts'],
-        serverExternalPackages: ['postgres', 'stripe', '@node-rs/argon2'],
+        serverExternalPackages: ['postgres', 'stripe', '@node-rs/argon2', 'sharp'],
         productionBrowserSourceMaps: false
       }),
   env: {

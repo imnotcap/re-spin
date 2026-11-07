@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Breadcrumbs } from '@respin/ui';
+import { LiveSection } from '@respin-live';
 import { Browse } from '../../../components/browse/Browse';
 import { CATEGORIES, getCategory, itemsIn, newest, toBrowse } from '../../../lib/catalog';
 
@@ -27,6 +28,7 @@ export default async function CategoryPage({ params }: Props) {
         <h1 className="text-h1 sm:text-[34px] sm:leading-[40px]">{c.label}</h1>
         <p className="mt-1 max-w-2xl text-body text-muted">{c.intro}</p>
       </header>
+      <LiveSection id="medlemmer" title={`Nyt i ${c.label} fra medlemmerne`} category={c.slug} className="mt-6" />
       <Browse items={items} types={c.subs} showSeller />
     </div>
   );

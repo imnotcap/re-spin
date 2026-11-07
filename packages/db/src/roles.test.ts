@@ -45,7 +45,7 @@ describe('database-roller (mindste privilegium)', () => {
   });
   it('admin kan moderere annoncer, men ikke ændre priser', async () => {
     const uid = '11111111-1111-4111-8111-111111111111';
-    await exec(`INSERT INTO listings (id, seller_id, title, category, condition, price_ore, shipping_size) VALUES ('22222222-2222-4222-8222-222222222222','${uid}','Testannonce','vintage','used',10000,'small')`);
+    await exec(`INSERT INTO listings (id, seller_id, title, category, condition, price_ore, shipping_size) VALUES ('22222222-2222-4222-8222-222222222222','${uid}','Testannonce','kvinder','good',10000,'small')`);
     expect(await as('respin_admin', `UPDATE listings SET moderation_status = 'rejected'`)).toBeNull();
     expect(await as('respin_admin', `UPDATE listings SET price_ore = 1`)).toMatch(/permission denied/);
   });

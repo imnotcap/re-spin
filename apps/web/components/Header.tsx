@@ -119,7 +119,7 @@ export function Header() {
             )}
           </Link>
           <AccountButton me={me} pathname={pathname} />
-          <Button href="/saelg/" size="sm" icon="plus" className="hidden sm:inline-flex">Sælg nu</Button>
+          <Button href={AUTH ? '/saelg/ny/' : '/saelg/'} size="sm" icon="plus" className="hidden sm:inline-flex">Sælg nu</Button>
           <button
             ref={buttonRef}
             type="button"
@@ -157,7 +157,7 @@ export function Header() {
               <Icon name="user" size={20} className="text-muted" />{me ? 'Min konto' : 'Log ind eller opret konto'}
             </Link>
           )}
-          <Button href="/saelg/" full icon="plus" className="mt-4 sm:hidden" onClick={() => setOpen(false)}>Sælg nu</Button>
+          <Button href={AUTH ? '/saelg/ny/' : '/saelg/'} full icon="plus" className="mt-4 sm:hidden" onClick={() => setOpen(false)}>Sælg nu</Button>
         </div>
       </nav>
     </header>

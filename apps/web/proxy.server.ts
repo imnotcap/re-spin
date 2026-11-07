@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { buildCsp, generateNonce, securityHeaders } from '@respin/security';
+import { imageOrigin } from './lib/blob-origin';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -13,7 +14,8 @@ export function proxy(request: NextRequest) {
     nonce,
     isDev: !isProd,
     // Stripe.js (betalingsformular) når den tages i brug: frameSrc: ['https://js.stripe.com', 'https://hooks.stripe.com'], connectSrc: ['https://api.stripe.com']
-    imgSrc: (process.env.CSP_IMG_SRC ?? '').split(',').map((s) => s.trim()).filter(Boolean)
+    // Annoncefotos ligger hos Vercel Blob (andet domæne end siden); CSP_IMG_SRC til evt. flere kilder
+    imgSrc: [imageOrigin(), ...(process.env.CSP_IMG_SRC ?? '').split(',').map((s) => s.trim())].filter((s): s is string => !!s)
   });
 
   const requestHeaders = new Headers(request.headers);

@@ -1,3 +1,4 @@
+import { LiveSection } from '@respin-live';
 import { CategoryTile, Chip, HScroll, ProductGrid, SectionHeader, TrustBar } from '@respin/ui';
 import { HomeHero } from '../components/home/HomeHero';
 import { SellBanner } from '../components/home/SellBanner';
@@ -58,6 +59,8 @@ export default function HomePage() {
           ))}
         </ul>
       </section>
+
+      <LiveSection id="medlemmer" title="Lige sat til salg" className={`${container} mt-14`} />
 
       <section aria-labelledby="nyt" className={`${container} mt-14`}>
         <SectionHeader id="nyt" title="Nyt fra medlemmerne" action={{ label: 'Se alle', href: '/soeg/' }} className={head} />
