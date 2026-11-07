@@ -68,7 +68,8 @@ describe('billedlager', () => {
   });
 
   it('Vercel Blob: adressen udledes af tokenet; ugyldigt token afvises', () => {
-    expect(new BlobImageStore('vercel_blob_rw_AbC123xyz_SECRETpart987').urlFor('listings/x.webp')).toBe('https://abc123xyz.public.blob.vercel-storage.com/listings/x.webp');
+    // Opdigtede testværdier – ikke rigtige nøgler
+    expect(new BlobImageStore('vercel_blob_rw_TESTSTORE_FAKEFAKE').urlFor('listings/x.webp')).toBe('https://teststore.public.blob.vercel-storage.com/listings/x.webp'); // gitleaks:allow
     expect(() => new BlobImageStore('sk_live_x')).toThrow('BLOB_READ_WRITE_TOKEN');
   });
 });
@@ -76,7 +77,7 @@ describe('billedlager', () => {
 describe('billed-oprindelse til CSP', () => {
   it('kun https; ugyldige værdier ignoreres i stedet for at lægge siden ned', async () => {
     const { imageOrigin } = await import('./blob-origin');
-    expect(imageOrigin({ BLOB_READ_WRITE_TOKEN: 'vercel_blob_rw_AbC123_x9' })).toBe('https://abc123.public.blob.vercel-storage.com');
+    expect(imageOrigin({ BLOB_READ_WRITE_TOKEN: 'vercel_blob_rw_TESTSTORE_FAKEFAKE' })).toBe('https://teststore.public.blob.vercel-storage.com'); // gitleaks:allow
     expect(imageOrigin({ BLOB_PUBLIC_BASE_URL: 'https://cdn.respin.dk/x' })).toBe('https://cdn.respin.dk');
     for (const bad of ['http://cdn.respin.dk', 'javascript:alert(1)', 'ikke en url', "https://x.dk'; script-src *"]) expect(imageOrigin({ BLOB_PUBLIC_BASE_URL: bad })).toBeNull();
     expect(imageOrigin({})).toBeNull();
