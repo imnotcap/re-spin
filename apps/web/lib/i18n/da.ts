@@ -62,6 +62,7 @@ const da = {
   'footer.test': 'Testversion. re:spin er under udvikling, og intet her er til salg endnu.',
   'footer.shop': 'Shop',
   'footer.help': 'Hjælp',
+  'footer.support': "Kontakt kundeservice",
   'footer.sellOn': 'Sælg på {name}',
   'footer.favorites': 'Dine favoritter',
 

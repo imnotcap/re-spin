@@ -40,7 +40,8 @@ Symboler: ✅ bygget og testet · 🟡 bygget, men ikke afprøvet i drift/mod ri
 | **Annoncer** – sæt til salg med billeder, redigér, markér som solgt, fjern; vises på forside, i kategorier og søgning; automatisk gennemgang ved betaling uden om platformen | ✅ | `apps/web/lib/listings.ts`, `apps/web/app/saelg/ny`, `annonce`, `konto/annoncer` | 13 tests (IDOR, rollback, moderation, søgning) + 34-trins browser-e2e + axe 0 og 0 CSP-brud på produktionsbuild |
 | **Billed-upload** – magic bytes, pixelloft, omkodning til WebP (EXIF/GPS fjernes), separat domæne (Vercel Blob) | ✅ | `apps/web/lib/image-pipeline.ts`, `image-store.ts`, `/api/billeder/` | 9 tests (SVG/GIF/HTML-polyglot, dekompressionsbombe, EXIF) + e2e (CSRF 403, 401, 413) 🟡 ingen virusscanning ud over omkodningen |
 | Chat, bud, rigtige favoritter i databasen, sælgerprofiler med anmeldelser | ⬜ | – | se roadmap |
-| Rigtige admin-funktioner (moderation, refunderinger, brugere) | ⬜ | `apps/admin` | siderne findes og er rolle-beskyttede, men tomme |
+| **Admin-panel** – oversigt med nøgletal, kundeservice (indbakke, samtaler, interne noter, standardsvar, tildeling), ordrer med tidslinje og refundering, fire-øjne-godkendelser fra 1.000 kr., brugere (søg, spær), moderation og audit-log | ✅ | `apps/admin`, `packages/support` | 15 tests (IDOR, interne noter, fire-øjne også i databasen, bogføring ved refundering) + 17-trins browser-e2e + 15-trins e2e kunde ↔ medarbejder + axe 0 🟡 ikke i drift endnu (kræver eget domæne og Cloudflare Access) |
+| **Kundeservice for kunder** – skriv til os fra Min konto, følg samtalen, prik ved nye svar | ✅ | `apps/web/app/konto/support` | se ovenfor 🟡 ingen e-mail ved svar endnu |
 | Worker-proces der kører `runOutbox` | ⬜ | – | funktionen er klar og testet |
 | CI (typecheck, tests, build, audit, CodeQL, secret-scan) | ✅ | `.github/workflows` | hele sekvensen kørt i ren kopi 🟡 workflows ikke kørt på GitHub endnu |
 
@@ -53,7 +54,7 @@ npm run typecheck
 npm run db:dev           # lokal Postgres (PGlite) på port 5433 med alle migrationer – ingen Docker
 APP_URL=http://localhost:3000 DATABASE_URL=postgres://postgres@127.0.0.1:5433/postgres DB_POOL_MAX=1 PWNED_CHECK=off MFA_ENCRYPTION_KEY=$(openssl rand -base64 32) npm run dev:web
 # → http://localhost:3000/opret-konto/ (bekræftelseslinket skrives i serverloggen)
-ADMIN_DEV_EMAIL=dig@respin.dk ADMIN_DEV_ROLE=admin npm run dev:admin   # http://localhost:3001 (dev-login kun uden for produktion)
+ADMIN_DEV_EMAIL=dig@respin.dk ADMIN_DEV_ROLE=admin DATABASE_URL=postgres://postgres@127.0.0.1:5433/postgres DB_POOL_MAX=1 npm run dev:admin   # http://localhost:3001 (dev-login kun uden for produktion; medarbejderen skal findes i staff_users)
 npm run dev:site         # hjemmesiden uden login på http://localhost:3030 (ingen miljøvariabler – som på GitHub Pages)
 ```
 

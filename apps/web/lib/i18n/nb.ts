@@ -57,6 +57,7 @@ const nb: Messages = {
   'footer.test': 'Testversjon. re:spin er under utvikling, og ingenting her er til salgs ennå.',
   'footer.shop': 'Handle',
   'footer.help': 'Hjelp',
+  'footer.support': "Kontakt kundeservice",
   'footer.sellOn': 'Selg på {name}',
   'footer.favorites': 'Dine favoritter',
 

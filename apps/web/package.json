@@ -17,6 +17,7 @@
     "@respin/db": "*",
     "@respin/payments": "*",
     "@respin/security": "*",
+    "@respin/support": "*",
     "@respin/ui": "*",
     "@simplewebauthn/browser": "^14.0.0",
     "@vercel/blob": "~2.8.2",

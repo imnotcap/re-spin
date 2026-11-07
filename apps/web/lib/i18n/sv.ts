@@ -57,6 +57,7 @@ const sv: Messages = {
   'footer.test': 'Testversion. re:spin är under utveckling, och inget här är till salu än.',
   'footer.shop': 'Handla',
   'footer.help': 'Hjälp',
+  'footer.support': "Kontakta kundtjänst",
   'footer.sellOn': 'Sälj på {name}',
   'footer.favorites': 'Dina favoriter',
 

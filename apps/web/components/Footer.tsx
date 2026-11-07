@@ -37,6 +37,7 @@ export function Footer() {
           <h2 id="footer-help" className={head}><T k="footer.help" /></h2>
           <ul className="mt-3 space-y-2 text-small">
             {HELP_NAV.map((n) => <li key={n.href}><Link className={linkCls} href={n.href}><T k={n.key} /></Link></li>)}
+            {process.env.NEXT_PUBLIC_AUTH_ENABLED === '1' && <li><Link className={linkCls} href="/konto/support/ny/"><T k="footer.support" /></Link></li>}
           </ul>
         </nav>
         <nav aria-labelledby="footer-respin">

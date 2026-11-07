@@ -83,7 +83,7 @@
 .rs-badge--coral { background: var(--rs-coral-600); color: #fff; box-shadow: none; }
 .rs-badge--forest { background: var(--rs-grad-ink); color: var(--rs-cream); box-shadow: none; }
 .rs-badge--soft { background: var(--rs-grad-stone); color: var(--rs-forest); box-shadow: none; }
-.rs-badge--warn { background: #fff1d6; color: var(--rs-warning); box-shadow: none; }
+.rs-badge--warn { background: #fff1d6; color: #8f5200; /* 5,6:1 på baggrunden (WCAG AA) */ box-shadow: none; }
 .rs-badge--live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--rs-coral-600); animation: rs-pulse 1.6s infinite; }
 @keyframes rs-pulse { 50% { opacity: .25; } }
 

@@ -57,6 +57,7 @@ const de: Messages = {
   'footer.test': 'Testversion. re:spin ist in Entwicklung, und hier ist noch nichts zu kaufen.',
   'footer.shop': 'Shop',
   'footer.help': 'Hilfe',
+  'footer.support': "Kundenservice kontaktieren",
   'footer.sellOn': 'Auf {name} verkaufen',
   'footer.favorites': 'Deine Favoriten',
 

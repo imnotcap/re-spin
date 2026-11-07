@@ -11,6 +11,7 @@ import { isBannerId, DEFAULT_BANNER } from '../../lib/banners';
 import { profilePath } from '../../lib/profile-url';
 import { BASE_PATH } from '../../lib/site';
 import { ProfileForm } from '../../components/profile/ProfileForm';
+import { unreadCountForUser } from '@respin/support';
 
 export const metadata = { title: 'Min konto' };
 
@@ -24,6 +25,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const list = await getAuth().listSessions(current.user.id);
   const username = await ensureUsername(getDb(), current.user.id);
   const profile = await profileFor(getDb(), current.user.id);
+  const unread = await unreadCountForUser(getDb(), current.user.id);
   return (
     <AuthPage width="page" title="Min konto" crumbs={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Min konto' }]}>
       {sp.welcome && <Notice icon="check" role="status">Din e-mail er bekræftet. Velkommen til re:spin!</Notice>}
@@ -55,6 +57,18 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         <span className="min-w-0 flex-1">
           <span className="block font-semibold">Mine annoncer</span>
           <span className="block text-small text-muted">Sæt til salg, redigér, markér som solgt</span>
+        </span>
+        <Icon name="next" size={20} className="text-muted" />
+      </Link>
+
+      <Link href="/konto/support/" className="flex items-center gap-4 rounded-lg border border-line p-4 transition-colors hover:border-slate">
+        <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-100 text-forest">
+          <Icon name="chat" size={20} />
+          {unread > 0 && <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-surface bg-coral-600" aria-hidden="true" />}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">Kundeservice</span>
+          <span className="block text-small text-muted">{unread > 0 ? (unread === 1 ? 'Du har 1 nyt svar' : `Du har ${unread} nye svar`) : 'Skriv til os, og følg dine henvendelser'}</span>
         </span>
         <Icon name="next" size={20} className="text-muted" />
       </Link>
