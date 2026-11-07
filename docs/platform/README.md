@@ -12,6 +12,7 @@ Læs i rækkefølge, eller hop direkte til det, du skal bruge.
 | [05-infrastructure.md](05-infrastructure.md) | Miljøer, hosting, Cloudflare, DNS, database-drift, CI/CD |
 | [06-decisions.md](06-decisions.md) | Arkitekturbeslutninger (ADR) med begrundelse |
 | [07-tools-and-costs.md](07-tools-and-costs.md) | **Værktøjer, priser og månedlige omkostninger pr. fase**, økonomi pr. ordre, opgraderingsplan når I vokser |
+| [08-deploy.md](08-deploy.md) | **Sæt login i drift:** Vercel, Neon, Resend, miljøvariabler, migrationer og tjek efter deploy |
 
 ## Status: hvad er bygget
 
@@ -25,16 +26,17 @@ Symboler: ✅ bygget og testet · 🟡 bygget, men ikke afprøvet i drift/mod ri
 | Input-validering, usynlige tegn, svindel-heuristik | ✅ | `packages/core` | tests |
 | Databaseskema + integritetsregler (ingen dobbeltsalg, append-only, frosne beløb) | ✅ | `packages/db` | tests mod rigtig Postgres (PGlite), mutationstestet |
 | Database-roller med mindste privilegium | ✅ | `packages/db/sql/roles.sql` | tests mod rigtig Postgres |
-| CSP med nonce, sikkerheds-headers | ✅ | `packages/security`, `proxy.ts` | tests + målt på kørende server + browser uden CSP-brud |
+| CSP med nonce, sikkerheds-headers | ✅ | `packages/security`, `apps/web/proxy.server.ts` | tests + målt på produktionsbuild + browser-gennemgang af 17 sider (inkl. login-siderne) på mobil og desktop: 0 CSP-brud |
 | IP-allowlist (v4/v6, spoof-sikker), RBAC, fire-øjne, rate limiter, redirect/origin/upload-validering | ✅ | `packages/security` | tests |
 | Cloudflare Access-JWT-verifikation (alg=none, nøgleforveksling, forkert audience …) | ✅ | `packages/security` | tests med egne nøgler 🟡 ikke mod Cloudflares rigtige nøgler |
 | Admin-adgangskæde (host → IP → identitet → rolle), dobbeltforsvar | ✅ | `apps/admin` | HTTP-tests mod produktionsbuild, inkl. bypass-forsøg og fjernet proxy |
 | Checkout, ordre-overgange, Stripe-webhook, outbox | ✅ | `packages/payments` | integrationstests (Postgres + ægte webhook-signaturer) 🟡 ikke mod Stripes API |
-| **Login** – tilmelding, e-mailbekræftelse, login/log ud, sessioner, glemt adgangskode, skift adgangskode, step-up, aktive enheder | ✅ | `packages/auth`, `apps/web` | 28 tests + mutationstest + 23-trins browser-e2e mod produktionsbuild |
+| **Login** – tilmelding, e-mailbekræftelse, login/log ud, sessioner, glemt adgangskode, skift adgangskode, step-up, aktive enheder | ✅ | `packages/auth`, `apps/web` | 28 tests + mutationstest + 23-trins browser-e2e; sider i hjemmesidens design, axe 0 fejl |
+| Mail via Resend (header-injektion afvist, timeout, ingen nøgle i fejl) | ✅ | `packages/auth` (`ResendMailer`) | 5 tests 🟡 ikke sendt mod Resends rigtige API |
+| Migrationer med ét klik + hosting-opsætning | 🟡 | `.github/workflows/db-migrate.yml`, `apps/web/vercel.json` | kørt mod tom Postgres (idempotent) 🟡 ikke kørt mod Neon/Vercel – se [08-deploy.md](08-deploy.md) |
 | Delt rate limiting i Postgres | ✅ | `packages/auth` (`PgRateLimiter`) | tests 🟡 række-låsen kan ikke bevises i PGlite (én forbindelse) |
-| **Passkeys** (login uden adgangskode) og **to-trins-login** (authenticator-app + gendannelseskoder) | ✅ | `packages/auth`, `apps/web/account/security` | 30 tests med software-autentikator + 10/10 mutationer fanget + 19-trins browser-e2e med Chromiums virtuelle autentikator (dev og produktion) |
-| **Hjemmeside** (testversion på GitHub Pages) – forside med varer og kategorier, kategorier med filtre, varesider med gennemskuelig pris, sælgerprofiler, søgning, favoritter | ✅ | `apps/site`, `.github/workflows/pages.yml` | enhedstests + browser-tests af alle 62 sider + axe 0 fejl + Lighthouse 99–100, CLS 0 🟡 eksempeldata; workflow ikke kørt på GitHub endnu |
-| Forbrugersite (`apps/web`) | 🟡 | `apps/web` | forside, login-sider, min konto, health, webhook |
+| **Passkeys** (login uden adgangskode) og **to-trins-login** (authenticator-app + gendannelseskoder) | ✅ | `packages/auth`, `apps/web/app/konto/sikkerhed` | 30 tests med software-autentikator + 10/10 mutationer fanget + 19-trins browser-e2e med Chromiums virtuelle autentikator (dev og produktion) |
+| **Hjemmeside** – forside med varer og kategorier, kategorier med filtre, varesider med gennemskuelig pris, sælgerprofiler, søgning, favoritter. Statisk testversion på GitHub Pages; samme app med login på en server | ✅ | `apps/web`, `.github/workflows/pages.yml` | enhedstests + browser-tests af alle sider + axe 0 fejl + Lighthouse 99–100, CLS 0, udgivet på Pages 🟡 eksempeldata |
 | Annoncer, søgning, upload, chat, favoritter | ⬜ | – | se roadmap |
 | Rigtige admin-funktioner (moderation, refunderinger, brugere) | ⬜ | `apps/admin` | siderne findes og er rolle-beskyttede, men tomme |
 | Worker-proces der kører `runOutbox` | ⬜ | – | funktionen er klar og testet |
@@ -48,10 +50,14 @@ npm test                 # alle tests (kræver ingen database – bruger PGlite)
 npm run typecheck
 npm run db:dev           # lokal Postgres (PGlite) på port 5433 med alle migrationer – ingen Docker
 APP_URL=http://localhost:3000 DATABASE_URL=postgres://postgres@127.0.0.1:5433/postgres DB_POOL_MAX=1 PWNED_CHECK=off MFA_ENCRYPTION_KEY=$(openssl rand -base64 32) npm run dev:web
-# → http://localhost:3000/signup (bekræftelseslinket skrives i serverloggen)
+# → http://localhost:3000/opret-konto/ (bekræftelseslinket skrives i serverloggen)
 ADMIN_DEV_EMAIL=dig@respin.dk ADMIN_DEV_ROLE=admin npm run dev:admin   # http://localhost:3001 (dev-login kun uden for produktion)
-npm run dev:site         # hjemmesiden på http://localhost:3030 (ingen miljøvariabler)
+npm run dev:site         # hjemmesiden uden login på http://localhost:3030 (ingen miljøvariabler – som på GitHub Pages)
 ```
+
+## Sæt det i drift
+
+Se [08-deploy.md](08-deploy.md).
 
 ## Det jeg ikke ved, og som du skal tage stilling til
 

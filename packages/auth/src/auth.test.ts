@@ -39,7 +39,7 @@ describe('tilmelding og bekræftelse', () => {
     const s = setup(); const m = email();
     expect(await s.auth.signUp({ email: m, password: PW, displayName: 'Mette' })).toEqual({ ok: true });
     expect(s.mailer.sent[0]).toMatchObject({ to: m, subject: expect.stringContaining('Bekræft') });
-    expect(s.mailer.linkFrom()).toMatch(/^https:\/\/respin\.dk\/verify-email\?token=/);
+    expect(s.mailer.linkFrom()).toMatch(/^https:\/\/respin\.dk\/bekraeft-email\/\?token=/);
     expect(await s.auth.signIn({ email: m, password: PW })).toEqual({ ok: false, error: 'email_not_verified' });
   });
   it('aktivering kræver link OG adgangskode; linket kan kun bruges én gang', async () => {

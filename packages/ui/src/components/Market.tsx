@@ -154,7 +154,7 @@ export function ProductGallery({ images, placeholderIcon, sizes = '(min-width: 1
   const tile = (img: GalleryImage, large: boolean) => (
     <div className={cx('rs-ph', 'rs-ph--34', img.src && 'rs-ph--photo')} style={{ '--rs-ph-bg': `var(--rs-ph-${(Math.abs(img.shade ?? 0) % 4) + 1})` } as CSSProperties}
       role={!img.src && large ? 'img' : undefined} aria-label={!img.src && large ? img.alt : undefined}>
-      {img.src ? <img src={img.src} srcSet={img.srcSet} sizes={img.srcSet ? (large ? sizes : '120px') : undefined} alt={large ? img.alt : ''} loading={large ? 'eager' : 'lazy'} decoding="async" {...(large ? { fetchPriority: 'high' as const } : {})} /> : placeholderIcon ? <Icon name={placeholderIcon} size={large ? 96 : 32} /> : null}
+      {img.src ? <img src={img.src} srcSet={img.srcSet} sizes={img.srcSet ? (large ? sizes : '120px') : undefined} alt={large ? img.alt : ''} loading={large ? 'eager' : 'lazy'} decoding="async" /> : placeholderIcon ? <Icon name={placeholderIcon} size={large ? 96 : 32} /> : null}
     </div>
   );
   return (

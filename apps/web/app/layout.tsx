@@ -1,19 +1,55 @@
 import type { Metadata, Viewport } from 'next';
-import { headers } from 'next/headers';
 import type { ReactNode } from 'react';
-import '@respin/ui/reset.css';
-import '@respin/ui/styles.css';
+import { headers } from 'next/headers';
+import localFont from 'next/font/local';
+import './globals.css';
+import { Providers } from './providers';
+import { CategoryNav, Header } from '../components/Header';
+import { TopBar } from '../components/TopBar';
+import { Footer } from '../components/Footer';
+import { SITE } from '../lib/site';
 
-export const metadata: Metadata = { title: { default: 're:spin', template: '%s · re:spin' }, description: 'Giv tøjet nyt liv. Sælg nemt, køb unikt.' };
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#fdfbf7' };
+// Inter (variabel, latin-delsæt inkl. æ/ø/å) – selv-hostet og forhåndsindlæst. next/font laver en
+// størrelsestilpasset reserveskrift, så skiftet til Inter ikke flytter noget på siden (CLS 0).
+const inter = localFont({
+  src: './fonts/inter-latin-wght-normal.woff2',
+  weight: '100 900',
+  style: 'normal',
+  display: 'swap',
+  variable: '--font-inter'
+});
+
+export const metadata: Metadata = {
+  title: { default: SITE.title, template: `%s · ${SITE.name}` },
+  description: SITE.description,
+  // Testversion: skal ikke findes i søgemaskiner
+  robots: SITE.isTest ? { index: false, follow: false } : undefined,
+  openGraph: { title: SITE.title, description: SITE.description, locale: 'da_DK', type: 'website', siteName: SITE.name },
+  formatDetection: { telephone: false }
+};
+
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#ffffff' };
+
+const isServer = process.env.NEXT_PUBLIC_AUTH_ENABLED === '1';
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  // Læsning af headers() gør siden dynamisk, så hver request får sin egen CSP-nonce (påkrævet af nonce-baseret CSP).
-  // Next læser nonce fra CSP-headeren og sætter den automatisk på sine egne scripts.
-  await headers();
+  // Server-tilstand: headers() gør hver side dynamisk, så den får sin egen CSP-nonce (sat af proxy.server.ts).
+  // Next læser nonce fra CSP-headeren og sætter den på sine egne scripts. Statisk eksport kalder den ikke.
+  if (isServer) await headers();
   return (
-    <html lang="da">
-      <body>{children}</body>
+    <html lang="da" className={inter.variable}>
+      <body className="rs-flat min-h-dvh">
+        <a href="#indhold" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-lime focus:px-4 focus:py-2 focus:font-bold">
+          Spring til indhold
+        </a>
+        <Providers>
+          <TopBar />
+          <Header />
+          <CategoryNav />
+          <main id="indhold">{children}</main>
+          <Footer />
+        </Providers>
+      </body>
     </html>
   );
 }

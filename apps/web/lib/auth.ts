@@ -3,7 +3,7 @@ import { cache } from 'react';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { ConsoleMailer, PgRateLimiter, createAuth, createPwnedChecker, sessionCookieName, sessionCookieOptions, type Auth, type IssuedSession, type RequestContext } from '@respin/auth';
+import { ConsoleMailer, PgRateLimiter, ResendMailer, createAuth, createPwnedChecker, sessionCookieName, sessionCookieOptions, type Auth, type IssuedSession, type RequestContext } from '@respin/auth';
 import { getClientIp, loadEnv, safeRedirectPath } from '@respin/security';
 import { getDb } from './server';
 
@@ -12,7 +12,11 @@ export const isProd = process.env.NODE_ENV === 'production';
 const envSchema = z.object({
   /** Kanonisk adresse til links i e-mails. ALDRIG udledt af Host-headeren (forgiftede nulstillingslinks). */
   APP_URL: z.url(),
-  MAIL_TRANSPORT: z.enum(['console']).default('console'),
+  /** console = mails i serverloggen (kun udvikling). resend = rigtig afsendelse via Resend (produktion). */
+  MAIL_TRANSPORT: z.enum(['console', 'resend']).default('console'),
+  RESEND_API_KEY: z.string().optional(),
+  /** Afsender, fx "re:spin <noreply@respin.dk>" – domænet skal være verificeret (SPF/DKIM) */
+  MAIL_FROM: z.string().optional(),
   PWNED_CHECK: z.enum(['on', 'off']).default('on'),
   /** Header som den betroede proxy sætter med klientens IP */
   TRUSTED_IP_HEADER: z.enum(['cf-connecting-ip', 'x-real-ip', 'x-forwarded-for']).default('x-forwarded-for'),
@@ -20,6 +24,10 @@ const envSchema = z.object({
   /** 32 byte (base64) til kryptering af TOTP-hemmeligheder. Lav med: openssl rand -base64 32. Skift ALDRIG uden migrering. */
   MFA_ENCRYPTION_KEY: z.string().refine((v) => Buffer.from(v, 'base64').length === 32, 'skal være 32 byte base64')
 }).superRefine((e, ctx) => {
+  if (e.MAIL_TRANSPORT === 'resend') {
+    if (!e.RESEND_API_KEY) ctx.addIssue({ code: 'custom', path: ['RESEND_API_KEY'], message: 'påkrævet når MAIL_TRANSPORT=resend' });
+    if (!e.MAIL_FROM) ctx.addIssue({ code: 'custom', path: ['MAIL_FROM'], message: 'påkrævet når MAIL_TRANSPORT=resend' });
+  }
   if (!isProd) return;
   if (!e.APP_URL.startsWith('https://')) ctx.addIssue({ code: 'custom', path: ['APP_URL'], message: 'skal være https i produktion' });
   if (e.MAIL_TRANSPORT === 'console') ctx.addIssue({ code: 'custom', path: ['MAIL_TRANSPORT'], message: 'konsol-mail er ikke tilladt i produktion – konfigurér en mailudbyder' });
@@ -35,7 +43,7 @@ function boot() {
     const auth = createAuth({
       db,
       appUrl: env.APP_URL,
-      mailer: new ConsoleMailer(),
+      mailer: env.MAIL_TRANSPORT === 'resend' ? new ResendMailer({ apiKey: env.RESEND_API_KEY!, from: env.MAIL_FROM! }) : new ConsoleMailer(),
       limiter: (cfg) => new PgRateLimiter(db, cfg),
       pwned: env.PWNED_CHECK === 'on' ? createPwnedChecker() : undefined,
       mfaKey: env.MFA_ENCRYPTION_KEY,
@@ -71,6 +79,6 @@ export const getCurrentSession = cache(async () => getAuth().getSession(await se
 /** Kræv login; ellers til /login med sikker retur-sti. */
 export async function requireSession(returnTo: string) {
   const current = await getCurrentSession();
-  if (!current) redirect(`/login?next=${encodeURIComponent(safeRedirectPath(returnTo))}`);
+  if (!current) redirect(`/log-ind/?next=${encodeURIComponent(safeRedirectPath(returnTo))}`);
   return current;
 }

@@ -28,7 +28,7 @@ export function createMfa(i: Internals) {
   const key = () => { if (!i.mfaKey) throw new Error('MFA er ikke konfigureret (mangler krypteringsnøgle)'); return i.mfaKey; };
   const notify = async (userId: string, what: string) => {
     const [u] = await db.select({ email: users.email }).from(users).where(eq(users.id, userId));
-    if (u) await i.send(u.email, templates.securityChange(what, i.link('/forgot-password')));
+    if (u) await i.send(u.email, templates.securityChange(what, i.link('/glemt-adgangskode/')));
   };
 
   async function issueRecoveryCodes(userId: string): Promise<string[]> {

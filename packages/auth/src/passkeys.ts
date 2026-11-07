@@ -45,7 +45,7 @@ export function createPasskeys(i: Internals) {
     const r = await db.update(webauthnChallenges).set({ usedAt: now() }).where(cond).returning({ id: webauthnChallenges.id });
     return r.length === 1;
   }
-  const notify = async (email: string, what: string) => i.send(email, templates.securityChange(what, i.link('/forgot-password')));
+  const notify = async (email: string, what: string) => i.send(email, templates.securityChange(what, i.link('/glemt-adgangskode/')));
 
   return {
     async list(userId: string) {

@@ -2,11 +2,10 @@
 
 import { useActionState } from 'react';
 import { Button, Field, Notice } from '@respin/ui';
-import { changePasswordAction, forgotPasswordAction, resetPasswordAction, signInAction, signUpAction, verifyEmailAction, verifyMfaAction, type FormState } from '../app/actions';
+import { changePasswordAction, forgotPasswordAction, resetPasswordAction, signInAction, signUpAction, verifyEmailAction, verifyMfaAction, type FormState } from '../lib/actions';
 import { PasskeyLoginButton } from './Security';
 
 const Error = ({ state }: { state: FormState }) => (state?.error ? <Notice icon="info" warn role="alert" data-testid="form-error">{state.error}</Notice> : null);
-const form = { display: 'flex', flexDirection: 'column', gap: 16 } as const;
 
 export function LoginForm({ next }: { next: string }) {
   const [state, action, pending] = useActionState(signInAction, undefined);
@@ -14,8 +13,8 @@ export function LoginForm({ next }: { next: string }) {
   return (
     <>
     <PasskeyLoginButton next={next} />
-    <div className="rs-row-flex rs-gap-3 rs-t-muted rs-t-small"><hr className="rs-divider rs-grow" style={{ margin: 0 }} />eller<hr className="rs-divider rs-grow" style={{ margin: 0 }} /></div>
-    <form action={action} style={form} noValidate>
+    <div className="flex items-center gap-3 text-small text-muted" aria-hidden="true"><span className="h-px flex-1 bg-line" />eller<span className="h-px flex-1 bg-line" /></div>
+    <form action={action} className="flex flex-col gap-4" noValidate>
       <Error state={state} />
       <input type="hidden" name="next" value={next} />
       <Field label="E-mail" name="email" type="email" icon="mail" autoComplete="username" required defaultValue={state?.values?.email} />
@@ -29,9 +28,9 @@ export function LoginForm({ next }: { next: string }) {
 /** Andet trin: kode fra authenticator-app eller gendannelseskode */
 function MfaStep({ mfaToken, next }: { mfaToken: string; next: string }) {
   const [state, action, pending] = useActionState(verifyMfaAction, { mfaToken, next });
-  if (!state?.mfaToken) return <><Error state={state} /><Button href="/login" variant="outline" full>Log ind igen</Button></>;
+  if (!state?.mfaToken) return <><Error state={state} /><Button href="/log-ind/" variant="outline" full>Log ind igen</Button></>;
   return (
-    <form action={action} style={form} noValidate>
+    <form action={action} className="flex flex-col gap-4" noValidate>
       <Notice icon="lock">Indtast koden fra din authenticator-app. Har du ikke telefonen, kan du bruge en gendannelseskode.</Notice>
       <Error state={state} />
       <input type="hidden" name="mfaToken" value={state.mfaToken} />
@@ -46,7 +45,7 @@ export function SignupForm() {
   const [state, action, pending] = useActionState(signUpAction, undefined);
   if (state?.done) return <Notice icon="mail" role="status"><b>Tjek din indbakke.</b> Vi har sendt et link, så du kan bekræfte din e-mail. Linket virker i 24 timer.</Notice>;
   return (
-    <form action={action} style={form} noValidate>
+    <form action={action} className="flex flex-col gap-4" noValidate>
       <Error state={state} />
       <Field label="Navn" name="displayName" icon="user" autoComplete="nickname" required maxLength={40} defaultValue={state?.values?.displayName} />
       <Field label="E-mail" name="email" type="email" icon="mail" autoComplete="email" required defaultValue={state?.values?.email} />
@@ -59,7 +58,7 @@ export function SignupForm() {
 export function VerifyForm({ token }: { token: string }) {
   const [state, action, pending] = useActionState(verifyEmailAction, undefined);
   return (
-    <form action={action} style={form} noValidate>
+    <form action={action} className="flex flex-col gap-4" noValidate>
       <Error state={state} />
       <input type="hidden" name="token" value={token} />
       <Field label="Adgangskode" name="password" type="password" icon="lock" autoComplete="current-password" required hint="Den adgangskode du valgte, da du oprettede kontoen." />
@@ -72,7 +71,7 @@ export function ForgotForm() {
   const [state, action, pending] = useActionState(forgotPasswordAction, undefined);
   if (state?.done) return <Notice icon="mail" role="status">Hvis der findes en konto med den e-mail, har vi sendt et link til at nulstille adgangskoden. Linket virker i 30 minutter.</Notice>;
   return (
-    <form action={action} style={form} noValidate>
+    <form action={action} className="flex flex-col gap-4" noValidate>
       <Field label="E-mail" name="email" type="email" icon="mail" autoComplete="email" required />
       <Button type="submit" size="lg" full disabled={pending}>Send link</Button>
     </form>
@@ -82,7 +81,7 @@ export function ForgotForm() {
 export function ResetForm({ token }: { token: string }) {
   const [state, action, pending] = useActionState(resetPasswordAction, undefined);
   return (
-    <form action={action} style={form} noValidate>
+    <form action={action} className="flex flex-col gap-4" noValidate>
       <Error state={state} />
       <input type="hidden" name="token" value={token} />
       <Field label="Ny adgangskode" name="password" type="password" icon="lock" autoComplete="new-password" required minLength={12} hint="Mindst 12 tegn. Du bliver logget ud på alle enheder." />
@@ -94,7 +93,7 @@ export function ResetForm({ token }: { token: string }) {
 export function ChangePasswordForm() {
   const [state, action, pending] = useActionState(changePasswordAction, undefined);
   return (
-    <form action={action} style={form} noValidate>
+    <form action={action} className="flex flex-col gap-4" noValidate>
       {state?.done && <Notice icon="check" role="status">Adgangskoden er ændret, og du er logget ud på alle andre enheder.</Notice>}
       <Error state={state} />
       <Field label="Nuværende adgangskode" name="currentPassword" type="password" autoComplete="current-password" required />

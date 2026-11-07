@@ -34,7 +34,8 @@ export interface ProductImageProps {
   srcSet?: string;
   /** Hvor bredt billedet vises, fx "(min-width: 1024px) 220px, 50vw" */
   sizes?: string;
-  /** Vigtigste billede på siden: hentes med det samme (ikke lazy) og med høj prioritet */
+  /** Vigtigt billede øverst på siden: hentes med det samme i stedet for lazy.
+   *  (Bevidst uden fetchPriority="high": React laver så en preload, som også hentes, når siden blot forhåndshentes.) */
   priority?: boolean;
   alt: string;
   shade?: number;
@@ -56,8 +57,7 @@ export function ProductImage({ src, srcSet, sizes, priority, alt, shade = 0, rat
     <div className={cx('rs-ph', `rs-ph--${ratio}`, !placeholder && 'rs-ph--photo', className)} style={{ '--rs-ph-bg': `var(--rs-ph-${(Math.abs(shade) % 4) + 1})` } as CSSProperties}
       role={placeholder && !decorative ? 'img' : undefined} aria-label={placeholder && !decorative ? alt : undefined} aria-hidden={decorative ? true : undefined}>
       {image ?? (src ? (
-        <img src={src} srcSet={srcSet} sizes={sizes} alt={alt} loading={priority ? 'eager' : 'lazy'} decoding="async"
-          {...(priority ? { fetchPriority: 'high' as const } : {})} />
+        <img src={src} srcSet={srcSet} sizes={sizes} alt={alt} loading={priority ? 'eager' : 'lazy'} decoding="async" />
       ) : null)}
       {children}
     </div>

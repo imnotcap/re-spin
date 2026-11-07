@@ -15,7 +15,6 @@ export function HomeHero() {
           alt=""
           width={1600}
           height={900}
-          fetchPriority="high"
           decoding="async"
           className="block h-56 w-full object-cover sm:h-[360px] lg:h-[440px]"
         />
