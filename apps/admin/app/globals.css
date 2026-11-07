@@ -1,0 +1,7 @@
+@import "tailwindcss";
+/* UI-kittet i Tailwinds components-lag → utilities kan altid overstyre */
+@import "@respin/ui/styles.css" layer(components);
+@import "@respin/ui/tailwind.css";
+
+body { background: var(--rs-bg); color: var(--rs-text); font-family: var(--rs-font); -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 3px solid var(--rs-forest); outline-offset: 2px; border-radius: 4px; }

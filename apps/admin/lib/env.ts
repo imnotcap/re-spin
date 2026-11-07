@@ -14,6 +14,7 @@ const schema = z.object({
   ACCESS_TEAM_DOMAIN: z.string().optional(),
   ACCESS_AUD: z.string().optional(),
   DATABASE_URL: z.string().optional(),
+  DB_POOL_MAX: z.coerce.number().int().min(1).max(20).default(5),
   // KUN udvikling – afvises i produktion
   ADMIN_DEV_EMAIL: z.string().email().optional(),
   ADMIN_DEV_ROLE: z.enum(['support', 'moderator', 'finance', 'admin']).default('support')

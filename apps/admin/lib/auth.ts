@@ -7,13 +7,14 @@ import { createDb, schema, type Db } from '@respin/db';
 import { adminEnv } from './env';
 import { getGuard } from './guard';
 
-export interface Staff { id: string; email: string; role: Role; ip: string | null }
+export interface Staff { id: string; email: string; role: Role; ip: string | null; name: string | null }
 
 const g = globalThis as unknown as { __adminDb?: Db };
-function db(): Db | null {
-  const url = adminEnv().DATABASE_URL;
+/** Databasen for admin-appen (rollen respin_admin). null i udvikling uden database. */
+export function db(): Db | null {
+  const { DATABASE_URL: url, DB_POOL_MAX: max } = adminEnv();
   if (!url) return null;
-  return (g.__adminDb ??= createDb({ url, max: 5 }).db);
+  return (g.__adminDb ??= createDb({ url, max }).db);
 }
 
 /** Audit-log: i produktion til databasen (append-only tabel); i dev uden database til konsollen. */
@@ -26,12 +27,12 @@ const auditor = createAuditor({
 });
 export const audit = auditor.record;
 
-async function lookupStaff(email: string): Promise<{ id: string; role: Role } | null> {
+async function lookupStaff(email: string): Promise<{ id: string; role: Role; name: string | null } | null> {
   const e = adminEnv();
   const d = db();
-  if (!d) return e.NODE_ENV !== 'production' && e.ADMIN_DEV_EMAIL?.toLowerCase() === email ? { id: 'dev', role: e.ADMIN_DEV_ROLE } : null;
-  const [row] = await d.select({ id: schema.staffUsers.id, role: schema.staffUsers.role, active: schema.staffUsers.active }).from(schema.staffUsers).where(eq(schema.staffUsers.email, email));
-  return row && row.active ? { id: row.id, role: row.role } : null; // spærrede medarbejdere mister adgang med det samme
+  if (!d) return e.NODE_ENV !== 'production' && e.ADMIN_DEV_EMAIL?.toLowerCase() === email ? { id: 'dev', role: e.ADMIN_DEV_ROLE, name: null } : null;
+  const [row] = await d.select({ id: schema.staffUsers.id, role: schema.staffUsers.role, active: schema.staffUsers.active, name: schema.staffUsers.displayName }).from(schema.staffUsers).where(eq(schema.staffUsers.email, email));
+  return row && row.active ? { id: row.id, role: row.role, name: row.name } : null; // spærrede medarbejdere mister adgang med det samme
 }
 
 /**
@@ -49,5 +50,12 @@ export async function requireStaff(permission?: Permission): Promise<Staff> {
     await audit({ actorType: 'staff', actorId: staff.id, action: 'admin.forbidden', ip: result.ip, metadata: { permission } });
     notFound();
   }
-  return { id: staff.id, email: result.identity.email, role: staff.role, ip: result.ip };
+  return { id: staff.id, email: result.identity.email, role: staff.role, ip: result.ip, name: staff.name };
+}
+
+/** Databasen – kræves af alle sider med data. Uden database (kun udvikling) vises en tydelig fejl. */
+export function requireDb(): Db {
+  const d = db();
+  if (!d) throw new Error('DATABASE_URL mangler – admin kan ikke vise data uden database.');
+  return d;
 }

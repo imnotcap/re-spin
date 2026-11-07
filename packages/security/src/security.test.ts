@@ -120,6 +120,13 @@ describe('RBAC', () => {
     expect(permissionForAdminPath('/settings/fees')).toBe('fees.edit');
     expect(permissionForAdminPath('/staffing')).toBeNull(); // ikke prefix-forvekslet med /staff
     expect(permissionForAdminPath('/hemmelig')).toBeNull();
+    expect(permissionForAdminPath('/support/abc')).toBe('support.handle');
+    expect(permissionForAdminPath('/approvals')).toBe('order.refund'); // kun dem, der selv må refundere, kan godkende
+  });
+  it('kundeservice: alle roller kan svare kunder, men support kan ikke refundere eller spærre', () => {
+    for (const r of ROLES) expect(can(r, 'support.handle')).toBe(true);
+    expect(can('support', 'order.refund')).toBe(false);
+    expect(can('support', 'user.suspend')).toBe(false);
   });
 });
 

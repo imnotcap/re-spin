@@ -8,14 +8,14 @@ export type Role = (typeof ROLES)[number];
 export const PERMISSIONS = [
   'user.view', 'user.suspend', 'listing.view', 'listing.moderate', 'report.handle',
   'order.view', 'order.refund', 'order.resolve_dispute', 'payout.view', 'ledger.view',
-  'fees.edit', 'staff.manage', 'audit.view'
+  'fees.edit', 'staff.manage', 'audit.view', 'support.handle'
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
 const MATRIX: Record<Role, readonly Permission[]> = {
-  support:   ['user.view', 'listing.view', 'order.view', 'report.handle'],
-  moderator: ['user.view', 'user.suspend', 'listing.view', 'listing.moderate', 'report.handle', 'order.view'],
-  finance:   ['user.view', 'order.view', 'order.refund', 'order.resolve_dispute', 'payout.view', 'ledger.view', 'audit.view'],
+  support:   ['user.view', 'listing.view', 'order.view', 'report.handle', 'support.handle'],
+  moderator: ['user.view', 'user.suspend', 'listing.view', 'listing.moderate', 'report.handle', 'order.view', 'support.handle'],
+  finance:   ['user.view', 'order.view', 'order.refund', 'order.resolve_dispute', 'payout.view', 'ledger.view', 'audit.view', 'support.handle'],
   admin:     [...PERMISSIONS]
 };
 
@@ -45,7 +45,8 @@ export function canApprove(input: { requesterId: string; approverId: string; app
 /** Beskyttede admin-ruter → påkrævet rettighed. Ikke-listede ruter afvises (deny-by-default). */
 export const ADMIN_ROUTE_PERMISSIONS: ReadonlyArray<readonly [prefix: string, permission: Permission]> = [
   ['/users', 'user.view'], ['/listings', 'listing.view'], ['/moderation', 'report.handle'], ['/orders', 'order.view'],
-  ['/payouts', 'payout.view'], ['/ledger', 'ledger.view'], ['/settings/fees', 'fees.edit'], ['/staff', 'staff.manage'], ['/audit', 'audit.view']
+  ['/payouts', 'payout.view'], ['/ledger', 'ledger.view'], ['/settings/fees', 'fees.edit'], ['/staff', 'staff.manage'], ['/audit', 'audit.view'],
+  ['/support', 'support.handle'], ['/approvals', 'order.refund']
 ];
 
 /** '/' (dashboard) er åben for alle gyldige medarbejdere; alt andet skal matche en rute-regel. */

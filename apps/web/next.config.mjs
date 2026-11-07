@@ -46,5 +46,5 @@ export default {
   reactStrictMode: true,
   poweredByHeader: false, // skjul "X-Powered-By: Next.js"
   // Interne workspace-pakker er TypeScript-kildekode og skal oversættes af Next
-  transpilePackages: ['@respin/core', '@respin/db', '@respin/security', '@respin/payments', '@respin/auth', '@respin/ui']
+  transpilePackages: ['@respin/core', '@respin/db', '@respin/security', '@respin/payments', '@respin/support', '@respin/auth', '@respin/ui']
 };

@@ -267,9 +267,14 @@ export const staffUsers = pgTable('staff_users', {
   id: id(),
   email: text('email').notNull().unique(),
   role: staffRole('role').notNull(),
+  /** Fornavn, som kunden ser i support-samtaler ("Signe fra re:spin") */
+  displayName: text('display_name'),
   active: boolean('active').notNull().default(true),
   createdAt: createdAt()
-}, (t) => [check('staff_email_lower', sql`${t.email} = lower(${t.email})`)]);
+}, (t) => [
+  check('staff_email_lower', sql`${t.email} = lower(${t.email})`),
+  check('staff_display_name_len', sql`${t.displayName} IS NULL OR char_length(${t.displayName}) BETWEEN 1 AND 40`)
+]);
 
 export const auditLog = pgTable('audit_log', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
@@ -406,3 +411,88 @@ export const mfaPending = pgTable('mfa_pending', {
   usedAt: ts('used_at'),
   createdAt: createdAt()
 }, (t) => [check('mfa_pending_attempts', sql`${t.attempts} BETWEEN 0 AND 5`)]);
+
+/* ------------------------------ Kundeservice ------------------------------ */
+export const SUPPORT_CATEGORIES = ['order', 'payment', 'account', 'listing', 'safety', 'other'] as const;
+export const SUPPORT_STATUSES = ['open', 'pending_customer', 'resolved', 'closed'] as const;
+export const SUPPORT_PRIORITIES = ['low', 'normal', 'high', 'urgent'] as const;
+export const supportCategory = pgEnum('support_category', SUPPORT_CATEGORIES);
+export const supportStatus = pgEnum('support_status', SUPPORT_STATUSES);
+export const supportPriority = pgEnum('support_priority', SUPPORT_PRIORITIES);
+
+/**
+ * En henvendelse fra en kunde (sag). Samtalen ligger i support_messages. Kunden ser kun sine egne sager
+ * (håndhæves i hver forespørgsel), medarbejdere ser alle. `number` er det korte sagsnummer kunden ser (#1001).
+ */
+export const supportCases = pgTable('support_cases', {
+  id: id(),
+  number: integer('number').generatedAlwaysAsIdentity({ startWith: 1001 }).notNull().unique(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
+  subject: text('subject').notNull(),
+  category: supportCategory('category').notNull(),
+  status: supportStatus('status').notNull().default('open'),
+  priority: supportPriority('priority').notNull().default('normal'),
+  assigneeId: uuid('assignee_id').references(() => staffUsers.id, { onDelete: 'set null' }),
+  orderId: uuid('order_id').references(() => orders.id, { onDelete: 'set null' }),
+  listingId: uuid('listing_id').references(() => listings.id, { onDelete: 'set null' }),
+  /** Seneste besked fra kunden (svartid måles herfra) og fra en medarbejder */
+  lastCustomerAt: ts('last_customer_at'),
+  lastStaffAt: ts('last_staff_at'),
+  firstResponseAt: ts('first_response_at'),
+  resolvedAt: ts('resolved_at'),
+  /** Kunden har ulæste svar (vises som prik på Min konto) */
+  customerUnread: boolean('customer_unread').notNull().default(false),
+  createdAt: createdAt(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+}, (t) => [
+  check('support_subject_len', sql`char_length(${t.subject}) BETWEEN 3 AND 120`),
+  index('support_cases_queue_idx').on(t.status, t.updatedAt),
+  index('support_cases_user_idx').on(t.userId, t.updatedAt),
+  index('support_cases_assignee_idx').on(t.assigneeId, t.status)
+]);
+
+export const supportMessages = pgTable('support_messages', {
+  id: id(),
+  caseId: uuid('case_id').notNull().references(() => supportCases.id, { onDelete: 'cascade' }),
+  authorType: text('author_type').notNull(),
+  /** users.id for kunden, staff_users.id for medarbejdere, NULL for systemet */
+  authorId: uuid('author_id'),
+  body: text('body').notNull(),
+  /** Interne noter ses kun af medarbejdere */
+  internal: boolean('internal').notNull().default(false),
+  createdAt: createdAt()
+}, (t) => [
+  check('support_msg_author', sql`${t.authorType} IN ('customer', 'staff', 'system')`),
+  check('support_msg_body_len', sql`char_length(${t.body}) BETWEEN 1 AND 4000`),
+  check('support_msg_internal_staff', sql`NOT ${t.internal} OR ${t.authorType} = 'staff'`),
+  index('support_messages_case_idx').on(t.caseId, t.createdAt)
+]);
+
+/* ------------------------------ Fire-øjne-godkendelser ------------------------------ */
+export const approvalStatus = pgEnum('approval_status', ['pending', 'approved', 'rejected']);
+
+/**
+ * Handlinger, der kræver en anden medarbejders godkendelse (fx refundering fra 1.000 kr.). Udføres først, når en
+ * ANDEN medarbejder med samme rettighed har godkendt – databasen afviser, at samme person godkender sin egen.
+ */
+export const adminApprovals = pgTable('admin_approvals', {
+  id: id(),
+  permission: text('permission').notNull(),
+  action: text('action').notNull(),
+  targetType: text('target_type').notNull(),
+  targetId: text('target_id').notNull(),
+  amountOre: integer('amount_ore'),
+  reason: text('reason').notNull(),
+  requestedBy: uuid('requested_by').notNull().references(() => staffUsers.id, { onDelete: 'restrict' }),
+  status: approvalStatus('status').notNull().default('pending'),
+  decidedBy: uuid('decided_by').references(() => staffUsers.id, { onDelete: 'restrict' }),
+  decidedAt: ts('decided_at'),
+  decisionNote: text('decision_note'),
+  createdAt: createdAt()
+}, (t) => [
+  check('approvals_four_eyes', sql`${t.decidedBy} IS NULL OR ${t.decidedBy} <> ${t.requestedBy}`),
+  check('approvals_reason_len', sql`char_length(${t.reason}) BETWEEN 5 AND 500`),
+  check('approvals_decided', sql`(${t.status} = 'pending') = (${t.decidedBy} IS NULL)`),
+  uniqueIndex('approvals_one_pending').on(t.action, t.targetId).where(sql`${t.status} = 'pending'`),
+  index('approvals_status_idx').on(t.status, t.createdAt)
+]);

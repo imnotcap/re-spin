@@ -89,3 +89,27 @@ curl -s https://respin.dk/api/health/
 - `https://respin.dk/konto/` skal sende dig videre til `/log-ind/?next=%2Fkonto%2F`.
 - Opret en konto, bekræft mailen og log ind. Tilføj en passkey og slå to-trins-login til under *Login og sikkerhed*.
 - Gå [go-live-checklisten i 02-security.md](02-security.md#11-go-live-checkliste-alle-skal-være-afkrydset) igennem.
+
+## 7. Admin-panelet (medarbejdere)
+
+Admin er en selvstændig app (`apps/admin`) på sit eget domæne, fx `admin.respin.dk`. Den må aldrig kunne nås uden om Cloudflare Access.
+
+1. **Domæne og Cloudflare Access:** læg domænet bag Cloudflare, og opret en Access-applikation for `admin.respin.dk` med jeres arbejdsmails og MFA. Notér *team domain* og *AUD*.
+2. **Vercel:** opret et nyt projekt fra samme repo med **Root Directory = `apps/admin`**. Miljøvariabler (kun *Production*):
+
+| Variabel | Værdi |
+|---|---|
+| `DATABASE_URL` | Neon pooler-URL for en login-bruger med rollen `respin_admin` (`CREATE USER respin_admin_app LOGIN PASSWORD '…' IN ROLE respin_admin;`) |
+| `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` | fra Cloudflare Access |
+| `ADMIN_ALLOWED_HOSTS` | `admin.respin.dk` |
+| `ADMIN_IP_ALLOWLIST` | kontorets/VPN'ens IP-adresser (eller `ADMIN_IP_ALLOWLIST_DISABLED=true`, hvis I kun bruger Access) |
+
+3. **Medarbejdere:** opret dem i Neons SQL-editor. Rollen afgør, hvad de må: `support` (kundeservice), `moderator` (+ moderation og spærring), `finance` (+ refundering og godkendelser), `admin` (alt).
+
+```sql
+INSERT INTO staff_users (email, role, display_name) VALUES ('signe@respin.dk', 'admin', 'Signe');
+```
+
+Kunden ser kun medarbejderens fornavn (`display_name`), aldrig e-mailen. Spær en medarbejder med `UPDATE staff_users SET active = false WHERE email = '…'`. Adgangen ophører med det samme.
+
+**Fire-øjne:** refunderinger og tvistafgørelser fra 1.000 kr. skal godkendes af en anden medarbejder med samme rettighed. Databasen afviser, at nogen godkender sin egen anmodning.

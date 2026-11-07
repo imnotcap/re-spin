@@ -20,6 +20,10 @@ GRANT SELECT, INSERT, UPDATE ON orders TO respin_web;
 GRANT SELECT, INSERT ON order_events, ledger_transactions, outbox, reports TO respin_web;
 GRANT INSERT ON ledger_entries, audit_log TO respin_web;
 GRANT SELECT, INSERT, UPDATE ON stripe_events TO respin_web;
+-- Kundeservice: kunden opretter sager og skriver beskeder; kan kun ændre status/ulæst på sagen
+GRANT SELECT, INSERT ON support_cases, support_messages TO respin_web;
+GRANT UPDATE (status, customer_unread, last_customer_at, resolved_at, updated_at) ON support_cases TO respin_web;
+GRANT USAGE ON SEQUENCE support_cases_number_seq TO respin_web;
 
 -- ---------- admin ----------
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO respin_admin;
@@ -31,6 +35,10 @@ GRANT INSERT ON audit_log, order_events, ledger_transactions, outbox TO respin_a
 GRANT INSERT ON ledger_entries TO respin_admin;
 GRANT UPDATE ON orders TO respin_admin;
 GRANT INSERT, UPDATE ON staff_users TO respin_admin;
+-- Kundeservice og fire-øjne-godkendelser (beskeder kan kun tilføjes, aldrig ændres/slettes)
+GRANT INSERT ON support_messages, admin_approvals TO respin_admin;
+GRANT UPDATE (status, priority, assignee_id, last_staff_at, first_response_at, resolved_at, customer_unread, updated_at) ON support_cases TO respin_admin;
+GRANT UPDATE (status, decided_by, decided_at, decision_note) ON admin_approvals TO respin_admin;
 
 -- ---------- worker ----------
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO respin_worker;
