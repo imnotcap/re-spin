@@ -31,6 +31,8 @@ export default {
         // Server-filer tages med; *.server.* skal stå først, så "page.server.tsx" læses som "page"
         pageExtensions: ['server.tsx', 'server.ts', 'tsx', 'ts'],
         serverExternalPackages: ['postgres', 'stripe', '@node-rs/argon2', 'sharp'],
+        // Profiler har adressen /@/<profilnavn>; siden bor i app/profil/[name] (GitHub Pages: kopi, se scripts/profile-alias.mjs)
+        async rewrites() { return [{ source: '/@/:name', destination: '/profil/:name/' }]; },
         productionBrowserSourceMaps: false
       }),
   env: {

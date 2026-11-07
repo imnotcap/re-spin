@@ -8,6 +8,9 @@ import { getImageStore } from '../../../lib/image-store';
 import { myListings } from '../../../lib/listings';
 import { LISTING_STATUS_LABEL } from '../../../lib/listing-labels';
 import { listingStatusAction } from '../../../lib/listing-actions';
+import { activePromotions } from '../../../lib/promotions';
+
+const dateFmt = new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Copenhagen' });
 
 export const metadata = { title: 'Mine annoncer' };
 
@@ -21,14 +24,17 @@ function StatusButton({ id, action, label, variant = 'outline' }: { id: string; 
   );
 }
 
-export default async function MyListingsPage({ searchParams }: { searchParams: Promise<{ fjernet?: string; opdateret?: string }> }) {
+export default async function MyListingsPage({ searchParams }: { searchParams: Promise<{ fjernet?: string; opdateret?: string; fremhaevet?: string }> }) {
   const current = await requireSession('/konto/annoncer/');
   const sp = await searchParams;
-  const list = await myListings(getDb(), getImageStore(), current.user.id);
+  const db = getDb();
+  const list = await myListings(db, getImageStore(), current.user.id);
+  const promos = await activePromotions(db, list.map((l) => l.id));
   return (
     <AuthPage width="page" title="Mine annoncer" crumbs={[{ label: 'Min konto', href: '/konto/' }, { label: 'Mine annoncer' }]}>
       {sp.fjernet && <Notice icon="check" role="status">Annoncen er fjernet.</Notice>}
       {sp.opdateret && <Notice icon="check" role="status">Annoncen er opdateret.</Notice>}
+      {sp.fremhaevet && <Notice icon="check" role="status">Tak for dit køb! Fremhævningen starter, så snart betalingen er bekræftet – normalt inden for et minut.</Notice>}
       <div><Button href="/saelg/ny/" icon="plus">Sæt en vare til salg</Button></div>
 
       {list.length === 0 ? (
@@ -48,12 +54,14 @@ export default async function MyListingsPage({ searchParams }: { searchParams: P
                     <Badge tone={l.status === 'active' ? 'forest' : 'neutral'}>{LISTING_STATUS_LABEL[l.status]}</Badge>
                     {l.moderation === 'pending' && <Badge tone="warn">Venter på gennemgang</Badge>}
                     {l.moderation === 'rejected' && <Badge tone="coral">Afvist</Badge>}
+                    {promos.has(l.id) && <Badge tone="lime">Fremhævet til {dateFmt.format(promos.get(l.id)!)}</Badge>}
                   </span>
                 </span>
               </Link>
               {l.status !== 'reserved' && (
                 <div className="flex flex-wrap gap-2">
                   <Button href={`/konto/annoncer/${l.id}/rediger/`} size="sm" variant="outline">Redigér</Button>
+                  {l.status === 'active' && l.moderation === 'approved' && <Button href={`/konto/annoncer/${l.id}/fremhaev/`} size="sm" variant="outline" icon="sparkle">{promos.has(l.id) ? 'Forlæng fremhævning' : 'Fremhæv'}</Button>}
                   {l.status === 'active' && <StatusButton id={l.id} action="sold" label="Markér som solgt" />}
                   {l.status === 'sold' && <StatusButton id={l.id} action="active" label="Sæt til salg igen" />}
                   <StatusButton id={l.id} action="removed" label="Fjern" variant="ghost" />

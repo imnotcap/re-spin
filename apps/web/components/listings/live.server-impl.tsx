@@ -5,7 +5,13 @@ import { getDb } from '../../lib/server';
 import { getImageStore } from '../../lib/image-store';
 import { listFeed } from '../../lib/listings';
 import { listingToCard } from '../../lib/listing-card';
+import type { Metadata } from 'next';
 import type { LiveSectionProps } from './live';
+import { memberByUsername } from '../../lib/profile';
+import { bannerById } from '../../lib/banners';
+import { profilePath } from '../../lib/profile-url';
+import { ProfileHeader, ProfileTabs, ReviewsPanel } from '../profile/ProfileView';
+import { Breadcrumbs } from '@respin/ui';
 import { T } from '../../lib/i18n/client';
 export { LiveSearch } from './LiveSearch';
 
@@ -22,4 +28,37 @@ export async function LiveSection({ title, category, limit = 12, id, className }
       <ProductGrid layout="responsive">{items.map((l) => <ItemCard key={l.id} item={listingToCard(l)} showSeller />)}</ProductGrid>
     </section>
   );
+}
+
+/** Medlemsprofil fra databasen: /@/<username> */
+export async function MemberProfile({ name }: { name: string }) {
+  const m = await memberByUsername(getDb(), name).catch(() => null);
+  if (!m || !m.username) return null;
+  const items = await listFeed(getDb(), getImageStore(), { sellerId: m.id, limit: 48 }).catch(() => []);
+  return (
+    <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
+      <Breadcrumbs items={[{ label: <T k="crumb.home" />, href: '/' }, { label: m.displayName }]} />
+      <ProfileHeader
+        name={m.displayName} handle={m.username} banner={bannerById(m.banner)} sharePath={profilePath(m.username)}
+        bio={m.bio ?? undefined}
+        facts={[
+          { icon: 'tag', label: <T k="profile.forSale" />, value: items.length },
+          { icon: 'user', label: <T k="profile.memberSince" />, value: m.createdAt.getFullYear() },
+          { icon: 'shield', label: <T k="profile.member" />, value: '✓' },
+          { icon: 'star', label: <T k="profile.reviews" />, value: 0 }
+        ]}
+      />
+      <ProfileTabs tabs={[
+        { id: 'til-salg', label: <T k="profile.forSale" />, count: items.length, panel: items.length
+          ? <ProductGrid layout="responsive">{items.map((l) => <ItemCard key={l.id} item={listingToCard(l)} />)}</ProductGrid>
+          : <p className="text-body text-muted"><T k="profile.noItems" /></p> },
+        { id: 'anmeldelser', label: <T k="profile.reviews" />, count: 0, panel: <ReviewsPanel name={m.displayName} rating={0} count={0} distribution={[0, 0, 0, 0, 0]} reviews={[]} /> }
+      ]} />
+    </div>
+  );
+}
+
+export async function memberMetadata(name: string): Promise<Metadata> {
+  const m = await memberByUsername(getDb(), name).catch(() => null);
+  return m?.username ? { title: `${m.displayName} – profil`, description: m.bio || `${m.displayName} sælger brugt tøj og ting på re:spin.`, alternates: { canonical: profilePath(m.username) } } : { title: 'Profilen findes ikke' };
 }

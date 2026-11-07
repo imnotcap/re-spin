@@ -21,6 +21,8 @@ export interface CardItem {
   /** Medlemmernes annoncer: eget foto og egen side (eksempelvarerne bruger /vare/ og fotos i public/img) */
   image?: { src: string; srcSet?: string } | null;
   href?: string;
+  /** Mærke på billedet, fx "Fremhævet" */
+  badge?: string;
 }
 
 /** Kittets produktkort koblet til favoritterne. Tælleren inkluderer dit eget hjerte, når du har gemt varen. */
@@ -34,7 +36,7 @@ export function ItemCard({ item, showSeller = false }: { item: CardItem; showSel
     <ProductCard
       product={{ id: item.id, title: item.title, brand: item.brand, size: item.size, condition: t(`cond.${item.condition}`, undefined, item.condition), price: item.price, imageUrl: photo.src, imageSrcSet: photo.srcSet }}
       href={item.href ?? `/vare/${item.id}/`}
-      badge={item.vintage ? 'Vintage' : undefined}
+      badge={item.badge ?? (item.vintage ? 'Vintage' : undefined)}
       placeholderIcon={item.icon}
       favoriteCount={item.favorites + (on ? 1 : 0)}
       seller={showSeller ? item.seller : undefined}

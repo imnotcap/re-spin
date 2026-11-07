@@ -6,7 +6,10 @@ import { CATEGORIES as CATEGORY_CODES, assessMessageRisk, createListingInput, ty
 import { CONDITION_LABEL, subsOf } from './listing-labels';
 import { thumbKey, type ImageStore } from './image-store';
 
-const { listings, listingImages, users, sellerProfiles } = schema;
+const { listings, listingImages, users, sellerProfiles, listingPromotions } = schema;
+
+/** Er annoncen fremhævet lige nu (betalt, og nu ligger i perioden)? */
+const promotedNow = sql<boolean>`exists (select 1 from ${listingPromotions} lp where lp.listing_id = ${listings.id} and lp.status = 'paid' and lp.starts_at <= now() and lp.ends_at > now())`;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 export type ListingError = 'invalid_input' | 'invalid_subcategory' | 'invalid_images' | 'not_found';
@@ -95,6 +98,8 @@ export interface ListingCardData {
   id: string; title: string; brand: string; size: string; condition: string; price: number;
   category: ListingCategory; sub: string; createdAt: string; image: ListingImage | null;
   seller: { name: string; certified: boolean };
+  /** Købt fremhævning, der kører lige nu */
+  promoted?: boolean;
 }
 
 const imageOf = (store: ImageStore, key: string, width: number | null, height: number | null): ListingImage => ({
@@ -129,6 +134,8 @@ export const likeEscape = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);
 export const feedQuery = z.object({
   category: z.enum(CATEGORY_CODES).optional(),
   q: z.string().max(100).optional(),
+  /** Kun én sælgers annoncer (profilsiden) */
+  sellerId: z.uuid().optional(),
   limit: z.coerce.number().int().min(1).max(48).default(24)
 });
 
@@ -137,20 +144,24 @@ export async function listFeed(db: Db, store: ImageStore, input: z.input<typeof 
   const f = feedQuery.parse(input);
   const where: SQL[] = [eq(listings.status, 'active'), eq(listings.moderationStatus, 'approved'), eq(users.status, 'active')];
   if (f.category) where.push(eq(listings.category, f.category));
+  if (f.sellerId) where.push(eq(listings.sellerId, f.sellerId));
   for (const w of (f.q ?? '').normalize('NFC').toLocaleLowerCase('da-DK').split(/\s+/).filter(Boolean).slice(0, 6)) {
     const pat = `%${likeEscape(w)}%`;
     where.push(sql`(${listings.title} ILIKE ${pat} OR coalesce(${listings.brand}, '') ILIKE ${pat} OR coalesce(${listings.subcategory}, '') ILIKE ${pat})`);
   }
-  const rows = await db.select(cardColumns).from(listings).innerJoin(users, eq(users.id, listings.sellerId))
+  // Fremhævede annoncer først, derefter nyeste
+  const rows = await db.select({ ...cardColumns, promoted: promotedNow }).from(listings).innerJoin(users, eq(users.id, listings.sellerId))
     .leftJoin(sellerProfiles, eq(sellerProfiles.userId, listings.sellerId))
-    .where(and(...where)).orderBy(desc(listings.createdAt)).limit(f.limit);
+    .where(and(...where)).orderBy(desc(promotedNow), desc(listings.createdAt)).limit(f.limit);
   const images = await coverImages(db, store, rows.map((r) => r.id));
-  return rows.map((r) => toCard(r, images)).filter((c) => c.image);
+  return rows.map((r) => ({ ...toCard(r, images), promoted: !!r.promoted })).filter((c) => c.image);
 }
 
 export interface ListingDetail extends ListingCardData {
   description: string; conditionCode: ListingCondition; parcel: 'small' | 'medium'; status: 'draft' | 'active' | 'reserved' | 'sold' | 'removed';
   moderation: 'pending' | 'approved' | 'rejected'; images: Array<ListingImage & { alt: string }>; isOwner: boolean; sellerId: string;
+  /** Sælgerens profilnavn (/@/<navn>), hvis det er sat */
+  sellerUsername: string | null;
 }
 
 /**
@@ -159,7 +170,7 @@ export interface ListingDetail extends ListingCardData {
  */
 export async function getListing(db: Db, store: ImageStore, id: string, viewerId?: string | null): Promise<ListingDetail | null> {
   if (!UUID.test(id)) return null;
-  const [r] = await db.select({ ...cardColumns, description: listings.description, shippingSize: listings.shippingSize, moderation: listings.moderationStatus, sellerId: listings.sellerId, userStatus: users.status })
+  const [r] = await db.select({ ...cardColumns, description: listings.description, shippingSize: listings.shippingSize, moderation: listings.moderationStatus, sellerId: listings.sellerId, userStatus: users.status, sellerUsername: users.username })
     .from(listings).innerJoin(users, eq(users.id, listings.sellerId)).leftJoin(sellerProfiles, eq(sellerProfiles.userId, listings.sellerId))
     .where(eq(listings.id, id));
   if (!r || r.status === 'removed') return null;
@@ -170,7 +181,7 @@ export async function getListing(db: Db, store: ImageStore, id: string, viewerId
   const images = imgs.map((i, n) => ({ ...imageOf(store, i.key, i.w, i.h), alt: `${r.title}${r.brand ? ` fra ${r.brand}` : ''}, billede ${n + 1}` }));
   return {
     ...toCard(r, new Map(images[0] ? [[r.id, images[0]]] : [])), description: r.description, conditionCode: r.condition, parcel: r.shippingSize,
-    status: r.status, moderation: r.moderation, images, isOwner, sellerId: r.sellerId
+    status: r.status, moderation: r.moderation, images, isOwner, sellerId: r.sellerId, sellerUsername: r.sellerUsername
   };
 }
 

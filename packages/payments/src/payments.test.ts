@@ -23,6 +23,7 @@ function fakeGateway() {
     createPaymentIntent: async (p) => { calls.pi.push(p); return { id: `pi_${++n}`, clientSecret: `pi_${n}_secret` }; },
     createTransfer: async (p) => { calls.transfer.push(p); return { id: `tr_${p.orderId}` }; },
     createRefund: async (p) => { calls.refund.push(p); return { id: `re_${calls.refund.length}` }; },
+    createCheckoutSession: async (p) => ({ id: `cs_${p.promotionId}`, url: `https://checkout.stripe.test/${p.promotionId}` }),
     verifyWebhook: (raw, sig) => verifier.verifyWebhook(raw, sig)
   };
   return { gw, calls };

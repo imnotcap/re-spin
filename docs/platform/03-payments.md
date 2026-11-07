@@ -102,6 +102,16 @@ flowchart LR
 | **Ledger ≠ Stripe** | Daglig afstemning mod Stripe balance transactions → alarm | ⬜ |
 | Delvis refundering, flere betalinger pr. ordre | Ikke understøttet i skelettet | ⬜ |
 
+## Fremhævning af annoncer
+
+Sælgere kan købe fremhævning af egne annoncer (1 dag 19 kr, 3 dage 39 kr, 7 dage 69 kr – `packages/core/src/promotions.ts`). Fremhævede annoncer står først i feed, kategori og søgning med mærket «Fremhævet».
+
+- Prisen fastfryses fra pakken på serveren (aldrig fra klienten) i `listing_promotions` med status `pending`, og køber sendes til **Stripe Checkout** (ikke Connect – pengene er platformens omsætning).
+- Fremhævningen aktiveres **kun** af en signeret `checkout.session.completed` med `metadata.kind = promotion`, og kun når session-id, beløb, valuta (DKK) og `payment_status = paid` passer præcist. Ellers: audit-log `promotion.payment_mismatch` og intet aktiveres. Samme event igen ændrer intet.
+- Flere køb på samme annonce lægges i forlængelse af hinanden (række-lås på annoncens fremhævninger).
+- `payment_intent.*`-events for fremhævninger ignoreres, så de ikke behandles som ordrer.
+- Uden Stripe-nøgler kan fremhævning aktiveres gratis i udvikling, eller i produktion med `PROMOTIONS_TEST_MODE=1`.
+
 ## Åbne spørgsmål
 
 1. Kan I holde købers penge via Connect (separate charges and transfers) inden for gældende regler for jeres virksomhedsform – eller kræves en anden model/licens? *(juridisk/Stripe)*

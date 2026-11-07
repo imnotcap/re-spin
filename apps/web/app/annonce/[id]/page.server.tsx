@@ -12,6 +12,7 @@ import { getImageStore } from '../../../lib/image-store';
 import { getListing } from '../../../lib/listings';
 import { CONDITION_HELP, getCategory, uploadedLabel } from '../../../lib/catalog';
 import { PARCEL_LABEL } from '../../../lib/listing-labels';
+import { profilePath } from '../../../lib/profile-url';
 import { T } from '../../../lib/i18n/client';
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ ny?: string; gemt?: string; gennemgang?: string }> };
@@ -66,7 +67,8 @@ export default async function ListingPage({ params, searchParams }: Props) {
             {l.isOwner ? (
               <div className="flex flex-wrap gap-2">
                 <Button href={`/konto/annoncer/${l.id}/rediger/`} icon="edit">Redigér annonce</Button>
-                <Button href="/konto/annoncer/" variant="outline">Mine annoncer</Button>
+                {l.status === 'active' && l.moderation === 'approved' && <Button href={`/konto/annoncer/${l.id}/fremhaev/`} variant="outline" icon="sparkle">Fremhæv annonce</Button>}
+                <Button href="/konto/annoncer/" variant="ghost">Mine annoncer</Button>
               </div>
             ) : l.status === 'active' ? (
               <ItemActions id={l.id} title={l.title} meta={meta} price={l.price} parcel={l.parcel} favorites={0} sellerName={l.seller.name} sellerCertified={l.seller.certified} />
@@ -96,7 +98,7 @@ export default async function ListingPage({ params, searchParams }: Props) {
             </section>
           )}
 
-          <SellerCard className="mt-7" name={l.seller.name} certified={l.seller.certified} facts={[{ icon: 'user', text: 'Medlem af re:spin' }]} />
+          <SellerCard className="mt-7" name={l.seller.name} href={l.sellerUsername ? profilePath(l.sellerUsername) : undefined} certified={l.seller.certified} facts={[{ icon: 'user', text: 'Medlem af re:spin' }]} />
         </div>
       </div>
     </div>

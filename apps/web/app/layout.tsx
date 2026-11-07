@@ -7,6 +7,7 @@ import { Providers } from './providers';
 import { CategoryNav, Header } from '../components/Header';
 import { TopBar } from '../components/TopBar';
 import { Footer } from '../components/Footer';
+import { CookieBanner } from '../components/consent/CookieBanner';
 import { menuMeta } from '../lib/catalog';
 import { SITE_URL, SITE } from '../lib/site';
 
@@ -40,7 +41,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   if (isServer) await headers();
   return (
     <html lang="da" className={inter.variable} data-scroll-behavior="smooth">
-      <body className="rs-flat min-h-dvh">
+      <body className="rs-flat flex min-h-dvh flex-col">
         <a href="#indhold" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-lime focus:px-4 focus:py-2 focus:font-bold">
           Spring til indhold
         </a>
@@ -48,8 +49,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <TopBar />
           <Header meta={menuMeta()} />
           <CategoryNav meta={menuMeta()} />
-          <main id="indhold">{children}</main>
+          <main id="indhold" className="flex-1">{children}</main>
           <Footer />
+          <CookieBanner />
         </Providers>
       </body>
     </html>

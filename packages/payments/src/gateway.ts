@@ -10,6 +10,8 @@ export interface StripeGateway {
   createPaymentIntent(p: { amount: number; orderId: string; idempotencyKey: string }): Promise<{ id: string; clientSecret: string }>;
   createTransfer(p: { amount: number; destination: string; orderId: string; sourceTransaction?: string | null; idempotencyKey: string }): Promise<{ id: string }>;
   createRefund(p: { paymentIntentId: string; orderId: string; idempotencyKey: string }): Promise<{ id: string }>;
+  /** Stripe Checkout (hostet betalingsside) til køb af fremhævning. Kortdata rører aldrig vores servere. */
+  createCheckoutSession(p: { amountOre: number; productName: string; promotionId: string; successUrl: string; cancelUrl: string; idempotencyKey: string }): Promise<{ id: string; url: string }>;
   /** Kaster hvis signaturen er ugyldig eller for gammel (replay). `rawBody` skal være den RÅ request-tekst. */
   verifyWebhook(rawBody: string, signature: string): Stripe.Event;
 }
@@ -40,6 +42,18 @@ export function stripeGateway(stripe: Stripe, webhookSecret: string): StripeGate
     async createRefund({ paymentIntentId, orderId, idempotencyKey }) {
       const r = await stripe.refunds.create({ payment_intent: paymentIntentId, metadata: { orderId } }, { idempotencyKey });
       return { id: r.id };
+    },
+    async createCheckoutSession({ amountOre, productName, promotionId, successUrl, cancelUrl, idempotencyKey }) {
+      const metadata = { kind: 'promotion', promotionId };
+      const cs = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        line_items: [{ quantity: 1, price_data: { currency: CURRENCY, unit_amount: amountOre, product_data: { name: productName } } }],
+        success_url: successUrl, cancel_url: cancelUrl, client_reference_id: promotionId,
+        metadata, payment_intent_data: { metadata },
+        expires_at: Math.floor(Date.now() / 1000) + 30 * 60 // betalingssiden udløber efter 30 min.
+      }, { idempotencyKey });
+      if (!cs.url) throw new Error('Checkout-session mangler url');
+      return { id: cs.id, url: cs.url };
     },
     verifyWebhook(rawBody, signature) {
       return stripe.webhooks.constructEvent(rawBody, signature, webhookSecret, 300);
