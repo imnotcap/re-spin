@@ -6,7 +6,7 @@ import { Button, Chip, Dropdown, EmptyState, ProductGrid } from '@respin/ui';
 import { ItemCard } from '../ItemCard';
 import { useI18n } from '../../lib/i18n/client';
 import {
-  DEFAULT_FILTERS, PRICE_BUCKETS, SORTS, activeFilterCount, applyFilters, filtersToSearch, optionsFor, parseFilters,
+  DEFAULT_FILTERS, PRICE_BUCKETS, SORTS, activeFilterCount, compareSizes, applyFilters, filtersToSearch, optionsFor, parseFilters,
   type BrowseItem, type BrowseOptions, type Filters
 } from '../../lib/browse';
 
@@ -43,7 +43,7 @@ function BrowseView({ items, opt, filters, onChange, showSeller }: { items: read
       )}
 
       <div className="mt-4 flex flex-wrap items-center gap-2" role="group" aria-label={t('browse.filters')}>
-        <Dropdown label={t('browse.size')} emptyLabel={t('browse.allSizes')} options={opt.sizes} value={filters.str ?? ''} onChange={(v) => set({ str: v || undefined })} />
+        <Dropdown label={t('browse.size')} emptyLabel={t('browse.allSizes')} options={filters.str && !opt.sizes.includes(filters.str) ? [...opt.sizes, filters.str].sort(compareSizes) : opt.sizes} value={filters.str ?? ''} onChange={(v) => set({ str: v || undefined })} />
         <Dropdown label={t('browse.condition')} emptyLabel={t('browse.all')} options={opt.conditions.map((c) => ({ value: c, label: t(`cond.${c}`, undefined, c) }))} value={filters.stand ?? ''} onChange={(v) => set({ stand: (v || undefined) as Filters['stand'] })} />
         <Dropdown label={t('browse.price')} emptyLabel={t('browse.allPrices')} options={PRICE_BUCKETS.map((b) => ({ value: b.value, label: t(`price.${b.value}`, undefined, b.label) }))} value={filters.pris ?? ''} onChange={(v) => set({ pris: (v || undefined) as Filters['pris'] })} />
         <Dropdown label={t('browse.brand')} emptyLabel={t('browse.allBrands')} options={opt.brands} value={filters.maerke ?? ''} onChange={(v) => set({ maerke: v || undefined })} />

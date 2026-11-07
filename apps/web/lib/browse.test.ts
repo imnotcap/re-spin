@@ -77,3 +77,15 @@ describe('typer fra megamenuen', () => {
     expect(parseFilters(new URLSearchParams('type=Findes ikke'), o, kvinder.subs).type).toBeUndefined();
   });
 });
+
+describe('størrelser fra menuen', () => {
+  it('"M" finder både "M" og "M / 38"; ukendte værdier ignoreres', () => {
+    const r = applyFilters(all, parseFilters(new URLSearchParams('str=M'), opt));
+    expect(r.length).toBeGreaterThan(0);
+    expect(r.every((i) => i.size === 'M' || i.size.split(' / ').includes('M'))).toBe(true);
+    expect(r.some((i) => i.size === 'M / 38')).toBe(true);
+    expect(parseFilters(new URLSearchParams('str=XS'), opt).str).toBe('XS'); // kendt størrelse uden varer → 0 resultater, ikke alle
+    expect(applyFilters(all, parseFilters(new URLSearchParams('str=XS'), opt))).toHaveLength(0);
+    expect(parseFilters(new URLSearchParams('str=<script>'), opt).str).toBeUndefined();
+  });
+});

@@ -39,6 +39,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   // Server-tilstand: headers() gør hver side dynamisk, så den får sin egen CSP-nonce (sat af proxy.server.ts).
   // Next læser nonce fra CSP-headeren og sætter den på sine egne scripts. Statisk eksport kalder den ikke.
   if (isServer) await headers();
+  const meta = menuMeta();
   return (
     <html lang="da" className={inter.variable} data-scroll-behavior="smooth">
       <body className="rs-flat flex min-h-dvh flex-col">
@@ -47,8 +48,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         </a>
         <Providers>
           <TopBar />
-          <Header meta={menuMeta()} />
-          <CategoryNav meta={menuMeta()} />
+          <Header meta={meta} />
+          <CategoryNav meta={meta} />
           <main id="indhold" className="flex-1">{children}</main>
           <Footer />
           <CookieBanner />
