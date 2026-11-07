@@ -22,3 +22,9 @@ export function getStripeGateway(): StripeGateway {
   }
   return g.__respinGw;
 }
+
+/** Stripe, hvis nøglerne er sat – ellers null (fx i udvikling eller før betaling er slået til) */
+export function getStripeGatewayOrNull(): StripeGateway | null {
+  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) return null;
+  try { return getStripeGateway(); } catch { return null; }
+}

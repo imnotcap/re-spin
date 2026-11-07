@@ -5,6 +5,12 @@ import { ChangePasswordForm } from '../../components/AuthForms';
 import { getAuth, requireSession } from '../../lib/auth';
 import { revokeSessionAction, signOutAction, signOutOthersAction } from '../../lib/actions';
 import { T } from '../../lib/i18n/client';
+import { getDb } from '../../lib/server';
+import { ensureUsername, profileFor } from '../../lib/profile';
+import { isBannerId, DEFAULT_BANNER } from '../../lib/banners';
+import { profilePath } from '../../lib/profile-url';
+import { BASE_PATH } from '../../lib/site';
+import { ProfileForm } from '../../components/profile/ProfileForm';
 
 export const metadata = { title: 'Min konto' };
 
@@ -16,6 +22,8 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const current = await requireSession('/konto/');
   const sp = await searchParams;
   const list = await getAuth().listSessions(current.user.id);
+  const username = await ensureUsername(getDb(), current.user.id);
+  const profile = await profileFor(getDb(), current.user.id);
   return (
     <AuthPage width="page" title="Min konto" crumbs={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Min konto' }]}>
       {sp.welcome && <Notice icon="check" role="status">Din e-mail er bekræftet. Velkommen til re:spin!</Notice>}
@@ -28,6 +36,19 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           <p className="truncate text-body text-muted">{current.user.email}</p>
         </div>
       </div>
+
+      <section aria-labelledby="profil" className="rounded-lg border border-line p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 id="profil" className={h2}>Din profil</h2>
+            <p className="text-small text-muted">Det, andre ser, når de klikker på dit navn.</p>
+          </div>
+          <a href={`${BASE_PATH}${profilePath(username)}`} className="inline-flex items-center gap-1.5 text-small font-semibold text-forest underline underline-offset-4">Se din profil<Icon name="arrow" size={16} /></a>
+        </div>
+        <div className="mt-4">
+          <ProfileForm username={username} bio={profile?.bio ?? ''} banner={isBannerId(profile?.banner) ? profile.banner : DEFAULT_BANNER} />
+        </div>
+      </section>
 
       <Link href="/konto/annoncer/" className="flex items-center gap-4 rounded-lg border border-line p-4 transition-colors hover:border-slate">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-100 text-forest"><Icon name="tag" size={20} /></span>

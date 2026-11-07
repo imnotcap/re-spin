@@ -4,6 +4,7 @@
  */
 import type { IconName } from '@respin/ui';
 
+import type { BannerId } from './banners';
 import { CATEGORIES, CONDITIONS, CONDITION_HELP, type Category, type CategorySlug, type Condition } from './categories';
 
 export { CATEGORIES, CONDITIONS, CONDITION_HELP, type Category, type CategorySlug, type Condition };
@@ -19,17 +20,21 @@ export interface Seller {
   responds: string;
   memberSince: number;
   sold: number;
+  /** Profilbanner (se lib/banners.ts) */
+  banner: BannerId;
+  /** Kort tekst om sælgeren */
+  bio: string;
 }
 
 export const SELLERS: readonly Seller[] = [
-  { id: 'sofie-vintage', name: 'sofie.vintage', city: 'København NV', rating: 4.9, reviews: 212, certified: true, responds: 'inden for en time', memberSince: 2024, sold: 340 },
-  { id: 'mads-garderobe', name: 'mads_garderobe', city: 'Aarhus C', rating: 4.8, reviews: 87, certified: false, responds: 'inden for få timer', memberSince: 2025, sold: 96 },
-  { id: 'linea-loppe', name: 'linea.loppe', city: 'Odense', rating: 5.0, reviews: 46, certified: true, responds: 'inden for en time', memberSince: 2025, sold: 58 },
-  { id: 'jonasruns', name: 'jonasruns', city: 'Aalborg', rating: 4.7, reviews: 31, certified: false, responds: 'samme dag', memberSince: 2025, sold: 34 },
-  { id: 'hjem-hos-ida', name: 'hjem.hos.ida', city: 'Roskilde', rating: 4.9, reviews: 128, certified: true, responds: 'inden for få timer', memberSince: 2024, sold: 151 },
-  { id: 'familien-berg', name: 'familien.berg', city: 'Vejle', rating: 4.8, reviews: 64, certified: false, responds: 'samme dag', memberSince: 2025, sold: 77 },
-  { id: 'nordic-sneaks', name: 'nordic.sneaks', city: 'Frederiksberg', rating: 4.9, reviews: 301, certified: true, responds: 'inden for en time', memberSince: 2024, sold: 412 },
-  { id: 'kamilla-k', name: 'kamilla.k', city: 'Esbjerg', rating: 4.6, reviews: 19, certified: false, responds: 'inden for et døgn', memberSince: 2026, sold: 21 }
+  { id: 'sofie-vintage', name: 'sofie.vintage', city: 'København NV', rating: 4.9, reviews: 212, certified: true, responds: 'inden for en time', memberSince: 2024, sold: 340, banner: 'stativ', bio: "Vintage fra 70'erne til 00'erne – håndplukket på loppemarkeder i hele landet. Alt er vasket og tjekket for fejl, og jeg sender inden for et døgn." },
+  { id: 'mads-garderobe', name: 'mads_garderobe', city: 'Aarhus C', rating: 4.8, reviews: 87, certified: false, responds: 'inden for få timer', memberSince: 2025, sold: 96, banner: 'nat', bio: 'Rydder ud i garderoben. Mest overtøj og strik i str. M–L fra danske mærker. Byd gerne!' },
+  { id: 'linea-loppe', name: 'linea.loppe', city: 'Odense', rating: 5.0, reviews: 46, certified: true, responds: 'inden for en time', memberSince: 2025, sold: 58, banner: 'lime', bio: 'Studerende i Odense med for mange tasker og alt for lidt plads. Ryger- og dyrefrit hjem.' },
+  { id: 'jonasruns', name: 'jonasruns', city: 'Aalborg', rating: 4.7, reviews: 31, certified: false, responds: 'samme dag', memberSince: 2025, sold: 34, banner: 'skov', bio: 'Løber og cykler – sælger udstyr, jeg er vokset fra eller har skiftet ud. Spørg endelig om pasform.' },
+  { id: 'hjem-hos-ida', name: 'hjem.hos.ida', city: 'Roskilde', rating: 4.9, reviews: 128, certified: true, responds: 'inden for få timer', memberSince: 2024, sold: 151, banner: 'butik', bio: 'Danske designklassikere og fine ting til hjemmet. Pakker alt grundigt ind, så intet går i stykker.' },
+  { id: 'familien-berg', name: 'familien.berg', city: 'Vejle', rating: 4.8, reviews: 64, certified: false, responds: 'samme dag', memberSince: 2025, sold: 77, banner: 'sand', bio: 'Børnetøj og legetøj fra tre børn. Alt er brugt med kærlighed og stadig i god stand.' },
+  { id: 'nordic-sneaks', name: 'nordic.sneaks', city: 'Frederiksberg', rating: 4.9, reviews: 301, certified: true, responds: 'inden for en time', memberSince: 2024, sold: 412, banner: 'saelg', bio: 'Sneakers og streetwear – kun ægte vare, og kvittering medfølger, hvor jeg har den.' },
+  { id: 'kamilla-k', name: 'kamilla.k', city: 'Esbjerg', rating: 4.6, reviews: 19, certified: false, responds: 'inden for et døgn', memberSince: 2026, sold: 21, banner: 'koral', bio: 'Sælger fine ting fra min egen garderobe. Ny på re:spin, så skriv endelig, hvis du har spørgsmål.' }
 ];
 
 export interface Item {

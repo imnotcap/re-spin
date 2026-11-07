@@ -8,6 +8,7 @@ import { ItemCard } from '../../../components/ItemCard';
 import { itemImage } from '../../../lib/images';
 import { ItemActions } from '../../../components/item/ItemActions';
 import { T } from '../../../lib/i18n/client';
+import { profilePath } from '../../../lib/profile-url';
 import { CONDITION_HELP, ITEMS, categoryOf, getItem, itemsBySeller, sellerOf, similarTo, toCard } from '../../../lib/catalog';
 
 export const dynamicParams = false;
@@ -80,7 +81,7 @@ export default async function ItemPage({ params }: Props) {
             <p className="mt-2 whitespace-pre-line text-body text-slate-700">{item.description}</p>
           </section>
 
-          <SellerCard className="mt-7" name={seller.name} href={`/medlem/${seller.id}/`} rating={seller.rating} reviews={seller.reviews} certified={seller.certified}
+          <SellerCard className="mt-7" name={seller.name} href={profilePath(seller.name)} rating={seller.rating} reviews={seller.reviews} certified={seller.certified}
             facts={[
               { icon: 'pin', text: seller.city },
               { icon: 'clock', text: `Svarer typisk ${seller.responds}` },
@@ -91,7 +92,7 @@ export default async function ItemPage({ params }: Props) {
 
       {more.length > 0 && (
         <section aria-labelledby="flere" className="mt-16">
-          <SectionHeader id="flere" title={<T k="item.moreFrom" v={{ name: seller.name }} />} action={{ label: <T k="item.seeProfile" />, href: `/medlem/${seller.id}/` }} className="px-0" />
+          <SectionHeader id="flere" title={<T k="item.moreFrom" v={{ name: seller.name }} />} action={{ label: <T k="item.seeProfile" />, href: profilePath(seller.name) }} className="px-0" />
           <ProductGrid layout="responsive">{more.map((i) => <ItemCard key={i.id} item={toCard(i)} />)}</ProductGrid>
         </section>
       )}

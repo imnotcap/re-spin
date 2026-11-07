@@ -6,6 +6,7 @@ import { requireSession } from './auth';
 import { getDb } from './server';
 import { createListing, setListingStatus, updateListing, type StatusAction } from './listings';
 import { parseKr } from './listing-labels';
+import { ensureUsername } from './profile';
 
 export type ListingFormState = { error?: string; field?: string } | undefined;
 
@@ -45,6 +46,7 @@ export async function createListingAction(_: ListingFormState, fd: FormData): Pr
   const imageKeys = fd.getAll('image').filter((v): v is string => typeof v === 'string').slice(0, 9);
   const r = await createListing(db, current.user.id, { ...fields(fd), imageKeys });
   if (!r.ok) return fieldError(r.field);
+  await ensureUsername(db, current.user.id).catch(() => {}); // sælgere skal have en profiladresse
   redirect(`/annonce/${r.id}/?${r.moderation === 'pending' ? 'gennemgang' : 'ny'}=1`);
 }
 

@@ -15,6 +15,7 @@ GRANT SELECT, INSERT ON seller_profiles TO respin_web;
 -- Web må ALDRIG selv sætte certificering (0,5 % gebyr) eller KYC-status – kun admin/system
 GRANT UPDATE (stripe_account_id, payouts_enabled, kyc_status) ON seller_profiles TO respin_web;
 GRANT SELECT, INSERT, DELETE ON favorites TO respin_web;
+GRANT SELECT, INSERT, UPDATE ON listing_promotions TO respin_web;      -- fremhævning (købes af sælgeren selv)
 GRANT SELECT, INSERT, UPDATE ON orders TO respin_web;
 GRANT SELECT, INSERT ON order_events, ledger_transactions, outbox, reports TO respin_web;
 GRANT INSERT ON ledger_entries, audit_log TO respin_web;

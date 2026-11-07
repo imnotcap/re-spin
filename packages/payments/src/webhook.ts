@@ -10,6 +10,7 @@ import type Stripe from 'stripe';
 import { schema, type Db } from '@respin/db';
 import { applyOrderEvent } from './orders';
 import { CURRENCY, type StripeGateway } from './gateway';
+import { isPromotionPayment, onPromotionCheckoutCompleted } from './promotions';
 
 const { stripeEvents, orders, outbox, auditLog } = schema;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -43,8 +44,10 @@ export async function processStripeEvent(db: Db, event: Stripe.Event): Promise<W
   try {
     let outcome: 'processed' | 'ignored' = 'processed';
     switch (event.type) {
-      case 'payment_intent.succeeded': await onPaymentSucceeded(db, event.data.object); break;
-      case 'payment_intent.canceled': await onPaymentCanceled(db, event.data.object); break;
+      // Betalinger for fremhævning har ingen ordre – de håndteres via checkout.session.completed nedenfor
+      case 'payment_intent.succeeded': if (isPromotionPayment(event.data.object)) outcome = 'ignored'; else await onPaymentSucceeded(db, event.data.object); break;
+      case 'payment_intent.canceled': if (isPromotionPayment(event.data.object)) outcome = 'ignored'; else await onPaymentCanceled(db, event.data.object); break;
+      case 'checkout.session.completed': if (isPromotionPayment(event.data.object)) await onPromotionCheckoutCompleted(db, event.data.object); else outcome = 'ignored'; break;
       default: outcome = 'ignored';
     }
     await db.update(stripeEvents).set({ status: outcome, processedAt: new Date() }).where(eq(stripeEvents.id, event.id));

@@ -20,3 +20,24 @@ export const HELP_NAV = [
   { href: '/gebyrer/', label: 'Gebyrer', key: 'nav.fees' },
   { href: '/saadan-virker-det/#faq', label: 'Spørgsmål og svar', key: 'nav.faq' }
 ] as const;
+
+/**
+ * Sociale medier i footeren. OBS: profilnavnene er pladsholdere – ret dem til jeres rigtige profiler, før
+ * siden lanceres (linkene peger ellers på profiler, I ikke ejer).
+ */
+export const SOCIAL = [
+  { name: 'Instagram', icon: 'instagram', href: 'https://www.instagram.com/respin.dk/' },
+  { name: 'TikTok', icon: 'tiktok', href: 'https://www.tiktok.com/@respin.dk' },
+  { name: 'Facebook', icon: 'facebook', href: 'https://www.facebook.com/respin.dk' },
+  { name: 'LinkedIn', icon: 'linkedin', href: 'https://www.linkedin.com/company/respin-dk/' },
+  { name: 'YouTube', icon: 'youtube', href: 'https://www.youtube.com/@respin.dk' }
+] as const;
+
+/** Juridiske sider og info – footerens nederste linje */
+export const LEGAL_NAV = [
+  { href: '/privatliv/', key: 'footer.privacy' },
+  { href: '/cookiepolitik/', key: 'footer.cookies' },
+  { href: '/cookieindstillinger/', key: 'footer.cookieSettings' },
+  { href: '/vilkaar/', key: 'footer.terms' }
+] as const;
+

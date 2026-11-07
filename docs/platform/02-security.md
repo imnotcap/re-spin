@@ -200,7 +200,7 @@ Fejlsporing (fx Sentry) **med PII-scrubbing** og `redactForLog` før data sendes
 - `PgRateLimiter` bruger en række-lås, der er nødvendig i rigtig Postgres; PGlite (én forbindelse) kan ikke bevise den. Test mod rigtig Postgres i CI.
 - Ingen besked ved login fra ny enhed, og ingen udbetalingspause efter nulstilling endnu.
 - `style-src-attr 'unsafe-inline'` er slået til, fordi UI-kittet bruger `style`-attributter. Scripts er strengt nonce-beskyttede. Kan strammes ved at flytte inline-styles til CSS-klasser.
-- Webhook-håndteringen dækker `payment_intent.succeeded` og `.canceled`. Disputes, refunds, `account.updated` (Connect-onboarding) og payout-events mangler.
+- Webhook-håndteringen dækker `payment_intent.succeeded`, `.canceled` og `checkout.session.completed` (fremhævning). Disputes, refunds, `account.updated` (Connect-onboarding) og payout-events mangler.
 - Web-rollens `UPDATE` på `users` er ikke kolonnebegrænset (fx `status`). Stram når auth-tabellerne er på plads.
 - Admin har endnu ingen ændrende handlinger (derfor ingen CSRF-/fire-øjne-flow at teste). Biblioteket er klar.
 - Worker-processen, der kalder `runOutbox` jævnligt, er ikke skrevet.

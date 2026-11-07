@@ -57,9 +57,12 @@ CSP'en tillader automatisk billeder fra lagerets adresse, som udledes af tokenet
 | `TRUSTED_PROXIES` | `1` | |
 | `BLOB_READ_WRITE_TOKEN` | sættes af Vercel, når Blob-lageret forbindes (punkt 3) | ja |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | fra Stripe (test-nøgler, indtil I går live) | ja |
+| `PROMOTIONS_TEST_MODE` | `1` gør fremhævning af annoncer gratis og øjeblikkelig, når Stripe ikke er sat op. Kun til test – fjern den, når Stripe er klar. | |
 
 3. Tilknyt domænet. HSTS med `preload` sendes automatisk i produktion. Indsend først domænet til hstspreload.org, når alle subdomæner kører https.
 4. Slå **Deployment Protection** til for previews, og afgræns hvem der kan se miljøvariabler.
+
+**Stripe-webhook:** opret ét endpoint `https://<domæne>/api/webhooks/stripe/` med disse events: `payment_intent.succeeded`, `payment_intent.canceled` (ordrer) og `checkout.session.completed` (køb af fremhævning). Kopiér signeringshemmeligheden til `STRIPE_WEBHOOK_SECRET`.
 
 Forkert eller manglende konfiguration stopper serveren ved første forespørgsel med en kort fejl uden hemmeligheder (zod-validering i `apps/web/lib/auth.ts`).
 

@@ -11,7 +11,8 @@
     "./money": "./src/money.ts",
     "./fees": "./src/fees.ts",
     "./limits": "./src/limits.ts",
-    "./order": "./src/order.ts"
+    "./order": "./src/order.ts",
+    "./promotions": "./src/promotions.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

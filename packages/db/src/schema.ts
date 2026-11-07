@@ -43,8 +43,18 @@ export const users = pgTable('users', {
   /** Login kræver bekræftet e-mail */
   emailVerifiedAt: ts('email_verified_at'),
   createdAt: createdAt(),
-  deletedAt: ts('deleted_at')
-}, (t) => [check('users_email_normalized_lower', sql`${t.emailNormalized} = lower(${t.emailNormalized})`)]);
+  deletedAt: ts('deleted_at'),
+  /** Offentligt profilnavn i adressen /@/<username>. Små bogstaver, tal, . _ - (3–30 tegn). Sættes første gang det skal bruges. */
+  username: text('username').unique(),
+  /** Valgt profilbanner (id fra appens faste liste) */
+  profileBanner: text('profile_banner'),
+  bio: text('bio')
+}, (t) => [
+  check('users_email_normalized_lower', sql`${t.emailNormalized} = lower(${t.emailNormalized})`),
+  check('users_username_format', sql`${t.username} IS NULL OR ${t.username} ~ '^[a-z0-9][a-z0-9._-]{1,28}[a-z0-9]$'`),
+  check('users_profile_banner_len', sql`${t.profileBanner} IS NULL OR char_length(${t.profileBanner}) BETWEEN 1 AND 20`),
+  check('users_bio_len', sql`${t.bio} IS NULL OR char_length(${t.bio}) <= 300`)
+]);
 
 export const sellerProfiles = pgTable('seller_profiles', {
   userId: uuid('user_id').primaryKey().references(() => users.id, { onDelete: 'restrict' }),
@@ -97,6 +107,28 @@ export const listingImages = pgTable('listing_images', {
   position: integer('position').notNull().default(0),
   createdAt: createdAt()
 }, (t) => [check('listing_images_type', sql`${t.contentType} IN ('image/jpeg','image/png','image/webp')`), check('listing_images_size', sql`${t.bytes} BETWEEN 1 AND 15728640`)]);
+
+/** Købt fremhævning af en annonce. Aktiv, når den er betalt og nu ligger mellem starts_at og ends_at. */
+export const promotionPackage = pgEnum('promotion_package', ['1d', '3d', '7d']);
+export const promotionStatus = pgEnum('promotion_status', ['pending', 'paid', 'cancelled']);
+export const listingPromotions = pgTable('listing_promotions', {
+  id: id(),
+  listingId: uuid('listing_id').notNull().references(() => listings.id, { onDelete: 'cascade' }),
+  sellerId: uuid('seller_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
+  package: promotionPackage('package').notNull(),
+  /** Pris fastfrosset ved køb */
+  priceOre: integer('price_ore').notNull(),
+  status: promotionStatus('status').notNull().default('pending'),
+  /** Stripe Checkout-session (null ved testfremhævning uden betaling, kun uden for produktion) */
+  stripeSessionId: text('stripe_session_id').unique(),
+  startsAt: ts('starts_at'),
+  endsAt: ts('ends_at'),
+  createdAt: createdAt()
+}, (t) => [
+  check('promotions_price_positive', sql`${t.priceOre} > 0`),
+  check('promotions_paid_has_period', sql`${t.status} <> 'paid' OR (${t.startsAt} IS NOT NULL AND ${t.endsAt} > ${t.startsAt})`),
+  index('promotions_active_idx').on(t.listingId, t.endsAt)
+]);
 
 export const favorites = pgTable('favorites', {
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
