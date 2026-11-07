@@ -1,7 +1,7 @@
 {
   "name": "respin",
   "private": true,
-  "description": "re:spin – platform-skelet, UI-kit (@respin/ui), apps (web, admin, showcase) og hjemmeside (site)",
+  "description": "re:spin – platform: hjemmeside med login (apps/web), admin, UI-kit (@respin/ui) og pakker til domæne, database, sikkerhed, betaling og login",
   "workspaces": [
     "packages/*",
     "apps/*"
@@ -11,18 +11,18 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build": "npm run build:ui && npm run build -w web && npm run build -w admin && npm run build -w showcase && npm run build -w site",
+    "build": "npm run build:ui && npm run build -w web && npm run build:static -w web && npm run build -w admin && npm run build -w showcase",
     "dev:showcase": "npm run build:ui && npm run dev -w showcase",
-    "dev:web": "npm run dev -w web",
+    "dev:web": "npm run build:ui && npm run dev -w web",
+    "dev:site": "npm run build:ui && npm run dev:static -w web",
     "dev:admin": "npm run dev -w admin",
-    "dev:site": "npm run build:ui && npm run dev -w site",
     "db:generate": "npm run generate -w @respin/db",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "db:dev": "npm run dev -w @respin/db"
   },
   "devDependencies": {
     "vitest": "^5.1.0",
-    "typescript": "~5.9.3"
+    "typescript": "~6.0.3"
   },
   "engines": {
     "node": ">=22"

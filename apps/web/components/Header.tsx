@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
-import { Button, Icon, LogoMark, Wordmark } from '@respin/ui';
+import { Avatar, Button, Icon, LogoMark, Wordmark } from '@respin/ui';
 import { BASE_PATH, HELP_NAV, SITE } from '../lib/site';
 import { CATEGORIES } from '../lib/categories';
 import { useFavorites } from '../lib/favorites';
@@ -36,6 +36,42 @@ function SearchForm({ id, className = '' }: { id: string; className?: string }) 
   );
 }
 
+const AUTH = process.env.NEXT_PUBLIC_AUTH_ENABLED === '1';
+
+/** Hvem er logget ind (kun når siden kører med server). Hentes igen ved sideskift, fx efter log ind/ud. */
+function useMe(pathname: string) {
+  const [me, setMe] = useState<{ name: string } | null>(null);
+  useEffect(() => {
+    if (!AUTH) return;
+    let alive = true;
+    fetch('/api/me/', { cache: 'no-store', credentials: 'same-origin' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: unknown) => {
+        const name = d && typeof d === 'object' && typeof (d as { name?: unknown }).name === 'string' ? (d as { name: string }).name : null;
+        if (alive) setMe(name ? { name } : null);
+      })
+      .catch(() => { if (alive) setMe(null); });
+    return () => { alive = false; };
+  }, [pathname]);
+  return me;
+}
+
+/** Konto-knap: samme størrelse logget ind og ud, så intet i headeren flytter sig. */
+function AccountButton({ me, pathname }: { me: { name: string } | null; pathname: string }) {
+  if (!AUTH) return null;
+  const active = pathname.startsWith('/konto/') || pathname === '/log-ind/';
+  return (
+    <Link
+      href={me ? '/konto/' : '/log-ind/'}
+      aria-current={active ? 'page' : undefined}
+      className="inline-flex h-tap w-tap items-center justify-center rounded-md text-ink transition-colors hover:bg-sunken"
+    >
+      {me ? <Avatar name={me.name} size="sm" /> : <Icon name="user" size={22} />}
+      <span className="sr-only">{me ? `Min konto (${me.name})` : 'Log ind'}</span>
+    </Link>
+  );
+}
+
 export function Header() {
   const [open, setOpen] = useState(false);
   const menuId = useId();
@@ -43,6 +79,7 @@ export function Header() {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   const { count } = useFavorites();
+  const me = useMe(pathname);
 
   // Luk også menuen ved sideskift, der ikke kommer fra menuen (fx tilbage-knappen)
   useEffect(() => { setOpen(false); }, [pathname]);
@@ -81,6 +118,7 @@ export function Header() {
               </span>
             )}
           </Link>
+          <AccountButton me={me} pathname={pathname} />
           <Button href="/saelg/" size="sm" icon="plus" className="hidden sm:inline-flex">Sælg nu</Button>
           <button
             ref={buttonRef}
@@ -114,6 +152,11 @@ export function Header() {
               <li key={n.href}><Link href={n.href} onClick={() => setOpen(false)} className="block rounded-md px-2 py-3 text-body font-semibold hover:bg-sunken">{n.label}</Link></li>
             ))}
           </ul>
+          {AUTH && (
+            <Link href={me ? '/konto/' : '/log-ind/'} onClick={() => setOpen(false)} className="mt-2 flex items-center gap-3 rounded-md border-t border-line px-2 pb-1 pt-4 text-body font-semibold hover:bg-sunken">
+              <Icon name="user" size={20} className="text-muted" />{me ? 'Min konto' : 'Log ind eller opret konto'}
+            </Link>
+          )}
           <Button href="/saelg/" full icon="plus" className="mt-4 sm:hidden" onClick={() => setOpen(false)}>Sælg nu</Button>
         </div>
       </nav>

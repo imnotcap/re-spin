@@ -45,7 +45,7 @@ Skelet og plan for hele platformen ligger i `docs/platform/` (**start med [READM
 | `packages/security` | CSP/headers, IP-allowlist, RBAC + fire-øjne, rate limiter, upload-validering, Cloudflare Access-JWT, admin-vagt |
 | `packages/payments` | Checkout, ordre-overgange, Stripe-webhooks (idempotente), outbox |
 | `packages/auth` | Login: Argon2id, sessioner, e-mailbekræftelse, glemt adgangskode, step-up, passkeys, to-trins-login (TOTP), delt rate limiting |
-| `apps/web` | Forbrugersite (`respin.dk`): login-sider, min konto, Stripe-webhook |
+| `apps/web` | Hjemmesiden (`respin.dk`): varer, kategorier, søgning, favoritter + login, min konto, passkeys, to-trins-login, Stripe-webhook |
 | `apps/admin` | Medarbejderside (`admin.respin.dk`): Cloudflare Access + IP + roller |
 
 ```bash
@@ -57,19 +57,21 @@ npm run dev:web     # http://localhost:3000 (se docs/platform/README.md for milj
 
 ## Hjemmeside (testversion): <https://imnotcap.github.io/re-spin/>
 
-`apps/site` er markedspladsens hjemmeside med fokus på brugernes varer:
+`apps/web` er markedspladsens hjemmeside med fokus på brugernes varer:
 
 - forside med kategorier og produkter;
 - kategorisider med filtre og varesider med gennemskuelig pris inkl. køberbeskyttelse;
-- sælgerprofiler, søgning og favoritter.
+- sælgerprofiler, søgning og favoritter;
+- login, tilmelding, min konto, passkeys og to-trins-login (kun når siden kører på en server).
 
-Den er bygget i Next.js, TypeScript, Tailwind og `@respin/ui` og eksporteres statisk til GitHub Pages.
+Samme app bygges på to måder: med server (login og alle sikkerheds-headers) eller statisk til GitHub Pages (kun de offentlige sider).
 
 ```bash
-npm run dev:site   # http://localhost:3030
+npm run dev:site   # uden login, ingen miljøvariabler: http://localhost:3030
+npm run dev:web    # med login (se docs/platform/README.md): http://localhost:3000
 ```
 
-Udgives automatisk af `.github/workflows/pages.yml` ved push til `main`. Se `apps/site/README.md`.
+Pages-versionen udgives automatisk af `.github/workflows/pages.yml` ved push til `main`. Login i drift: [docs/platform/08-deploy.md](docs/platform/08-deploy.md). Se også `apps/web/README.md`.
 
 ## UI-kit til Next.js / TypeScript
 

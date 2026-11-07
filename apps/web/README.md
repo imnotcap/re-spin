@@ -1,15 +1,48 @@
-# apps/site – re:spin hjemmeside (testversion på GitHub Pages)
+# apps/web – re:spin hjemmeside og login
 
-Markedspladsens hjemmeside med fokus på brugernes varer, som hos Vinted, og en ren, professionel opbygning i stil med store danske webshops. Siden bygges som **statisk eksport** (ren HTML/CSS/JS) og udgives på GitHub Pages: <https://imnotcap.github.io/re-spin/>
+Markedspladsens hjemmeside med fokus på brugernes varer, som hos Vinted, og en ren, professionel opbygning i stil med store danske webshops. Testversionen ligger på GitHub Pages: <https://imnotcap.github.io/re-spin/>
 
-**Stak:** Next.js 16 (App Router, `output: 'export'`), TypeScript, Tailwind CSS v4 og `@respin/ui` (kit og Tailwind-tema), Motion og React Bits. Gebyrer beregnes med `@respin/core`, med samme regler som checkout.
+**Stak:** Next.js 16 (App Router), TypeScript, Tailwind CSS v4 og `@respin/ui` (kit og Tailwind-tema), Motion og React Bits. Gebyrer beregnes med `@respin/core`, med samme regler som checkout. Login kommer fra `@respin/auth`, headers og CSP fra `@respin/security`.
+
+## To måder at bygge den på
+
+| | Server | Statisk (`STATIC_EXPORT=1`) |
+|---|---|---|
+| Kommando | `npm run build -w web` | `npm run build:static -w web` → `out/` |
+| Til | Vercel/Node ([../../docs/platform/08-deploy.md](../../docs/platform/08-deploy.md)) | GitHub Pages |
+| Login, konto, `/api/*` | ja | nej – filerne er slet ikke med |
+| Sikkerheds-headers og nonce-CSP | ja (`proxy.server.ts`) | nej (Pages kan ikke sætte headers) |
+| Konto-knap i headeren | ja | nej |
+
+Filer, der hedder `*.server.tsx`/`*.server.ts`, er kun med i server-bygget (`pageExtensions` i `next.config.mjs`).
 
 ```bash
-npm run dev:site                                       # http://localhost:3030
-NEXT_PUBLIC_BASE_PATH=/re-spin npm run build -w site   # → apps/site/out (som på GitHub Pages)
+npm run dev:site                                                  # statisk tilstand, ingen miljøvariabler: http://localhost:3030
+npm run dev:web                                                   # med login: kræver database og miljøvariabler, se .env.example
+NEXT_PUBLIC_BASE_PATH=/re-spin npm run build:static -w web        # → apps/web/out (som på GitHub Pages)
 ```
 
-## Sider
+## Login og sikkerhed (server-bygget)
+
+| Sti | Indhold |
+|---|---|
+| `/log-ind/` | Adgangskode eller passkey, derefter to-trins-kode hvis slået til. `?next=` accepteres kun som intern sti. |
+| `/opret-konto/`, `/bekraeft-email/` | Tilmelding. Kontoen bekræftes med link i en mail (engangstoken, kun hash gemmes). |
+| `/glemt-adgangskode/`, `/ny-adgangskode/` | Nulstilling. Svarer det samme, uanset om e-mailen findes. En ny adgangskode logger alle enheder ud. |
+| `/konto/` | Navn, aktive enheder (log ud enkeltvis eller alle andre), skift adgangskode, log ud |
+| `/konto/sikkerhed/` | Passkeys og to-trins-login med gendannelseskoder. Kræver, at du lige har bekræftet din adgangskode. |
+| `/api/me/` | Headerens login-status: kun visningsnavnet, `Cache-Control: no-store, private` |
+| `/api/health/`, `/api/webhooks/stripe/` | Drift og Stripe |
+
+- **Adgangskoder:** Argon2id, mindst 12 tegn, tjek mod lækkede adgangskoder (Have I Been Pwned med k-anonymitet).
+- **Sessioner:** tilfældigt token i en `__Host-`-cookie (`HttpOnly`, `Secure`, `SameSite=Lax` i produktion). Kun hashen gemmes.
+- **Beskyttelse:** rate limiting i Postgres pr. IP og pr. konto. Formularer er server actions med Next' Origin-tjek. Login-sider sender ingen referrer.
+- **Mail** sendes via Resend. I produktion afvises konsol-mail, og `APP_URL` skal være https.
+- **CSP:** scripts og styles kun med nonce (`strict-dynamic`), `frame-ancestors 'none'`. Målt på produktionsbuild: 0 CSP-brud på 17 sider, mobil og desktop.
+
+Testet: enhedstests i `packages/auth`. I browseren (Chromium, rigtig Postgres-protokol): 23 login-trin og 19 passkey/to-trins-trin. axe-core: 0 overtrædelser på login-siderne.
+
+## Offentlige sider
 
 | Sti | Indhold |
 |---|---|
@@ -73,8 +106,8 @@ I browseren (Chromium) mod den statiske eksport:
 
 ## GitHub Pages: begrænsninger at kende
 
-- **Ingen egne HTTP-headers.** Pages kan ikke sætte CSP, HSTS-preload osv. Det er acceptabelt for en statisk side uden login og betaling. Den rigtige side (`apps/web`) sætter alle headers.
-- **Kun statisk:** intet login og ingen database. "Køb nu" viser prisen, men kan ikke købe.
+- **Ingen egne HTTP-headers.** Pages kan ikke sætte CSP, HSTS-preload osv. Det er acceptabelt for en statisk side uden login og betaling. Server-bygget af samme app sætter alle headers.
+- **Kun statisk:** intet login og ingen database. "Køb nu" viser prisen, men kan ikke købe. Login kræver server-bygget.
 - **Cache:** Pages cacher i cirka 10 minutter.
 
 ## Licenser

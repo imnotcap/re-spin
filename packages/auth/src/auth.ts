@@ -147,7 +147,7 @@ export function createAuth(deps: AuthDeps) {
 
       const existing = await findUserWithPassword(email);
       if (existing?.verifiedAt) {
-        await send(existing.email, templates.alreadyRegistered(link('/login'), link('/forgot-password')));
+        await send(existing.email, templates.alreadyRegistered(link('/log-ind/'), link('/glemt-adgangskode/')));
         await audit('auth.signup.existing', ctx, null, { email: maskEmail(email) });
         return { ok: true };
       }
@@ -167,7 +167,7 @@ export function createAuth(deps: AuthDeps) {
         }
       }
       const token = await issueToken(db, userId, 'verify_email', VERIFY_TTL_MS);
-      await send(email, templates.verify(link('/verify-email', token)));
+      await send(email, templates.verify(link('/bekraeft-email/', token)));
       await audit('auth.signup', ctx, userId);
       return { ok: true };
     },
@@ -204,7 +204,7 @@ export function createAuth(deps: AuthDeps) {
       if (user.status !== 'active') { await audit('auth.login.disabled', ctx, user.id); return { ok: false, error: 'account_disabled' }; }
       if (!user.verifiedAt) {
         const token = await issueToken(db, user.id, 'verify_email', VERIFY_TTL_MS);
-        await send(user.email, templates.verify(link('/verify-email', token)));
+        await send(user.email, templates.verify(link('/bekraeft-email/', token)));
         return { ok: false, error: 'email_not_verified' };
       }
       if (hasher.needsRehash(user.hash!)) await db.update(userPasswords).set({ hash: await hasher.hash(password), updatedAt: now() }).where(eq(userPasswords.userId, user.id));
@@ -282,7 +282,7 @@ export function createAuth(deps: AuthDeps) {
       const [u] = await db.select({ id: users.id, email: users.email, status: users.status }).from(users).where(eq(users.emailNormalized, email));
       if (u && u.status === 'active') {
         const token = await issueToken(db, u.id, 'reset_password', RESET_TTL_MS);
-        await send(u.email, templates.reset(link('/reset-password', token)));
+        await send(u.email, templates.reset(link('/ny-adgangskode/', token)));
         await audit('auth.reset.requested', ctx, u.id);
       }
       return { ok: true };
@@ -307,7 +307,7 @@ export function createAuth(deps: AuthDeps) {
         return true;
       });
       if (!done) return { ok: false, error: 'invalid_or_expired' };
-      await send(u.email, templates.passwordChanged(link('/forgot-password')));
+      await send(u.email, templates.passwordChanged(link('/glemt-adgangskode/')));
       await audit('auth.reset.completed', ctx, row.userId);
       return { ok: true };
     },
@@ -323,7 +323,7 @@ export function createAuth(deps: AuthDeps) {
       if (problem) return { ok: false, error: problem };
       await db.update(userPasswords).set({ hash: await hasher.hash(input.newPassword), updatedAt: now() }).where(eq(userPasswords.userId, cur.user.id));
       await db.update(sessions).set({ revokedAt: now() }).where(and(eq(sessions.userId, cur.user.id), isNull(sessions.revokedAt)));
-      await send(cur.user.email, templates.passwordChanged(link('/forgot-password')));
+      await send(cur.user.email, templates.passwordChanged(link('/glemt-adgangskode/')));
       await audit('auth.password_changed', ctx, cur.user.id);
       return { ok: true, session: await createSession(cur.user.id, ctx, true) };
     }

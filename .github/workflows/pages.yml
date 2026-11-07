@@ -1,12 +1,12 @@
 name: Hjemmeside (GitHub Pages)
 
-# Bygger apps/site som statisk eksport og udgiver den på GitHub Pages (testversion).
+# Bygger apps/web som statisk eksport (uden login – Pages kan ikke køre server-kode) og udgiver den på GitHub Pages.
 # Kræver én gang: Settings → Pages → Source: "GitHub Actions".
 on:
   push:
     branches: [main]
     paths:
-      - apps/site/**
+      - apps/web/**
       - packages/ui/**
       - packages/core/**
       - package-lock.json
@@ -36,17 +36,17 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - id: pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - run: npm run build:ui
       - name: Byg hjemmesiden (statisk eksport)
-        run: npm run build -w site
+        run: npm run build:static -w web
         env:
           # "/re-spin" på imnotcap.github.io/re-spin – tom ved eget domæne
           NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
           NEXT_TELEMETRY_DISABLED: '1'
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
-          path: apps/site/out
+          path: apps/web/out
 
   deploy:
     needs: build
@@ -60,4 +60,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

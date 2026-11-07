@@ -1,0 +1,71 @@
+import Link from 'next/link';
+import { Avatar, Button, Icon, Notice } from '@respin/ui';
+import { AuthPage } from '../../components/AuthPage';
+import { ChangePasswordForm } from '../../components/AuthForms';
+import { getAuth, requireSession } from '../../lib/auth';
+import { revokeSessionAction, signOutAction, signOutOthersAction } from '../../lib/actions';
+
+export const metadata = { title: 'Min konto' };
+
+const fmt = (d: Date) => d.toLocaleString('da-DK', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/Copenhagen' });
+const device = (ua: string | null) => (ua ? (/(iPhone|iPad|Android|Macintosh|Windows|Linux)/.exec(ua)?.[1] ?? 'Ukendt enhed') : 'Ukendt enhed');
+const h2 = 'text-[20px] font-bold leading-[26px]';
+
+export default async function AccountPage({ searchParams }: { searchParams: Promise<{ welcome?: string; others?: string }> }) {
+  const current = await requireSession('/konto/');
+  const sp = await searchParams;
+  const list = await getAuth().listSessions(current.user.id);
+  return (
+    <AuthPage width="page" title="Min konto" crumbs={[{ label: 'Forside', href: '/' }, { label: 'Min konto' }]}>
+      {sp.welcome && <Notice icon="check" role="status">Din e-mail er bekræftet. Velkommen til re:spin!</Notice>}
+      {sp.others && <Notice icon="check" role="status">Du er logget ud på alle andre enheder.</Notice>}
+
+      <div className="flex items-center gap-4">
+        <Avatar name={current.user.displayName} size="lg" />
+        <div className="min-w-0">
+          <p className="truncate text-[18px] font-semibold">{current.user.displayName}</p>
+          <p className="truncate text-body text-muted">{current.user.email}</p>
+        </div>
+      </div>
+
+      <Link href="/konto/sikkerhed/" className="flex items-center gap-4 rounded-lg border border-line p-4 transition-colors hover:border-slate">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-100 text-forest"><Icon name="shield" size={20} /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">Login og sikkerhed</span>
+          <span className="block text-small text-muted">Passkeys, to-trins-login og gendannelseskoder</span>
+        </span>
+        <Icon name="next" size={20} className="text-muted" />
+      </Link>
+
+      <section aria-labelledby="enheder" className="border-t border-line pt-6">
+        <h2 id="enheder" className={h2}>Aktive enheder</h2>
+        <p className="mt-1 text-small text-muted">Kan du ikke genkende en enhed, så log den ud og skift adgangskode.</p>
+        <ul className="mt-4 divide-y divide-line rounded-lg border border-line">
+          {list.map((s) => (
+            <li key={s.id} className="flex items-center gap-3 px-4 py-3">
+              <Icon name="phone" size={20} className="shrink-0 text-muted" />
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">{device(s.userAgent)}{s.id === current.session.id && <span className="font-normal text-muted"> · denne enhed</span>}</p>
+                <p className="text-small text-muted">Sidst aktiv {fmt(s.lastSeenAt)}</p>
+              </div>
+              {s.id !== current.session.id && (
+                <form action={revokeSessionAction}>
+                  <input type="hidden" name="sessionId" value={s.id} />
+                  <Button type="submit" size="sm" variant="outline">Log ud</Button>
+                </form>
+              )}
+            </li>
+          ))}
+        </ul>
+        {list.length > 1 && <form action={signOutOthersAction} className="mt-3"><Button type="submit" variant="outline">Log ud på alle andre enheder</Button></form>}
+      </section>
+
+      <section aria-labelledby="adgangskode" className="border-t border-line pt-6">
+        <h2 id="adgangskode" className={h2}>Skift adgangskode</h2>
+        <div className="mt-4 max-w-md"><ChangePasswordForm /></div>
+      </section>
+
+      <form action={signOutAction} className="border-t border-line pt-6"><Button type="submit" variant="dark" icon="logout">Log ud</Button></form>
+    </AuthPage>
+  );
+}

@@ -36,7 +36,7 @@ export default function HowPage() {
           </div>
         </div>
         <img src={photo.src} srcSet={photo.srcSet} sizes="(min-width: 768px) 50vw, 100vw" alt="" width={1200} height={900}
-          decoding="async" fetchPriority="high" className="aspect-[4/3] w-full rounded-lg object-cover" />
+          decoding="async" className="aspect-[4/3] w-full rounded-lg object-cover" />
       </header>
 
       <section aria-labelledby="saelg" className={section}>

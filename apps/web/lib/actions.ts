@@ -6,8 +6,8 @@
  */
 import { redirect } from 'next/navigation';
 import { safeRedirectPath } from '@respin/security';
-import { clearSessionCookie, getAuth, getCurrentSession, requestContext, sessionToken, setSessionCookie } from '../lib/auth';
-import { messageFor } from '../lib/messages';
+import { clearSessionCookie, getAuth, getCurrentSession, requestContext, sessionToken, setSessionCookie } from './auth';
+import { messageFor } from './messages';
 
 /** `values` sendes tilbage, så formularen beholder indtastningen efter en fejl (React nulstiller ellers felterne). Aldrig adgangskoder. */
 export type FormState = { error?: string; done?: boolean; values?: { email?: string; displayName?: string }; mfaToken?: string; next?: string } | undefined;
@@ -23,14 +23,14 @@ export async function signInAction(_: FormState, fd: FormData): Promise<FormStat
   if (!r.ok && r.error === 'mfa_required') return { mfaToken: r.mfaToken, next: str(fd, 'next') };
   if (!r.ok) return { error: messageFor(r.error), values: { email: str(fd, 'email').slice(0, 254) } };
   await setSessionCookie(r.session);
-  redirect(safeRedirectPath(str(fd, 'next'), '/account'));
+  redirect(safeRedirectPath(str(fd, 'next'), '/konto/'));
 }
 
 export async function verifyEmailAction(_: FormState, fd: FormData): Promise<FormState> {
   const r = await getAuth().verifyEmail({ token: str(fd, 'token'), password: str(fd, 'password') }, await requestContext());
   if (!r.ok) return { error: messageFor(r.error) };
   await setSessionCookie(r.session);
-  redirect('/account?welcome=1');
+  redirect('/konto/?welcome=1');
 }
 
 export async function forgotPasswordAction(_: FormState, fd: FormData): Promise<FormState> {
@@ -42,7 +42,7 @@ export async function resetPasswordAction(_: FormState, fd: FormData): Promise<F
   const r = await getAuth().resetPassword({ token: str(fd, 'token'), password: str(fd, 'password') }, await requestContext());
   if (!r.ok) return { error: messageFor(r.error) };
   await clearSessionCookie();
-  redirect('/login?reset=1');
+  redirect('/log-ind/?reset=1');
 }
 
 export async function signOutAction(): Promise<void> {
@@ -53,24 +53,24 @@ export async function signOutAction(): Promise<void> {
 
 export async function signOutOthersAction(): Promise<void> {
   const current = await getCurrentSession();
-  if (!current) redirect('/login');
+  if (!current) redirect('/log-ind/');
   await getAuth().signOutEverywhere(current.user.id, current.session.id, await requestContext());
-  redirect('/account?others=1');
+  redirect('/konto/?others=1');
 }
 
 export async function revokeSessionAction(fd: FormData): Promise<void> {
   const current = await getCurrentSession();
-  if (!current) redirect('/login');
+  if (!current) redirect('/log-ind/');
   await getAuth().revokeSession(current.user.id, str(fd, 'sessionId')); // ejerskab tjekkes i revokeSession
-  redirect('/account');
+  redirect('/konto/');
 }
 
 export async function changePasswordAction(_: FormState, fd: FormData): Promise<FormState> {
   const token = await sessionToken();
-  if (!token) redirect('/login');
+  if (!token) redirect('/log-ind/');
   const r = await getAuth().changePassword(token, { currentPassword: str(fd, 'currentPassword'), newPassword: str(fd, 'newPassword') }, await requestContext());
   if (!r.ok) {
-    if (r.error === 'no_session') redirect('/login');
+    if (r.error === 'no_session') redirect('/log-ind/');
     return { error: messageFor(r.error) };
   }
   await setSessionCookie(r.session); // roteret session
@@ -83,21 +83,21 @@ export async function verifyMfaAction(_: FormState, fd: FormData): Promise<FormS
   const r = await getAuth().mfa.verifyLogin({ mfaToken, code: str(fd, 'code') }, await requestContext());
   if (!r.ok) return r.error === 'invalid_code' ? { error: messageFor(r.error), mfaToken, next: str(fd, 'next') } : { error: messageFor(r.error) };
   await setSessionCookie(r.session);
-  redirect(safeRedirectPath(str(fd, 'next'), '/account'));
+  redirect(safeRedirectPath(str(fd, 'next'), '/konto/'));
 }
 
 /* --------------------------- Genbekræftelse (step-up) --------------------------- */
 export async function reauthAction(_: FormState, fd: FormData): Promise<FormState> {
   const token = await sessionToken();
-  if (!token) redirect('/login');
+  if (!token) redirect('/log-ind/');
   const r = await getAuth().reauthenticate(token, str(fd, 'password'), await requestContext());
-  if (!r.ok) { if (r.error === 'no_session') redirect('/login'); return { error: messageFor(r.error) }; }
-  redirect('/account/security');
+  if (!r.ok) { if (r.error === 'no_session') redirect('/log-ind/'); return { error: messageFor(r.error) }; }
+  redirect('/konto/sikkerhed/');
 }
 
 async function currentOrLogin() {
   const cur = await getCurrentSession();
-  if (!cur) redirect('/login?next=%2Faccount%2Fsecurity');
+  if (!cur) redirect('/log-ind/?next=%2Fkonto%2Fsikkerhed%2F');
   return cur;
 }
 
@@ -123,7 +123,7 @@ export async function disableTotpAction(_: FormState, fd: FormData): Promise<For
   const cur = await currentOrLogin();
   const r = await getAuth().mfa.disableTotp(cur, str(fd, 'code'), await requestContext());
   if (!r.ok) return { error: messageFor(r.error) };
-  redirect('/account/security?mfa=off');
+  redirect('/konto/sikkerhed/?mfa=off');
 }
 
 export async function regenerateCodesAction(): Promise<TotpSetupState> {
@@ -148,7 +148,7 @@ export async function passkeyRegisterVerifyAction(response: unknown, name: strin
 export async function passkeyRemoveAction(fd: FormData): Promise<void> {
   const cur = await currentOrLogin();
   await getAuth().passkeys.remove(cur, str(fd, 'credentialId'), await requestContext());
-  redirect('/account/security');
+  redirect('/konto/sikkerhed/');
 }
 
 export async function passkeyLoginOptionsAction() {
@@ -160,5 +160,5 @@ export async function passkeyLoginVerifyAction(response: unknown, next: string):
   const r = await getAuth().passkeys.verifyLogin(response as never, await requestContext());
   if (!r.ok) return { error: messageFor(r.error) };
   await setSessionCookie(r.session);
-  return { redirectTo: safeRedirectPath(next, '/account') };
+  return { redirectTo: safeRedirectPath(next, '/konto/') };
 }

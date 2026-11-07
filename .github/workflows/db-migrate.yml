@@ -1,0 +1,32 @@
+name: Databasemigrering
+
+# Kører databasemigreringerne mod produktionsdatabasen. Startes KUN manuelt (Actions → Databasemigrering → Run workflow).
+# Kræver secret DATABASE_URL_MIGRATE (bruger med ret til at ændre skemaet; ?sslmode=require) i environment "production".
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-migrate
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production   # sæt "Required reviewers" på environment'et, så en migrering skal godkendes
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Kør migreringer
+        run: npm run migrate -w @respin/db
+        env:
+          DATABASE_URL_MIGRATE: ${{ secrets.DATABASE_URL_MIGRATE }}

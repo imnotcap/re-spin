@@ -9,5 +9,5 @@
   "exports": { ".": "./src/index.ts" },
   "scripts": { "typecheck": "tsc --noEmit" },
   "dependencies": { "jose": "^6.0.0", "zod": "^4.6.0" },
-  "devDependencies": { "typescript": "~5.9.3" }
+  "devDependencies": { "typescript": "~6.0.3" }
 }
