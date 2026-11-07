@@ -6,17 +6,25 @@ import { BASE_PATH } from './site';
 
 const img = (p: string) => `${BASE_PATH}/img/${p}`;
 
-/** Produktfoto (4:5) i to størrelser */
+const set = (paths: Array<[string, number]>) => paths.map(([p, w]) => `${img(p)} ${w}w`).join(', ');
+
+/** Produktfoto (4:5) i fire bredder – mobilens kort (ca. 180 px) henter 320, store skærme 480/960 */
 export const itemImage = (id: string) => ({
   src: img(`vare/${id}-480.webp`),
-  srcSet: `${img(`vare/${id}-480.webp`)} 480w, ${img(`vare/${id}-960.webp`)} 960w`
+  srcSet: set([[`vare/${id}-240.webp`, 240], [`vare/${id}-320.webp`, 320], [`vare/${id}-480.webp`, 480], [`vare/${id}-960.webp`, 960]])
 });
 
-/** Kvadratisk kategorifoto */
-export const categoryImage = (slug: string) => img(`kategori/${slug}.webp`);
+/** Kvadratisk kategorifoto (160/240/480) – fliserne er ca. 140 px brede */
+export const categoryImage = (slug: string) => ({
+  src: img(`kategori/${slug}-240.webp`),
+  srcSet: set([[`kategori/${slug}-160.webp`, 160], [`kategori/${slug}-240.webp`, 240], [`kategori/${slug}.webp`, 480]])
+});
 
-/** Bannerfoto i to bredder */
+/** Bannerfoto i flere bredder (mobil 480–800, desktop op til 1600) */
 export const bannerImage = (name: 'hero' | 'saelg' | 'butik') => {
   const big = name === 'hero' ? 1600 : 1200;
-  return { src: img(`banner/${name}-800.webp`), srcSet: `${img(`banner/${name}-800.webp`)} 800w, ${img(`banner/${name}-${big}.webp`)} ${big}w` };
+  return {
+    src: img(`banner/${name}-800.webp`),
+    srcSet: set([[`banner/${name}-480.webp`, 480], [`banner/${name}-640.webp`, 640], [`banner/${name}-800.webp`, 800], [`banner/${name}-${big}.webp`, big]])
+  };
 };

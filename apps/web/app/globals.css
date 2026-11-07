@@ -25,3 +25,8 @@ body { background: var(--rs-bg); color: var(--rs-text); font-family: var(--rs-fo
 /* Varesiden på mobil: plads til den faste købsbjælke under footeren */
 @media (max-width: 1023.98px) { body:has(.rs-buybar) footer { padding-bottom: 76px; } }
 @media print { .rs-buybar { display: none !important; } }
+
+/* Sektioner langt nede på forsiden: browseren springer layout (og dermed billedhentning) over, til man
+   nærmer sig dem. Sparer arbejde og data ved første visning. Ved print vises alt. */
+.cv-auto { content-visibility: auto; contain-intrinsic-size: auto 720px; }
+@media print { .cv-auto { content-visibility: visible; } }

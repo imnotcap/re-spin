@@ -97,7 +97,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/90">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:gap-6">
-        <Link href="/" aria-label={`${SITE.name} – forsiden`} className="shrink-0">
+        <Link href="/" prefetch={false} aria-label={`${SITE.name} – forsiden`} className="shrink-0">
           <span className="sm:hidden"><LogoMark size={30} onLight /></span>
           <span className="hidden sm:block"><Wordmark size={24} color="var(--rs-forest)" onLight /></span>
         </Link>

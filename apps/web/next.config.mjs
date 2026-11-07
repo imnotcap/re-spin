@@ -18,7 +18,13 @@ const liveImpl = isStatic ? './components/listings/live.tsx' : './components/lis
 
 /** @type {import('next').NextConfig} */
 export default {
-  turbopack: { resolveAlias: { '@respin-live': liveImpl } },
+  turbopack: {
+    resolveAlias: {
+      '@respin-live': liveImpl,
+      // Next' polyfills til gamle browsere: unødvendige for de understøttede browsere (se lib/no-polyfills.js)
+      '../build/polyfills/polyfill-module': './lib/no-polyfills.js'
+    }
+  },
   ...(isStatic
     ? { output: 'export', basePath, images: { unoptimized: true }, pageExtensions: ['tsx', 'ts'] }
     : {
@@ -30,7 +36,9 @@ export default {
   env: {
     // Kendt i browseren: om login findes (headerens konto-knap). Ingen hemmeligheder her.
     NEXT_PUBLIC_AUTH_ENABLED: isStatic ? '0' : '1',
-    NEXT_PUBLIC_BASE_PATH: basePath
+    NEXT_PUBLIC_BASE_PATH: basePath,
+    // Offentlig adresse til sitemap/robots/kanoniske links: GitHub Pages sætter den i workflowet, Vercel bruger APP_URL
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || (isStatic ? '' : process.env.APP_URL || '')
   },
   trailingSlash: true,
   reactStrictMode: true,

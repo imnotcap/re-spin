@@ -7,13 +7,14 @@ import { Providers } from './providers';
 import { CategoryNav, Header } from '../components/Header';
 import { TopBar } from '../components/TopBar';
 import { Footer } from '../components/Footer';
-import { SITE } from '../lib/site';
+import { SITE_URL, SITE } from '../lib/site';
 
-// Inter (variabel, latin-delsæt inkl. æ/ø/å) – selv-hostet og forhåndsindlæst. next/font laver en
-// størrelsestilpasset reserveskrift, så skiftet til Inter ikke flytter noget på siden (CLS 0).
+// Inter (variabel, latin-delsæt inkl. æ/ø/å) – selv-hostet. next/font laver en størrelsestilpasset
+// reserveskrift, så skiftet til Inter ikke flytter noget på siden (CLS 0). Delsæt (latin + æøå, vægt 400–800):
+// 27 KB i stedet for 48 KB – lavet med fonttools (pyftsubset + varLib.instancer), se app/fonts/OFL-Inter.txt.
 const inter = localFont({
   src: './fonts/inter-latin-wght-normal.woff2',
-  weight: '100 900',
+  weight: '400 800',
   style: 'normal',
   display: 'swap',
   variable: '--font-inter'
@@ -22,8 +23,8 @@ const inter = localFont({
 export const metadata: Metadata = {
   title: { default: SITE.title, template: `%s · ${SITE.name}` },
   description: SITE.description,
-  // Testversion: skal ikke findes i søgemaskiner
-  robots: SITE.isTest ? { index: false, follow: false } : undefined,
+  metadataBase: new URL(`${SITE_URL}/`),
+  alternates: { canonical: './' },
   openGraph: { title: SITE.title, description: SITE.description, locale: 'da_DK', type: 'website', siteName: SITE.name },
   formatDetection: { telephone: false }
 };

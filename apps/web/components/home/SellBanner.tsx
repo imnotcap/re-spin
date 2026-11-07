@@ -7,7 +7,7 @@ const POINTS = ['Gratis at sætte til salg', 'Kun 1 % til re:spin, når varen er
 export function SellBanner() {
   const photo = bannerImage('saelg');
   return (
-    <section aria-labelledby="saelg-title" className="mx-auto mt-16 max-w-7xl px-4 sm:px-6">
+    <section aria-labelledby="saelg-title" className="cv-auto mx-auto mt-16 max-w-7xl px-4 sm:px-6">
       <div className="grid grid-cols-1 overflow-hidden rounded-lg bg-cream-200 md:grid-cols-2">
         <img src={photo.src} srcSet={photo.srcSet} sizes="(min-width: 768px) 50vw, 100vw" alt="" width={1200} height={900} loading="lazy" decoding="async"
           className="block h-60 w-full object-cover md:h-full md:min-h-[360px]" />

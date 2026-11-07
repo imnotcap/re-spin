@@ -15,7 +15,7 @@ export function HomeHero() {
           alt=""
           width={1600}
           height={900}
-          decoding="async"
+          fetchPriority="high"
           className="block h-56 w-full object-cover sm:h-[360px] lg:h-[440px]"
         />
         <div className="relative border-b border-line bg-surface px-4 py-6 sm:absolute sm:left-8 sm:top-1/2 sm:w-[400px] sm:-translate-y-1/2 sm:rounded-md sm:border-0 sm:p-8 sm:shadow-float lg:left-12">
