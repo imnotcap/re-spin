@@ -5,92 +5,152 @@ import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Icon } from '@respin/ui';
 import { CATEGORIES, type Category, type CategorySlug } from '../../lib/categories';
-import type { MenuMeta } from '../../lib/catalog';
-import { categoryImage } from '../../lib/images';
+import { formatKr } from '@respin/ui/utils';
+import { SHIPPING_PRICE_ORE } from '@respin/core/fees';
+import type { MenuCategory, MenuMeta } from '../../lib/catalog';
+import { categoryImage, itemImage } from '../../lib/images';
 import { useI18n } from '../../lib/i18n/client';
 
 const typeHref = (slug: string, sub?: string) => `/kategori/${slug}/${sub ? `?type=${encodeURIComponent(sub)}` : ''}`;
 const OPEN_DELAY = 110;   // musen skal "hvile" et øjeblik, før menuen åbner (ingen blinken når man bare passerer)
 const CLOSE_DELAY = 180;
+const SHIPPING_FROM_KR = Number(SHIPPING_PRICE_ORE.small) / 100;
 
-/** Genveje med filtre, der allerede findes i kategorisidens URL */
-const SHORTCUTS = [
-  { key: 'sort.nyeste', icon: 'sparkle', q: '?sort=nyeste' },
-  { key: 'sort.populaere', icon: 'heart', q: '?sort=populaere' },
-  { key: 'price.under-200', icon: 'tag', q: '?pris=under-200' }
-] as const;
+/** Fordel grupper i to kolonner med så lige højde som muligt; rækkefølgen bevares inden for hver kolonne */
+function balance<G extends { items: readonly string[] }>(groups: readonly G[]): [G[], G[]] {
+  const h = (g: G) => g.items.length + 2; // overskrift og luft tæller med
+  const cols: [Array<{ g: G; i: number }>, Array<{ g: G; i: number }>] = [[], []];
+  const height = [0, 0];
+  [...groups.map((g, i) => ({ g, i }))].sort((a, b) => h(b.g) - h(a.g)).forEach((x) => {
+    const k = height[0]! <= height[1]! ? 0 : 1;
+    cols[k].push(x); height[k]! += h(x.g);
+  });
+  return [cols[0].sort((a, b) => a.i - b.i).map((x) => x.g), cols[1].sort((a, b) => a.i - b.i).map((x) => x.g)];
+}
 
-/** Indholdet af megamenuen for én kategori: genveje | alle grupper som kolonner | fotokort med mærker */
-function MegaPanel({ c, meta, onNavigate, id }: { c: Category; meta: MenuMeta[CategorySlug]; onNavigate: () => void; id: string }) {
+const catHref = (slug: string, q = '') => `/kategori/${slug}/${q}`;
+const kicker = 'text-caption font-bold uppercase tracking-[0.1em]';
+const count = 'font-mono text-caption tabular-nums text-muted';
+
+/** Indholdet af megamenuen for én kategori: udforsk | typer | populære mærker | ugens fokus, og en bjælke nederst */
+function MegaPanel({ c, meta, brandTotal, onNavigate, id }: { c: Category; meta: MenuCategory; brandTotal: number; onNavigate: () => void; id: string }) {
   const { t, n } = useI18n();
   const cat = t(`cat.${c.slug}`, undefined, c.label);
-  const img = categoryImage(c.slug);
-  const cols = c.groups.length >= 3 ? 'grid-cols-3' : 'grid-cols-2';
-  return (
-    <div id={id} className="mx-auto grid max-w-7xl grid-cols-[210px_minmax(0,1fr)_280px] gap-8 px-6 py-7">
-      {/* Genveje */}
-      <ul className="flex flex-col gap-0.5 border-r border-line pr-6" aria-label={cat}>
-        <li>
-          <Link href={typeHref(c.slug)} onClick={onNavigate} className="flex items-center gap-3 rounded-md bg-sunken px-3 py-2.5 text-body font-semibold text-forest hover:bg-stone-100">
-            <Icon name="grid" size={20} />{t('mega.all', { cat })}
-          </Link>
-        </li>
-        {SHORTCUTS.map((x) => (
-          <li key={x.key}>
-            <Link href={`/kategori/${c.slug}/${x.q}`} onClick={onNavigate} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-body font-semibold text-slate-700 hover:bg-sunken hover:text-ink">
-              <Icon name={x.icon} size={20} className="text-muted" />{t(x.key)}
-            </Link>
-          </li>
-        ))}
-      </ul>
+  const rows = [
+    { href: catHref(c.slug, '?sort=nyeste'), label: t('mega.news'), extra: meta.newWeek > 0 ? <span className="inline-flex items-center gap-1.5 rounded-pill border border-[var(--rs-forest-50)] bg-[var(--rs-forest-50)] px-2 py-0.5 text-caption font-semibold text-forest"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-forest" />{t('mega.newWeek', { n: n(meta.newWeek) })}</span> : null },
+    { href: catHref(c.slug, '?sort=populaere'), label: t('mega.popular'), extra: null },
+    meta.likeNew > 0 ? { href: catHref(c.slug, `?stand=${encodeURIComponent('Ny med mærke')}`), label: t('cond.Ny med mærke', undefined, 'Ny med mærke'), extra: <span className={count}>{n(meta.likeNew)}</span> } : null,
+    meta.under200 > 0 ? { href: catHref(c.slug, '?pris=under-200'), label: t('price.under-200', undefined, 'Under 200 kr.'), extra: <span className={count}>{n(meta.under200)}</span> } : null
+  ].filter((x) => x !== null);
+  const focusImg = meta.focus ? itemImage(meta.focus.itemId) : undefined;
 
-      {/* Alle grupper side om side */}
-      <div className={`grid min-w-0 gap-8 ${cols}`}>
-        {c.groups.map((g) => (
-          <section key={g.label} aria-label={t(`group.${g.label}`, undefined, g.label)} className="min-w-0">
-            <p className="flex items-center gap-2 text-caption font-bold uppercase tracking-[0.08em] text-muted">
-              <Icon name={g.icon} size={16} className="text-forest" />{t(`group.${g.label}`, undefined, g.label)}
-            </p>
-            <ul className={`mt-2 ${g.items.length > 7 && c.groups.length < 3 ? 'columns-2 gap-x-6' : ''}`}>
-              {g.items.map((s) => (
-                <li key={s} className="break-inside-avoid">
-                  <Link href={typeHref(c.slug, s)} onClick={onNavigate} className="block rounded-sm py-1.5 text-body text-ink underline-offset-4 hover:text-forest hover:underline">
-                    {t(`sub.${s}`, undefined, s)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
+  return (
+    <div id={id} className="mx-auto max-w-7xl">
+      <div className="grid grid-cols-[290px_minmax(0,1fr)_220px_200px]">
+        {/* Udforsk */}
+        <div className="flex flex-col border-r border-line bg-sunken px-7 py-7">
+          <p className={`${kicker} text-muted`}>{t('mega.explore', { cat })}</p>
+          <Link href={catHref(c.slug)} onClick={onNavigate}
+            className="mt-4 flex items-center justify-between gap-3 rounded-md border border-line bg-surface px-4 py-3 text-body font-semibold text-ink hover:border-slate">
+            {t('mega.allIn', { cat })}
+            <span className={`${count} inline-flex items-center gap-1`}>{n(meta.count)}<Icon name="arrow" size={14} /></span>
+          </Link>
+          <ul className="mt-2 flex flex-col">
+            {rows.map((r) => (
+              <li key={r.href}>
+                <Link href={r.href} onClick={onNavigate} className="flex items-center justify-between gap-3 rounded-md px-4 py-2.5 text-body text-slate-700 hover:bg-surface hover:text-ink">
+                  {r.label}{r.extra}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {meta.sizes.length > 0 && (
+            <div className="mt-auto border-t border-line pt-5">
+              <p className="text-small font-semibold text-ink">{t('mega.sizeTitle')}</p>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {meta.sizes.map((s) => (
+                  <li key={s}>
+                    <Link href={catHref(c.slug, `?str=${encodeURIComponent(s)}`)} onClick={onNavigate} aria-label={t('mega.sizeLabel', { s, cat })}
+                      className="inline-flex h-9 min-w-10 items-center justify-center rounded-md border border-line bg-surface px-2.5 text-small font-semibold text-ink hover:border-ink">{s}</Link>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-caption text-muted">{t('mega.sizeHint')}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Typer: grupperne fordelt i to lige høje kolonner (den største for sig selv) */}
+        <div className="grid min-w-0 grid-cols-2 gap-10 px-8 py-7">
+          {balance(c.groups).map((col, i) => (
+            <div key={i} className="flex min-w-0 flex-col gap-6">
+              {col.map((g) => {
+                const label = t(`group.${g.label}`, undefined, g.label);
+                return (
+                  <section key={g.label} aria-label={label}>
+                    <p className={`${kicker} border-b border-line pb-3 text-ink`}>{label}</p>
+                    <ul className="mt-2">
+                      {g.items.map((x) => (
+                        <li key={x}>
+                          <Link href={typeHref(c.slug, x)} onClick={onNavigate} className="block py-1.5 text-body text-slate-700 underline-offset-4 hover:text-forest hover:underline">
+                            {t(`sub.${x}`, undefined, x)}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        {/* Populære mærker */}
+        <div className="flex flex-col border-l border-line px-7 py-7">
+          <p className={`${kicker} border-b border-line pb-3 text-ink`}>{t('mega.brands')}</p>
+          <ul className="mt-2">
+            {meta.brands.map((b) => (
+              <li key={b.brand}>
+                <Link href={catHref(c.slug, `?maerke=${encodeURIComponent(b.brand)}`)} onClick={onNavigate}
+                  className="flex items-center justify-between gap-3 py-1.5 text-body text-ink hover:text-forest">
+                  <span className="truncate">{b.brand}</span><span className={count}>{n(b.count)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <Link href="/maerker/" onClick={onNavigate} className="mt-auto flex items-center gap-1.5 border-t border-line pt-4 text-small font-semibold text-ink hover:text-forest">
+            {t('mega.allBrands', { n: n(brandTotal) })}<Icon name="arrow" size={14} />
+          </Link>
+        </div>
+
+        {/* Ugens fokus */}
+        <div className="py-7 pr-7">
+          {meta.focus && focusImg && (
+            <Link href={typeHref(c.slug, meta.focus.sub)} onClick={onNavigate} className="group relative flex h-full min-h-[360px] flex-col justify-end overflow-hidden rounded-lg bg-slate text-white">
+              <img src={focusImg.src} srcSet={focusImg.srcSet} sizes="200px" alt="" width={200} height={250} loading="lazy" decoding="async"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] motion-reduce:transition-none" />
+              <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/75 to-transparent" />
+              <span className={`${kicker} absolute left-3 top-3 rounded-sm bg-surface px-2 py-1 text-[10px] text-ink`}>{t('mega.focus')}</span>
+              <span className="relative px-4 pb-4">
+                <span className="block text-caption text-white/85">{t('mega.focusKicker')}</span>
+                <span className="mt-1 block text-h3 font-bold leading-tight">{t(`sub.${meta.focus.sub}`, undefined, meta.focus.sub)}</span>
+                <span className="mt-3 inline-flex items-center gap-1.5 border-b border-white pb-0.5 text-small font-semibold">{t('mega.focusCta')}<Icon name="arrow" size={14} /></span>
+              </span>
+            </Link>
+          )}
+        </div>
       </div>
 
-      {/* Fotokort + populære mærker */}
-      <div>
-        <Link href={typeHref(c.slug)} onClick={onNavigate} className="group block overflow-hidden rounded-lg border border-line">
-          <span className="block aspect-[16/10] overflow-hidden bg-stone-100">
-            <img src={img.src} srcSet={img.srcSet} sizes="280px" alt="" width={280} height={175} loading="lazy" decoding="async"
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] motion-reduce:transition-none" />
-          </span>
-          <span className="flex items-center justify-between gap-3 px-4 py-3">
-            <span>
-              <span className="block font-semibold">{t('mega.newIn', { cat })}</span>
-              <span className="block text-small text-muted">{t('mega.items', { n: n(meta.count) })}</span>
-            </span>
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-forest text-white transition-transform group-hover:translate-x-0.5"><Icon name="arrow" size={18} /></span>
-          </span>
-        </Link>
-        {meta.brands.length > 0 && (
-          <>
-            <p className="mt-5 text-caption font-bold uppercase tracking-[0.08em] text-muted">{t('mega.brands')}</p>
-            <ul className="mt-2 flex flex-wrap gap-1.5">
-              {meta.brands.map((b) => (
-                <li key={b}>
-                  <Link href={`/soeg/?q=${encodeURIComponent(b)}`} onClick={onNavigate} className="inline-flex h-8 items-center rounded-pill border border-line px-3 text-small font-semibold hover:border-slate">{b}</Link>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
+      {/* Tryghed og salg */}
+      <div className="flex items-center justify-between gap-6 border-t border-line bg-sunken px-7 py-3 text-small text-slate-700">
+        <p className="flex items-center gap-2">
+          <Icon name="shield" size={16} className="text-forest" />{t('mega.trust')}
+          <span aria-hidden="true" className="mx-2 text-stone-400">·</span>{t('mega.shipping', { price: formatKr(SHIPPING_FROM_KR) })}
+        </p>
+        <p className="flex items-center gap-2">
+          <span className="text-muted">{t('mega.sellQ')}</span>
+          <Link href="/saelg/" onClick={onNavigate} className="inline-flex items-center gap-1 font-semibold text-forest underline-offset-4 hover:underline">{t('mega.sellCta')}<Icon name="arrow" size={14} /></Link>
+        </p>
       </div>
     </div>
   );
@@ -129,7 +189,8 @@ export function CategoryNav({ meta }: { meta: MenuMeta }) {
   return (
     <nav ref={nav} aria-label={t('menu.categories')} className="relative border-b border-line bg-surface"
       onMouseLeave={() => schedule(() => setOpen(null), CLOSE_DELAY)} onMouseEnter={() => clearTimeout(timer.current)}>
-      <ul className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-2 [mask-image:linear-gradient(to_right,#000_85%,transparent)] [scrollbar-width:none] sm:px-4 md:[mask-image:none] lg:overflow-visible [&::-webkit-scrollbar]:hidden">
+      <div className="mx-auto flex max-w-7xl items-center">
+      <ul className="flex min-w-0 flex-1 gap-1 overflow-x-auto px-2 [mask-image:linear-gradient(to_right,#000_85%,transparent)] [scrollbar-width:none] sm:px-4 md:[mask-image:none] lg:gap-2 lg:overflow-visible lg:px-3 [&::-webkit-scrollbar]:hidden">
         {CATEGORIES.map((c) => {
           const href = `/kategori/${c.slug}/`;
           const active = pathname === href;
@@ -141,7 +202,7 @@ export function CategoryNav({ meta }: { meta: MenuMeta }) {
               <Link
                 href={href}
                 aria-current={active ? 'page' : undefined}
-                className={`relative flex h-11 items-center px-3 text-small font-semibold transition-colors hover:text-ink lg:pr-1 ${active || expanded ? 'text-ink' : 'text-slate-700'} ${active || expanded ? 'after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-ink lg:after:right-0' : ''}`}
+                className={`relative flex h-11 items-center px-3 text-small font-semibold transition-colors hover:text-ink lg:h-[52px] lg:px-4 lg:text-body lg:font-medium ${active || expanded ? 'text-ink' : 'text-slate-700'} ${active || expanded ? 'after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-forest lg:after:inset-x-4' : ''}`}
               >
                 {label}
               </Link>
@@ -153,7 +214,7 @@ export function CategoryNav({ meta }: { meta: MenuMeta }) {
                 aria-label={t('mega.open', { cat: label })}
                 onClick={() => (expanded ? close() : setOpen(c.slug))}
                 onKeyDown={(e) => { if (e.key === 'ArrowDown') { e.preventDefault(); setOpen(c.slug); requestAnimationFrame(() => document.getElementById(panelId)?.querySelector<HTMLElement>('a,button')?.focus()); } }}
-                className="hidden h-11 w-6 items-center justify-center text-muted hover:text-ink lg:inline-flex"
+                className="hidden h-11 w-6 items-center justify-center text-muted hover:text-ink lg:inline-flex lg:sr-only lg:focus-visible:not-sr-only"
               >
                 <Icon name="down" size={14} className={`transition-transform ${expanded ? 'rotate-180' : ''}`} />
               </button>
@@ -161,10 +222,19 @@ export function CategoryNav({ meta }: { meta: MenuMeta }) {
           );
         })}
       </ul>
+      <ul className="hidden shrink-0 items-center gap-6 pr-6 text-small lg:flex">
+        <li>
+          <Link href="/soeg/?q=vintage" className="inline-flex items-center gap-2 text-slate-700 hover:text-ink">
+            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-coral-600" />{t('nav.vintage')}
+          </Link>
+        </li>
+        <li><Link href="/maerker/" aria-current={pathname === '/maerker/' ? 'page' : undefined} className={pathname === '/maerker/' ? 'font-semibold text-ink' : 'text-slate-700 hover:text-ink'}>{t('nav.brandsAZ')}</Link></li>
+      </ul>
+      </div>
 
       {current && (
         <div className="absolute inset-x-0 top-full z-30 hidden border-b border-line bg-surface shadow-float motion-safe:animate-[rs-mega-in_160ms_ease-out] lg:block">
-          <MegaPanel c={current} meta={meta[current.slug]} onNavigate={close} id={panelId} />
+          <MegaPanel c={current} meta={meta.cats[current.slug]} brandTotal={meta.brandTotal} onNavigate={close} id={panelId} />
         </div>
       )}
     </nav>
@@ -191,7 +261,7 @@ export function MobileCategories({ meta, onNavigate }: { meta: MenuMeta; onNavig
         <h2 className="px-2 pt-1 text-h3">{cat}</h2>
         <Link href={typeHref(c.slug)} onClick={onNavigate} className="mt-2 flex items-center justify-between rounded-md bg-sunken px-3 py-3 text-body font-semibold">
           <span className="flex items-center gap-3"><Icon name="grid" size={20} className="text-forest" />{t('mega.all', { cat })}</span>
-          <span className="text-small font-normal text-muted">{t('mega.items', { n: n(meta[c.slug].count) })}</span>
+          <span className="text-small font-normal text-muted">{t('mega.items', { n: n(meta.cats[c.slug].count) })}</span>
         </Link>
         {c.groups.map((g) => (
           <section key={g.label} className="mt-4" aria-label={t(`group.${g.label}`, undefined, g.label)}>
@@ -203,12 +273,12 @@ export function MobileCategories({ meta, onNavigate }: { meta: MenuMeta; onNavig
             </ul>
           </section>
         ))}
-        {meta[c.slug].brands.length > 0 && (
+        {meta.cats[c.slug].brands.length > 0 && (
           <>
             <p className="mt-4 px-2 text-caption font-bold uppercase tracking-[0.08em] text-muted">{t('mega.brands')}</p>
             <ul className="mt-2 flex flex-wrap gap-1.5 px-2">
-              {meta[c.slug].brands.map((b) => (
-                <li key={b}><Link href={`/soeg/?q=${encodeURIComponent(b)}`} onClick={onNavigate} className="inline-flex h-9 items-center rounded-pill border border-line px-3 text-small font-semibold">{b}</Link></li>
+              {meta.cats[c.slug].brands.map(({ brand: b }) => (
+                <li key={b}><Link href={catHref(c.slug, `?maerke=${encodeURIComponent(b)}`)} onClick={onNavigate} className="inline-flex h-9 items-center rounded-pill border border-line px-3 text-small font-semibold">{b}</Link></li>
               ))}
             </ul>
           </>
@@ -228,7 +298,7 @@ export function MobileCategories({ meta, onNavigate }: { meta: MenuMeta; onNavig
               <img src={img.src} srcSet={img.srcSet} sizes="44px" alt="" width={44} height={44} loading="lazy" decoding="async" className="h-11 w-11 rounded-md object-cover" />
               <span className="flex-1">
                 <span className="block text-body font-semibold">{t(`cat.${x.slug}`, undefined, x.label)}</span>
-                <span className="block text-small text-muted">{t('mega.items', { n: n(meta[x.slug].count) })}</span>
+                <span className="block text-small text-muted">{t('mega.items', { n: n(meta.cats[x.slug].count) })}</span>
               </span>
               <Icon name="next" size={20} className="text-muted" />
             </button>

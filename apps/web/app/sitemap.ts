@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...ITEMS.map((i) => u(`/vare/${i.id}/`, 0.7)),
     ...SELLERS.map((s) => u(profilePath(s.name), 0.5)),
     ...['/saelg/', '/saadan-virker-det/', '/sikkerhed/', '/gebyrer/'].map((p) => u(p, 0.6, 'monthly')),
-    ...['/om/', '/privatliv/', '/cookiepolitik/', '/vilkaar/'].map((p) => u(p, 0.3, 'monthly'))
+    ...['/om/', '/privatliv/', '/cookiepolitik/', '/vilkaar/'].map((p) => u(p, 0.3, 'monthly')),
+    u('/maerker/', 0.5, 'weekly')
   ];
 }

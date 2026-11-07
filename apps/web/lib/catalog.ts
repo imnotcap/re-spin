@@ -194,7 +194,50 @@ export function toCard(item: Item) {
 /** Det en filtrerbar liste skal bruge */
 export const toBrowse = (item: Item) => ({ ...toCard(item), category: item.category, sub: item.sub, uploaded: item.uploaded });
 
-/** Lille opsummering pr. kategori til menuen (antal varer, populære mærker) – beregnes på serveren */
-export type MenuMeta = Record<CategorySlug, { count: number; brands: string[] }>;
-export const menuMeta = (): MenuMeta =>
-  Object.fromEntries(CATEGORIES.map((c) => [c.slug, { count: countIn(c.slug), brands: popularBrands(6, c.slug).map((b) => b.brand) }])) as MenuMeta;
+/** Størrelser, man kan vælge direkte i menuen (kun hvor det giver mening) */
+const MENU_SIZES: Partial<Record<CategorySlug, string[]>> = {
+  kvinder: ['XS', 'S', 'M', 'L', 'XL'],
+  maend: ['S', 'M', 'L', 'XL', 'XXL'],
+  sko: ['38', '39', '40', '41', '42', '43']
+};
+
+export interface MenuCategory {
+  count: number;
+  /** Sat til salg inden for de seneste 7 dage */
+  newWeek: number;
+  likeNew: number;
+  under200: number;
+  brands: { brand: string; count: number }[];
+  sizes: string[];
+  /** Ugens fokus: den type med flest varer og dens mest populære vare (foto) */
+  focus?: { sub: string; itemId: string };
+}
+/** Lille opsummering til menuen – beregnes på serveren, så kataloget ikke sendes med til browseren */
+export interface MenuMeta { cats: Record<CategorySlug, MenuCategory>; brandTotal: number }
+
+function focusOf(slug: CategorySlug): MenuCategory['focus'] {
+  const bySub = new Map<string, Item[]>();
+  for (const i of itemsIn(slug)) bySub.set(i.sub, [...(bySub.get(i.sub) ?? []), i]);
+  const best = [...bySub].map(([sub, xs]) => ({ sub, n: xs.length, top: [...xs].sort((a, b) => b.favorites - a.favorites)[0]! }))
+    .sort((a, b) => b.n - a.n || b.top.favorites - a.top.favorites)[0];
+  return best ? { sub: best.sub, itemId: best.top.id } : undefined;
+}
+
+export const allBrands = (): { brand: string; count: number }[] => popularBrands(Number.MAX_SAFE_INTEGER)
+  .sort((a, b) => a.brand.localeCompare(b.brand, 'da'));
+
+export const menuMeta = (): MenuMeta => ({
+  cats: Object.fromEntries(CATEGORIES.map((c) => {
+    const xs = itemsIn(c.slug);
+    return [c.slug, {
+      count: xs.length,
+      newWeek: xs.filter((i) => i.uploaded <= 7).length,
+      likeNew: xs.filter((i) => i.condition === 'Ny med mærke').length,
+      under200: xs.filter((i) => i.price < 200).length,
+      brands: popularBrands(8, c.slug),
+      sizes: MENU_SIZES[c.slug] ?? [],
+      focus: focusOf(c.slug)
+    } satisfies MenuCategory];
+  })) as Record<CategorySlug, MenuCategory>,
+  brandTotal: allBrands().length
+});

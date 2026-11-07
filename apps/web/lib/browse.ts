@@ -46,6 +46,11 @@ const sizeRank = (s: string): number => {
   const i = LETTER_SIZES.indexOf(s.split(/[\s/]/)[0] ?? '');
   return i === -1 ? 100 : i;
 };
+/** "M" passer til "M / 38" – så størrelsesknapperne i menuen også finder kombinerede størrelser */
+export const sizeMatches = (size: string, want: string): boolean => size === want || size.split(/\s*\/\s*/).includes(want);
+/** Størrelser, der kan vælges i menuen, selvom ingen vare har præcis den værdi */
+const MENU_SIZE = /^(XXS|XS|S|M|L|XL|XXL|\d{2})$/;
+
 /** XS < S < M < L < XL, derefter tal i naturlig rækkefølge (36 < 38 < 104), "One size" sidst */
 export const compareSizes = (a: string, b: string): number =>
   Number(a === 'One size') - Number(b === 'One size') || sizeRank(a) - sizeRank(b) || a.localeCompare(b, 'da', { numeric: true });
@@ -81,7 +86,7 @@ export function parseFilters(params: URLSearchParams, opt: BrowseOptions, knownT
     // Alle kategoriens typer accepteres (også dem uden varer endnu → "ingen varer" i stedet for alle varer)
     type: pick(get('type'), knownTypes),
     kategori: pick(get('kategori'), opt.categories),
-    str: pick(get('str'), opt.sizes),
+    str: pick(get('str'), opt.sizes) ?? (MENU_SIZE.test(get('str') ?? '') ? get('str') : undefined),
     stand: pick(get('stand'), opt.conditions),
     pris: pick(get('pris'), PRICE_BUCKETS.map((b) => b.value)),
     maerke: pick(get('maerke'), opt.brands),
@@ -107,7 +112,7 @@ export function applyFilters(items: readonly BrowseItem[], f: Filters): BrowseIt
   const out = items.filter((i) =>
     (!f.type || i.sub === f.type) &&
     (!f.kategori || i.category === f.kategori) &&
-    (!f.str || i.size === f.str) &&
+    (!f.str || sizeMatches(i.size, f.str)) &&
     (!f.stand || i.condition === f.stand) &&
     (!f.maerke || i.brand === f.maerke) &&
     (!bucket || (i.price >= bucket.min && i.price < bucket.max)));
