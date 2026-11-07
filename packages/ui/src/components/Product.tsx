@@ -124,7 +124,7 @@ export interface ProductCardProps {
  * Produktkort: billede, titel, mærke · størrelse · stand, pris og prisen inkl. køberbeskyttelse
  * (præcis til øren – samme beregning som checkout). Hele kortet er ét link; hjertet er en separat knap.
  */
-export function ProductCard({ product, href, badge, favorite, defaultFavorite, onFavoriteChange, hideFavorite, favoriteCount, seller, placeholderIcon, variant = 'grid', image, imageSizes = '(min-width: 1280px) 200px, (min-width: 640px) 25vw, 50vw' }: ProductCardProps) {
+export function ProductCard({ product, href, badge, favorite, defaultFavorite, onFavoriteChange, hideFavorite, favoriteCount, seller, placeholderIcon, variant = 'grid', image, imageSizes = '(min-width: 1280px) 200px, (min-width: 640px) 25vw, calc(50vw - 24px)' }: ProductCardProps) {
   const { id, title, brand, size, condition, price, imageUrl, imageSrcSet, shade } = product;
   const meta = [brand, size, condition].filter(Boolean).join(' · ');
   const incl = formatKr(buyerTotal(price));
@@ -199,7 +199,7 @@ export function ProductRow({ product, href, trailing }: { product: Product; href
 
 export interface CategoryTileProps {
   icon: IconName;
-  label: string;
+  label: ReactNode;
   href: string;
   /** Antal varer – vises under navnet i `card`-varianten */
   count?: number;
@@ -207,14 +207,17 @@ export interface CategoryTileProps {
   variant?: 'icon' | 'card' | 'photo';
   /** Foto til `photo`-varianten (kvadratisk) */
   imageSrc?: string;
+  /** Flere bredder af fotoet, så små fliser ikke henter store billeder */
+  imageSrcSet?: string;
+  imageSizes?: string;
 }
 
-export function CategoryTile({ icon, label, href, count, variant = 'icon', imageSrc }: CategoryTileProps) {
+export function CategoryTile({ icon, label, href, count, variant = 'icon', imageSrc, imageSrcSet, imageSizes = '(min-width: 1024px) 140px, (min-width: 640px) 18vw, 128px' }: CategoryTileProps) {
   if (variant === 'photo') {
     return (
       <AppLink href={href} className="rs-catphoto">
         <span className="rs-catphoto__img">
-          {imageSrc ? <img src={imageSrc} alt="" loading="lazy" decoding="async" /> : <Icon name={icon} size={40} />}
+          {imageSrc ? <img src={imageSrc} srcSet={imageSrcSet} sizes={imageSrcSet ? imageSizes : undefined} alt="" loading="lazy" decoding="async" width={240} height={240} /> : <Icon name={icon} size={40} />}
         </span>
         <span className="rs-catphoto__label">{label}</span>
         {count !== undefined && <span className="rs-catphoto__count">{count.toLocaleString('da-DK')} {count === 1 ? 'vare' : 'varer'}</span>}
@@ -239,10 +242,10 @@ export function CategoryTile({ icon, label, href, count, variant = 'icon', image
 }
 
 export interface SectionHeaderProps {
-  title: string;
+  title: ReactNode;
   /** Kort forklaring under titlen */
-  description?: string;
-  action?: { label: string; href: string };
+  description?: ReactNode;
+  action?: { label: ReactNode; href: string };
   /** Id på overskriften – brug til `aria-labelledby` på sektionen */
   id?: string;
   className?: string;

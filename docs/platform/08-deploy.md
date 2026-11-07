@@ -15,7 +15,7 @@ Filer, der hedder `*.server.tsx` eller `*.server.ts`, er kun med i server-bygget
 ## 1. Database (Neon, region EU – Frankfurt)
 
 1. Opret et projekt i **AWS Europe Central (Frankfurt)**. Ejer-brugeren (fx `neondb_owner`) bruges **kun** til migrationer.
-2. Kør migrationerne (se punkt 4). Kør derefter `packages/db/sql/roles.sql` én gang som ejer i Neons SQL-editor. Det opretter rollerne `respin_web`, `respin_admin` og `respin_worker` med mindste privilegium.
+2. Kør migrationerne (se punkt 5). Kør derefter `packages/db/sql/roles.sql` én gang som ejer i Neons SQL-editor. Det opretter rollerne `respin_web`, `respin_admin` og `respin_worker` med mindste privilegium.
 3. Opret en login-bruger til hjemmesiden, med en lang tilfældig adgangskode:
    ```sql
    CREATE USER respin_web_app LOGIN PASSWORD '<fra password manager>' IN ROLE respin_web;
@@ -29,7 +29,16 @@ Filer, der hedder `*.server.tsx` eller `*.server.ts`, er kun med i server-bygget
 
 Appen nægter at starte i produktion med `MAIL_TRANSPORT=console`, så ingen links ender i en log.
 
-## 3. Hosting (Vercel)
+## 3. Billeder (Vercel Blob)
+
+Annoncefotos ligger i Vercel Blob, på et andet domæne end siden selv. En fil kan derfor aldrig køre som en del af siden.
+
+1. Opret et Blob-lager: Vercel → Storage → **Create** → **Blob**, med navnet fx `re-spin-billeder`.
+2. Forbind det kun til projektet `re-spin` og kun til **Production**. Vercel sætter så selv `BLOB_READ_WRITE_TOKEN`.
+
+CSP'en tillader automatisk billeder fra lagerets adresse, som udledes af tokenet. Hvert billede omkodes til WebP i to størrelser (1600 og 480 px), før det gemmes. Det fjerner EXIF og GPS-position.
+
+## 4. Hosting (Vercel)
 
 1. Importér repoet og sæt **Root Directory = `apps/web`**. `apps/web/vercel.json` står for install og build (hele monorepoet, `npm ci --ignore-scripts`) og for regionen `fra1`.
 2. Sæt miljøvariablerne under *Production*. Sæt dem **ikke** under *Preview*, så preview-byg aldrig rører produktionsdata.
@@ -46,6 +55,7 @@ Appen nægter at starte i produktion med `MAIL_TRANSPORT=console`, så ingen lin
 | `PWNED_CHECK` | `on` | |
 | `TRUSTED_IP_HEADER` | `x-real-ip`. Vercel sætter den selv. Brug kun `cf-connecting-ip`, hvis Vercel *kun* kan nås gennem Cloudflare. | |
 | `TRUSTED_PROXIES` | `1` | |
+| `BLOB_READ_WRITE_TOKEN` | sættes af Vercel, når Blob-lageret forbindes (punkt 3) | ja |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | fra Stripe (test-nøgler, indtil I går live) | ja |
 
 3. Tilknyt domænet. HSTS med `preload` sendes automatisk i produktion. Indsend først domænet til hstspreload.org, når alle subdomæner kører https.
@@ -53,7 +63,7 @@ Appen nægter at starte i produktion med `MAIL_TRANSPORT=console`, så ingen lin
 
 Forkert eller manglende konfiguration stopper serveren ved første forespørgsel med en kort fejl uden hemmeligheder (zod-validering i `apps/web/lib/auth.ts`).
 
-## 4. Migrationer (GitHub Actions)
+## 5. Migrationer (GitHub Actions)
 
 Migrationer køres aldrig automatisk ved deploy, men bevidst med et klik:
 
@@ -62,7 +72,7 @@ Migrationer køres aldrig automatisk ved deploy, men bevidst med et klik:
 
 Rækkefølgen ved en ny version, der kræver skemaændringer: kør migrationen først og deploy derefter. Skriv derfor migrationer, så den gamle version stadig virker imens: tilføj kolonner før koden bruger dem, og fjern dem først i en senere version.
 
-## 5. Tjek efter første deploy
+## 6. Tjek efter første deploy
 
 ```bash
 curl -sI https://respin.dk/ | grep -iE 'content-security|strict-transport|x-frame|x-content-type|referrer|permissions'

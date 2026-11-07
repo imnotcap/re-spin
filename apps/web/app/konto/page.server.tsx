@@ -4,6 +4,7 @@ import { AuthPage } from '../../components/AuthPage';
 import { ChangePasswordForm } from '../../components/AuthForms';
 import { getAuth, requireSession } from '../../lib/auth';
 import { revokeSessionAction, signOutAction, signOutOthersAction } from '../../lib/actions';
+import { T } from '../../lib/i18n/client';
 
 export const metadata = { title: 'Min konto' };
 
@@ -16,7 +17,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const sp = await searchParams;
   const list = await getAuth().listSessions(current.user.id);
   return (
-    <AuthPage width="page" title="Min konto" crumbs={[{ label: 'Forside', href: '/' }, { label: 'Min konto' }]}>
+    <AuthPage width="page" title="Min konto" crumbs={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Min konto' }]}>
       {sp.welcome && <Notice icon="check" role="status">Din e-mail er bekræftet. Velkommen til re:spin!</Notice>}
       {sp.others && <Notice icon="check" role="status">Du er logget ud på alle andre enheder.</Notice>}
 
@@ -27,6 +28,15 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           <p className="truncate text-body text-muted">{current.user.email}</p>
         </div>
       </div>
+
+      <Link href="/konto/annoncer/" className="flex items-center gap-4 rounded-lg border border-line p-4 transition-colors hover:border-slate">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-100 text-forest"><Icon name="tag" size={20} /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">Mine annoncer</span>
+          <span className="block text-small text-muted">Sæt til salg, redigér, markér som solgt</span>
+        </span>
+        <Icon name="next" size={20} className="text-muted" />
+      </Link>
 
       <Link href="/konto/sikkerhed/" className="flex items-center gap-4 rounded-lg border border-line p-4 transition-colors hover:border-slate">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-100 text-forest"><Icon name="shield" size={20} /></span>

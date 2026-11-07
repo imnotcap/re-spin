@@ -19,12 +19,14 @@
     "@respin/security": "*",
     "@respin/ui": "*",
     "@simplewebauthn/browser": "^14.0.0",
+    "@vercel/blob": "~2.8.2",
     "motion": "^14.9.0",
     "next": "^16.4.0",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "server-only": "^0.0.1",
+    "sharp": "^0.35.5",
     "zod": "^4.6.0"
   },
   "devDependencies": {

@@ -34,7 +34,7 @@ async function setupMarket(opts: { certified?: boolean; payoutsReady?: boolean }
   const mk = async (name: string) => (await db.insert(s.users).values({ email: `${name}${k}@x.dk`, emailNormalized: `${name}${k}@x.dk`, displayName: name }).returning())[0]!;
   const seller = await mk('seller'); const buyer = await mk('buyer'); const stranger = await mk('stranger');
   await db.insert(s.sellerProfiles).values({ userId: seller.id, certified: !!opts.certified, certifiedAt: opts.certified ? new Date() : null, stripeAccountId: opts.payoutsReady === false ? null : `acct_${k}`, payoutsEnabled: opts.payoutsReady !== false });
-  const [listing] = await db.insert(s.listings).values({ sellerId: seller.id, title: 'Ganni uldjakke', category: 'vintage', condition: 'almost_new', priceOre: 45_000, shippingSize: 'small', status: 'active', moderationStatus: 'approved' }).returning();
+  const [listing] = await db.insert(s.listings).values({ sellerId: seller.id, title: 'Ganni uldjakke', category: 'kvinder', condition: 'very_good', priceOre: 45_000, shippingSize: 'small', status: 'active', moderationStatus: 'approved' }).returning();
   return { seller, buyer, stranger, listing: listing! };
 }
 
@@ -77,7 +77,7 @@ describe('checkout', () => {
     expect(await createCheckout(db, gw, { buyerId: m.seller.id, listingId: m.listing.id })).toEqual({ ok: false, reason: 'own_listing' });
     expect((await createCheckout(db, gw, { buyerId: m.buyer.id, listingId: m.listing.id })).ok).toBe(true);
     expect(await createCheckout(db, gw, { buyerId: m.stranger.id, listingId: m.listing.id })).toEqual({ ok: false, reason: 'listing_unavailable' });
-    const unapproved = (await db.insert(s.listings).values({ sellerId: m.seller.id, title: 'Ikke godkendt', category: 'vintage', condition: 'used', priceOre: 10_000, shippingSize: 'small', status: 'active' }).returning())[0]!;
+    const unapproved = (await db.insert(s.listings).values({ sellerId: m.seller.id, title: 'Ikke godkendt', category: 'kvinder', condition: 'good', priceOre: 10_000, shippingSize: 'small', status: 'active' }).returning())[0]!;
     expect(await createCheckout(db, gw, { buyerId: m.buyer.id, listingId: unapproved.id })).toEqual({ ok: false, reason: 'listing_unavailable' });
   });
   it('samtidige købere: kun én får varen', async () => {

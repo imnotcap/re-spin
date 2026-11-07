@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Breadcrumbs, Notice, StepList, Timeline } from '@respin/ui';
+import { T } from '../../lib/i18n/client';
 
 const section = 'grid grid-cols-1 gap-6 border-t border-line py-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] md:gap-12 md:py-16';
 
@@ -15,7 +16,7 @@ const TIPS = [
 export default function SecurityPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
-      <Breadcrumbs items={[{ label: 'Forside', href: '/' }, { label: 'Tryghed og sikkerhed' }]} />
+      <Breadcrumbs items={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Tryghed og sikkerhed' }]} />
       <header className="max-w-2xl pb-12 pt-6 md:pb-16">
         <h1 className="text-[32px] font-bold leading-[38px] tracking-[-0.01em] sm:text-[40px] sm:leading-[46px]">Tryghed og sikkerhed</h1>
         <p className="mt-3 text-[17px] leading-[27px] text-slate-700">Sådan holder vi pengene og dine oplysninger sikre – og sådan undgår du svindel.</p>

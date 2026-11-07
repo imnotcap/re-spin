@@ -3,7 +3,7 @@ import { createListingInput, makeOfferInput, normalizeUserText, sendMessageInput
 import { assessMessageRisk } from './risk';
 
 const uuid = '123e4567-e89b-42d3-a456-426614174000';
-const valid = { title: 'Ganni uldjakke', description: 'Brugt to gange', category: 'vintage', condition: 'almost_new', priceOre: 45_000, shippingSize: 'small', imageKeys: [uuid] };
+const valid = { title: 'Ganni uldjakke', description: 'Brugt to gange', category: 'kvinder', condition: 'very_good', priceOre: 45_000, shippingSize: 'small', imageKeys: [uuid] };
 
 describe('normalizeUserText', () => {
   it('fjerner usynlige og retningsskiftende tegn og kontroltegn', () => {

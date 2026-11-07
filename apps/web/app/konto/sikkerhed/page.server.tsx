@@ -3,10 +3,11 @@ import { AuthPage } from '../../../components/AuthPage';
 import { AddPasskey, ReauthForm, TotpManage, TotpSetup } from '../../../components/Security';
 import { getAuth, requireSession } from '../../../lib/auth';
 import { passkeyRemoveAction } from '../../../lib/actions';
+import { T } from '../../../lib/i18n/client';
 
 export const metadata = { title: 'Login og sikkerhed' };
 const fmt = (d: Date | null) => (d ? d.toLocaleDateString('da-DK', { dateStyle: 'medium', timeZone: 'Europe/Copenhagen' }) : 'aldrig');
-const crumbs = [{ label: 'Forside', href: '/' }, { label: 'Min konto', href: '/konto/' }, { label: 'Login og sikkerhed' }];
+const crumbs = [{ label: <T k="crumb.home" />, href: '/' }, { label: 'Min konto', href: '/konto/' }, { label: 'Login og sikkerhed' }];
 const h2 = 'text-[20px] font-bold leading-[26px]';
 
 export default async function SecurityPage({ searchParams }: { searchParams: Promise<{ mfa?: string }> }) {

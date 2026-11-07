@@ -42,6 +42,28 @@ NEXT_PUBLIC_BASE_PATH=/re-spin npm run build:static -w web        # → apps/web
 
 Testet: enhedstests i `packages/auth`. I browseren (Chromium, rigtig Postgres-protokol): 23 login-trin og 19 passkey/to-trins-trin. axe-core: 0 overtrædelser på login-siderne.
 
+## Annoncer (server-bygget)
+
+| Sti | Indhold |
+|---|---|
+| `/saelg/ny/` | Sæt til salg: 1–8 billeder (forsidebillede kan vælges), kategori og type, mærke, størrelse, stand, pris med live udbetaling, pakkestørrelse |
+| `/annonce/[id]/` | Annoncen. Ejeren ser "Redigér"; andre ser "Køb nu" (prisberegning – betaling kommer senere) |
+| `/konto/annoncer/` | Mine annoncer: redigér, markér som solgt, sæt til salg igen, fjern |
+| `/api/billeder/` | Upload af ét billede (kræver login og samme oprindelse) |
+| `/api/annoncer/` | Offentligt feed (`?category=sko&q=nike&limit=12`), kort cache i CDN'et |
+
+Forside, kategorier og søgning viser medlemmernes annoncer øverst ("Lige sat til salg"). I det statiske byg erstattes komponenten af en tom udgave via aliaset `@respin-live` (`next.config.mjs`).
+
+- **Ejerskab:** alle ændringer sker med `WHERE seller_id = <den indloggede>`. En andens annonce giver samme svar som "findes ikke".
+- **Billeder:** billedet tjekkes på magic bytes (aldrig filnavn eller Content-Type), og der er et pixelloft på 40 MP. Det omkodes til WebP, roteres efter EXIF og mister alle metadata. Der gælder højst 4 MB pr. billede (browseren gør det mindre først), højst 60 uploads i timen og højst 40 ubrugte billeder pr. bruger.
+- **Annoncer:** en annonce kan kun bruge egne, færdigbehandlede billeder, som ikke er brugt før. Ellers rulles alt tilbage. Højst 20 nye annoncer i døgnet.
+- **Gennemgang:** tekst om MobilePay, telefonnumre, e-mails eller links sender annoncen til gennemgang, før andre kan se den.
+
+## Menu og sprog
+
+- **Kategorier** (`lib/categories.ts`): 8 hovedkategorier med grupper og i alt 80 typer. Desktop har en megamenu med genveje (nyeste, populære, under 200 kr.), alle grupper som kolonner, et fotokort og populære mærker. Den åbner ved hover med en lille forsinkelse eller med pilen/↓ på tastaturet, og Escape lukker. På mobil vælger man en kategori i menuen (☰) og ser derefter dens grupper og typer. En type uden varer viser "ingen varer" i stedet for alle varer.
+- **Sprog** (`lib/i18n/`): dansk, engelsk, svensk, norsk og tysk vælges i topbjælken eller mobilmenuen. Valget huskes i browseren, og `<html lang>` følger med. Serveren viser altid dansk, og de andre sprog hentes først, når de vælges, som en lille fil pr. sprog. Brugernes egne tekster (titler, beskrivelser) oversættes ikke. Lange informationssider og konto-sider er endnu kun på dansk. En test sikrer, at alle sprog har de samme nøgler og pladsholdere.
+
 ## Offentlige sider
 
 | Sti | Indhold |

@@ -5,12 +5,17 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Avatar, Button, Icon, LogoMark, Wordmark } from '@respin/ui';
 import { BASE_PATH, HELP_NAV, SITE } from '../lib/site';
-import { CATEGORIES } from '../lib/categories';
+import type { MenuMeta } from '../lib/catalog';
 import { useFavorites } from '../lib/favorites';
+import { useI18n } from '../lib/i18n/client';
+import { LanguageMenu } from './LanguageMenu';
+import { MobileCategories } from './nav/CategoryMenu';
+export { CategoryNav } from './nav/CategoryMenu';
 
 /** Søgefelt. Uden JavaScript sendes formularen som almindelig GET til /soeg/?q=… (med base-stien). */
 function SearchForm({ id, className = '' }: { id: string; className?: string }) {
   const router = useRouter();
+  const { t } = useI18n();
   const ref = useRef<HTMLInputElement>(null);
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,7 +25,7 @@ function SearchForm({ id, className = '' }: { id: string; className?: string }) 
   };
   return (
     <form role="search" action={`${BASE_PATH}/soeg/`} method="get" onSubmit={onSubmit} className={`relative ${className}`}>
-      <label htmlFor={id} className="sr-only">Søg efter varer og mærker</label>
+      <label htmlFor={id} className="sr-only">{t('header.searchLabel')}</label>
       <Icon name="search" size={20} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
       <input
         ref={ref}
@@ -29,7 +34,7 @@ function SearchForm({ id, className = '' }: { id: string; className?: string }) 
         type="search"
         enterKeyHint="search"
         autoComplete="off"
-        placeholder="Søg efter varer"
+        placeholder={t('header.searchPlaceholder')}
         className="h-11 w-full rounded-md border border-stone-300 bg-surface pl-11 pr-4 text-body text-ink placeholder:text-muted transition-colors focus:border-slate focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
       />
     </form>
@@ -58,6 +63,7 @@ function useMe(pathname: string) {
 
 /** Konto-knap: samme størrelse logget ind og ud, så intet i headeren flytter sig. */
 function AccountButton({ me, pathname }: { me: { name: string } | null; pathname: string }) {
+  const { t } = useI18n();
   if (!AUTH) return null;
   const active = pathname.startsWith('/konto/') || pathname === '/log-ind/';
   return (
@@ -67,12 +73,13 @@ function AccountButton({ me, pathname }: { me: { name: string } | null; pathname
       className="inline-flex h-tap w-tap items-center justify-center rounded-md text-ink transition-colors hover:bg-sunken"
     >
       {me ? <Avatar name={me.name} size="sm" /> : <Icon name="user" size={22} />}
-      <span className="sr-only">{me ? `Min konto (${me.name})` : 'Log ind'}</span>
+      <span className="sr-only">{me ? t('header.accountNamed', { name: me.name }) : t('header.login')}</span>
     </Link>
   );
 }
 
-export function Header() {
+export function Header({ meta }: { meta: MenuMeta }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const menuId = useId();
   const searchId = useId();
@@ -92,12 +99,12 @@ export function Header() {
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
 
-  const favLabel = count > 0 ? `Favoritter, ${count} gemt` : 'Favoritter';
+  const favLabel = count > 0 ? t('header.favoritesCount', { n: count }) : t('header.favorites');
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/90">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:gap-6">
-        <Link href="/" aria-label={`${SITE.name} – forsiden`} className="shrink-0">
+        <Link href="/" prefetch={false} aria-label={t('header.home', { name: SITE.name })} className="shrink-0">
           <span className="sm:hidden"><LogoMark size={30} onLight /></span>
           <span className="hidden sm:block"><Wordmark size={24} color="var(--rs-forest)" onLight /></span>
         </Link>
@@ -119,14 +126,14 @@ export function Header() {
             )}
           </Link>
           <AccountButton me={me} pathname={pathname} />
-          <Button href="/saelg/" size="sm" icon="plus" className="hidden sm:inline-flex">Sælg nu</Button>
+          <Button href={AUTH ? '/saelg/ny/' : '/saelg/'} size="sm" icon="plus" className="hidden sm:inline-flex">{t('header.sell')}</Button>
           <button
             ref={buttonRef}
             type="button"
             className="inline-flex h-tap w-tap items-center justify-center rounded-md transition-colors hover:bg-sunken lg:hidden"
             aria-expanded={open}
             aria-controls={menuId}
-            aria-label={open ? 'Luk menu' : 'Åbn menu'}
+            aria-label={open ? t('header.closeMenu') : t('header.openMenu')}
             onClick={() => setOpen((v) => !v)}
           >
             <Icon name={open ? 'close' : 'grid'} size={22} />
@@ -134,58 +141,31 @@ export function Header() {
         </div>
       </div>
 
-      <nav id={menuId} aria-label="Menu" hidden={!open} className="max-h-[calc(100dvh-64px)] overflow-y-auto border-t border-line bg-surface lg:hidden">
+      <nav id={menuId} aria-label={t('menu.label')} hidden={!open} className="max-h-[calc(100dvh-64px)] overflow-y-auto border-t border-line bg-surface lg:hidden">
         <div className="mx-auto max-w-7xl px-4 pb-6 pt-2 sm:px-6">
-          <h2 className="px-2 pt-3 text-caption font-bold uppercase tracking-[0.08em] text-muted">Kategorier</h2>
-          <ul className="mt-1 grid grid-cols-2 gap-x-2">
-            {CATEGORIES.map((c) => (
-              <li key={c.slug}>
-                <Link href={`/kategori/${c.slug}/`} onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-md px-2 py-3 text-body font-semibold hover:bg-sunken">
-                  <Icon name={c.icon} size={20} className="text-muted" />{c.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <h2 className="mt-4 border-t border-line px-2 pt-4 text-caption font-bold uppercase tracking-[0.08em] text-muted">Hjælp</h2>
+          <h2 className="px-2 pt-3 text-caption font-bold uppercase tracking-[0.08em] text-muted">{t('menu.categories')}</h2>
+          <div className="mt-1">
+            {/* key: start altid på kategorilisten, når menuen åbnes */}
+            <MobileCategories key={String(open)} meta={meta} onNavigate={() => setOpen(false)} />
+          </div>
+          <h2 className="mt-4 border-t border-line px-2 pt-4 text-caption font-bold uppercase tracking-[0.08em] text-muted">{t('menu.help')}</h2>
           <ul className="mt-1">
             {HELP_NAV.map((n) => (
-              <li key={n.href}><Link href={n.href} onClick={() => setOpen(false)} className="block rounded-md px-2 py-3 text-body font-semibold hover:bg-sunken">{n.label}</Link></li>
+              <li key={n.href}><Link href={n.href} onClick={() => setOpen(false)} className="block rounded-md px-2 py-3 text-body font-semibold hover:bg-sunken">{t(n.key)}</Link></li>
             ))}
           </ul>
           {AUTH && (
             <Link href={me ? '/konto/' : '/log-ind/'} onClick={() => setOpen(false)} className="mt-2 flex items-center gap-3 rounded-md border-t border-line px-2 pb-1 pt-4 text-body font-semibold hover:bg-sunken">
-              <Icon name="user" size={20} className="text-muted" />{me ? 'Min konto' : 'Log ind eller opret konto'}
+              <Icon name="user" size={20} className="text-muted" />{me ? t('header.account') : t('header.loginOrSignup')}
             </Link>
           )}
-          <Button href="/saelg/" full icon="plus" className="mt-4 sm:hidden" onClick={() => setOpen(false)}>Sælg nu</Button>
+          <div className="mt-4 flex items-center justify-between gap-3 border-t border-line px-2 pt-4">
+            <span className="text-caption font-bold uppercase tracking-[0.08em] text-muted">{t('lang.label')}</span>
+            <LanguageMenu align="right" />
+          </div>
+          <Button href={AUTH ? '/saelg/ny/' : '/saelg/'} full icon="plus" className="mt-4 sm:hidden" onClick={() => setOpen(false)}>{t('header.sell')}</Button>
         </div>
       </nav>
     </header>
-  );
-}
-
-/** Kategorilinje under headeren (ikke sticky). På mobil kan den scrolles vandret. */
-export function CategoryNav() {
-  const pathname = usePathname();
-  return (
-    <nav aria-label="Kategorier" className="border-b border-line bg-surface">
-      <ul className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-2 [mask-image:linear-gradient(to_right,#000_85%,transparent)] [scrollbar-width:none] sm:px-4 md:[mask-image:none] [&::-webkit-scrollbar]:hidden">
-        {CATEGORIES.map((c) => {
-          const href = `/kategori/${c.slug}/`;
-          const active = pathname === href;
-          return (
-            <li key={c.slug} className="shrink-0">
-              <Link
-                href={href}
-                aria-current={active ? 'page' : undefined}
-                className={`relative flex h-11 items-center px-3 text-small font-semibold transition-colors hover:text-ink ${active ? 'text-ink after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-ink' : 'text-slate-700'}`}
-              >
-                {c.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
   );
 }

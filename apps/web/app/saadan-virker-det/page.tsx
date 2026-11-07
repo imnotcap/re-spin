@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Accordion, Breadcrumbs, Button, StepList } from '@respin/ui';
 import { FAQ, STEPS } from '../../lib/content';
 import { bannerImage } from '../../lib/images';
+import { T } from '../../lib/i18n/client';
 
 export const metadata: Metadata = {
   title: 'Sådan virker det',
@@ -22,7 +23,7 @@ export default function HowPage() {
   const photo = bannerImage('butik');
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
-      <Breadcrumbs items={[{ label: 'Forside', href: '/' }, { label: 'Sådan virker det' }]} />
+      <Breadcrumbs items={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Sådan virker det' }]} />
 
       <header className="grid grid-cols-1 items-center gap-8 pb-12 pt-6 md:grid-cols-2 md:gap-12 md:pb-16">
         <div>

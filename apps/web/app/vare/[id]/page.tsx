@@ -7,7 +7,8 @@ import { formatKr } from '@respin/ui/utils';
 import { ItemCard } from '../../../components/ItemCard';
 import { itemImage } from '../../../lib/images';
 import { ItemActions } from '../../../components/item/ItemActions';
-import { CONDITION_HELP, ITEMS, categoryOf, getItem, itemsBySeller, sellerOf, similarTo, toCard, uploadedLabel } from '../../../lib/catalog';
+import { T } from '../../../lib/i18n/client';
+import { CONDITION_HELP, ITEMS, categoryOf, getItem, itemsBySeller, sellerOf, similarTo, toCard } from '../../../lib/catalog';
 
 export const dynamicParams = false;
 export const generateStaticParams = () => ITEMS.map((i) => ({ id: i.id }));
@@ -36,7 +37,7 @@ export default async function ItemPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
-      <Breadcrumbs items={[{ label: 'Forside', href: '/' }, { label: cat.label, href: `/kategori/${cat.slug}/` }, { label: item.sub, href: `/kategori/${cat.slug}/?type=${encodeURIComponent(item.sub)}` }, { label: item.title }]} />
+      <Breadcrumbs items={[{ label: <T k="crumb.home" />, href: '/' }, { label: <T k={`cat.${cat.slug}`} />, href: `/kategori/${cat.slug}/` }, { label: <T k={`sub.${item.sub}`} fallback={item.sub} />, href: `/kategori/${cat.slug}/?type=${encodeURIComponent(item.sub)}` }, { label: item.title }]} />
 
       <div className="mt-5 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-12">
         <div className="lg:sticky lg:top-24 lg:self-start">
@@ -46,7 +47,7 @@ export default async function ItemPage({ params }: Props) {
         <div>
           <Link href={`/soeg/?q=${encodeURIComponent(item.brand)}`} className="text-small font-bold text-forest underline-offset-4 hover:underline">{item.brand}</Link>
           <h1 className="mt-1 text-h1 sm:text-[30px] sm:leading-[36px]">{item.title}</h1>
-          <p className="mt-1 text-body text-muted">Str. {item.size} · {item.condition}</p>
+          <p className="mt-1 text-body text-muted"><T k="item.sizeShort" v={{ size: item.size }} /> · <T k={`cond.${item.condition}`} /></p>
 
           <PriceDetails price={item.price} shippingFrom={shippingKr} className="mt-4" />
 
@@ -56,26 +57,26 @@ export default async function ItemPage({ params }: Props) {
           </div>
 
           <Notice icon="shield" className="mt-5">
-            <span><b>Køberbeskyttelse på alle køb.</b> Pengene holdes, til du har modtaget varen. Er den ikke som beskrevet, får du dem tilbage. <Link href="/sikkerhed/" className="font-semibold underline underline-offset-2">Læs mere</Link></span>
+            <span><b><T k="item.protection" /></b> <T k="item.protectionText" /> <Link href="/sikkerhed/" className="font-semibold underline underline-offset-2"><T k="item.readMore" /></Link></span>
           </Notice>
 
           <section aria-labelledby="detaljer" className="mt-7">
-            <h2 id="detaljer" className="text-h3">Detaljer</h2>
+            <h2 id="detaljer" className="text-h3"><T k="item.details" /></h2>
             <DetailList className="mt-2" items={[
-              ['Mærke', item.brand],
-              ['Størrelse', item.size],
-              ['Stand', <span key="s">{item.condition}<span className="block text-caption font-normal text-muted">{CONDITION_HELP[item.condition]}</span></span>],
-              ['Farve', item.color],
-              ...(item.material ? [['Materiale', item.material] as const] : []),
-              ['Kategori', <Link key="k" href={`/kategori/${cat.slug}/`} className="underline underline-offset-2">{cat.label} · {item.sub}</Link>],
-              ['Fragt', `${PARCEL[item.parcel]}, ${formatKr(shippingKr)}`],
-              ['Sendes fra', seller.city],
-              ['Oprettet', uploadedLabel(item.uploaded)]
+              [<T key="b" k="item.brand" />, item.brand],
+              [<T key="s" k="item.size" />, item.size],
+              [<T key="c" k="item.condition" />, <span key="s"><T k={`cond.${item.condition}`} /><span className="block text-caption font-normal text-muted">{CONDITION_HELP[item.condition]}</span></span>],
+              [<T key="f" k="item.color" />, item.color],
+              ...(item.material ? [[<T key="m" k="item.material" />, item.material] as const] : []),
+              [<T key="k" k="item.category" />, <Link key="k" href={`/kategori/${cat.slug}/`} className="underline underline-offset-2"><T k={`cat.${cat.slug}`} /> · <T k={`sub.${item.sub}`} fallback={item.sub} /></Link>],
+              [<T key="p" k="item.shipping" />, <span key="p"><T k={`parcel.${item.parcel}`} />, {formatKr(shippingKr)}</span>],
+              [<T key="from" k="item.shipsFrom" />, seller.city],
+              [<T key="o" k="item.created" />, item.uploaded <= 0 ? <T key="o" k="time.today" /> : item.uploaded === 1 ? <T key="o" k="time.yesterday" /> : <T key="o" k="time.daysAgo" v={{ n: item.uploaded }} />]
             ]} />
           </section>
 
           <section aria-labelledby="beskrivelse" className="mt-7">
-            <h2 id="beskrivelse" className="text-h3">Beskrivelse</h2>
+            <h2 id="beskrivelse" className="text-h3"><T k="item.description" /></h2>
             <p className="mt-2 whitespace-pre-line text-body text-slate-700">{item.description}</p>
           </section>
 
@@ -90,13 +91,13 @@ export default async function ItemPage({ params }: Props) {
 
       {more.length > 0 && (
         <section aria-labelledby="flere" className="mt-16">
-          <SectionHeader id="flere" title={`Flere fra ${seller.name}`} action={{ label: 'Se profil', href: `/medlem/${seller.id}/` }} className="px-0" />
+          <SectionHeader id="flere" title={<T k="item.moreFrom" v={{ name: seller.name }} />} action={{ label: <T k="item.seeProfile" />, href: `/medlem/${seller.id}/` }} className="px-0" />
           <ProductGrid layout="responsive">{more.map((i) => <ItemCard key={i.id} item={toCard(i)} />)}</ProductGrid>
         </section>
       )}
 
       <section aria-labelledby="lignende" className="mt-16">
-        <SectionHeader id="lignende" title="Lignende varer" action={{ label: `Alt i ${cat.label}`, href: `/kategori/${cat.slug}/` }} className="px-0" />
+        <SectionHeader id="lignende" title={<T k="item.similar" />} action={{ label: <T k="item.allIn" vk={{ cat: `cat.${cat.slug}` }} />, href: `/kategori/${cat.slug}/` }} className="px-0" />
         <ProductGrid layout="responsive">{similar.map((i) => <ItemCard key={i.id} item={toCard(i)} />)}</ProductGrid>
       </section>
     </div>

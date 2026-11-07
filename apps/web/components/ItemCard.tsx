@@ -4,6 +4,7 @@ import { ProductCard, useToast } from '@respin/ui';
 import type { IconName } from '@respin/ui';
 import { useFavorites } from '../lib/favorites';
 import { itemImage } from '../lib/images';
+import { useI18n } from '../lib/i18n/client';
 
 /** Det kortet skal bruge – sendes fra serveren, så hele kataloget ikke skal med i browserens bundle. */
 export interface CardItem {
@@ -17,6 +18,9 @@ export interface CardItem {
   icon: IconName;
   vintage?: boolean;
   seller?: { name: string; certified: boolean };
+  /** Medlemmernes annoncer: eget foto og egen side (eksempelvarerne bruger /vare/ og fotos i public/img) */
+  image?: { src: string; srcSet?: string } | null;
+  href?: string;
 }
 
 /** Kittets produktkort koblet til favoritterne. Tælleren inkluderer dit eget hjerte, når du har gemt varen. */
@@ -24,11 +28,12 @@ export function ItemCard({ item, showSeller = false }: { item: CardItem; showSel
   const fav = useFavorites();
   const { toast } = useToast();
   const on = fav.has(item.id);
-  const photo = itemImage(item.id);
+  const { t } = useI18n();
+  const photo = item.image ?? itemImage(item.id);
   return (
     <ProductCard
-      product={{ id: item.id, title: item.title, brand: item.brand, size: item.size, condition: item.condition, price: item.price, imageUrl: photo.src, imageSrcSet: photo.srcSet }}
-      href={`/vare/${item.id}/`}
+      product={{ id: item.id, title: item.title, brand: item.brand, size: item.size, condition: t(`cond.${item.condition}`, undefined, item.condition), price: item.price, imageUrl: photo.src, imageSrcSet: photo.srcSet }}
+      href={item.href ?? `/vare/${item.id}/`}
       badge={item.vintage ? 'Vintage' : undefined}
       placeholderIcon={item.icon}
       favoriteCount={item.favorites + (on ? 1 : 0)}
@@ -36,7 +41,7 @@ export function ItemCard({ item, showSeller = false }: { item: CardItem; showSel
       favorite={on}
       onFavoriteChange={(next) => {
         fav.set(item.id, next);
-        toast(next ? 'Gemt i dine favoritter' : 'Fjernet fra dine favoritter', { icon: 'heart' });
+        toast(next ? t('fav.saved') : t('fav.removed'), { icon: 'heart' });
       }}
     />
   );

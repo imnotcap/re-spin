@@ -3,6 +3,7 @@ import { Breadcrumbs, Button, Icon, Notice, PriceSummary, StepList } from '@resp
 import { sellerFee, sellerPayout } from '@respin/core/fees';
 import { formatOre, fromKr } from '@respin/core/money';
 import { STEPS } from '../../lib/content';
+import { T } from '../../lib/i18n/client';
 
 export const metadata: Metadata = {
   title: 'Sælg på re:spin',
@@ -21,7 +22,7 @@ const TIPS = [
 export default function SellPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
-      <Breadcrumbs items={[{ label: 'Forside', href: '/' }, { label: 'Sælg' }]} />
+      <Breadcrumbs items={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Sælg' }]} />
 
       <div className="mt-6 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-14">
         <div>
@@ -29,7 +30,9 @@ export default function SellPage() {
           <p className="mt-3 max-w-xl text-body text-muted sm:text-[17px] sm:leading-[26px]">
             Det koster ikke noget at sætte til salg. Når varen er solgt, går 1 % til re:spin – kun 0,5 %, hvis du er certificeret sælger.
           </p>
-          <Notice icon="info" warn className="mt-5 max-w-xl">Appen er under udvikling. Du kan ikke oprette annoncer endnu.</Notice>
+          {process.env.NEXT_PUBLIC_AUTH_ENABLED === '1'
+            ? <Button href="/saelg/ny/" size="lg" icon="plus" className="mt-6">Sæt en vare til salg</Button>
+            : <Notice icon="info" warn className="mt-5 max-w-xl">Dette er en testversion. Her kan du ikke oprette annoncer.</Notice>}
 
           <h2 className="mt-10 text-h2">Sådan gør du</h2>
           <StepList className="mt-4" steps={STEPS.seller} />

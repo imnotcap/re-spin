@@ -63,3 +63,17 @@ describe('størrelser', () => {
     expect(['104 cm', '98 cm', '110 cm'].sort(compareSizes)).toEqual(['98 cm', '104 cm', '110 cm']);
   });
 });
+
+describe('typer fra megamenuen', () => {
+  it('en kendt type uden varer giver 0 resultater (ikke alle varer); ukendte ignoreres', async () => {
+    const { CATEGORIES } = await import('./categories');
+    const kvinder = CATEGORIES.find((c) => c.slug === 'kvinder')!;
+    const items = all.filter((i) => i.category === 'kvinder');
+    const o = optionsFor(items, kvinder.subs);
+    expect(o.types).not.toContain('Nederdele');
+    const f = parseFilters(new URLSearchParams('type=Nederdele'), o, kvinder.subs);
+    expect(f.type).toBe('Nederdele');
+    expect(applyFilters(items, f)).toHaveLength(0);
+    expect(parseFilters(new URLSearchParams('type=Findes ikke'), o, kvinder.subs).type).toBeUndefined();
+  });
+});

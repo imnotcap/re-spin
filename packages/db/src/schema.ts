@@ -64,6 +64,7 @@ export const listings = pgTable('listings', {
   title: text('title').notNull(),
   description: text('description').notNull().default(''),
   category: listingCategory('category').notNull(),
+  subcategory: text('subcategory'),
   brand: text('brand'),
   size: text('size'),
   condition: listingCondition('condition').notNull(),
@@ -76,6 +77,7 @@ export const listings = pgTable('listings', {
 }, (t) => [
   check('listings_price_range', sql`${t.priceOre} BETWEEN 100 AND 10000000`),
   check('listings_title_len', sql`char_length(${t.title}) BETWEEN 3 AND 80`),
+  check('listings_subcategory_len', sql`${t.subcategory} IS NULL OR char_length(${t.subcategory}) BETWEEN 1 AND 40`),
   index('listings_feed_idx').on(t.status, t.createdAt),
   index('listings_seller_idx').on(t.sellerId)
 ]);

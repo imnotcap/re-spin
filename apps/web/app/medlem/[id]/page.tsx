@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { Avatar, Breadcrumbs, CertifiedBadge, Icon, ProductGrid, Rating } from '@respin/ui';
 import { ItemCard } from '../../../components/ItemCard';
 import { SELLERS, getSeller, itemsBySeller, newest, toCard } from '../../../lib/catalog';
+import { T } from '../../../lib/i18n/client';
 
 export const dynamicParams = false;
 export const generateStaticParams = () => SELLERS.map((s) => ({ id: s.id }));
@@ -28,7 +29,7 @@ export default async function MemberPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
-      <Breadcrumbs items={[{ label: 'Forside', href: '/' }, { label: s.name }]} />
+      <Breadcrumbs items={[{ label: <T k="crumb.home" />, href: '/' }, { label: s.name }]} />
       <header className="mt-5 flex flex-col gap-5 rounded-xl bg-surface p-5 shadow-line sm:flex-row sm:items-center sm:p-7">
         <Avatar name={s.name} size="xl" />
         <div className="min-w-0 flex-1">
