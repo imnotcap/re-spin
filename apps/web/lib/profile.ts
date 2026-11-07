@@ -1,4 +1,5 @@
 import 'server-only';
+import { randomInt } from 'node:crypto';
 import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { schema, type Db } from '@respin/db';
@@ -33,7 +34,7 @@ export async function ensureUsername(db: Db, userId: string): Promise<string> {
   if (u.username) return u.username;
   const base = slugifyUsername(u.displayName);
   for (let i = 0; i < 20; i++) {
-    const candidate = i === 0 ? base : `${base.slice(0, 24)}.${Math.floor(100 + Math.random() * 9900)}`;
+    const candidate = i === 0 ? base : `${base.slice(0, 24)}.${randomInt(100, 10_000)}`;
     if (!USERNAME.test(candidate) || isReservedUsername(candidate)) continue;
     // Kun hvis brugeren stadig ikke har et navn (to samtidige kald må ikke overskrive hinanden)
     const r = await db.update(users).set({ username: candidate }).where(and(eq(users.id, userId), sql`${users.username} IS NULL`))
