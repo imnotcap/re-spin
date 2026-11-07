@@ -15,8 +15,8 @@ export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
 /** Hjælp og information – i topbjælken, mobilmenuen og footeren */
 export const HELP_NAV = [
-  { href: '/saadan-virker-det/', label: 'Sådan virker det' },
-  { href: '/sikkerhed/', label: 'Køberbeskyttelse' },
-  { href: '/gebyrer/', label: 'Gebyrer' },
-  { href: '/saadan-virker-det/#faq', label: 'Spørgsmål og svar' }
+  { href: '/saadan-virker-det/', label: 'Sådan virker det', key: 'nav.how' },
+  { href: '/sikkerhed/', label: 'Køberbeskyttelse', key: 'nav.protection' },
+  { href: '/gebyrer/', label: 'Gebyrer', key: 'nav.fees' },
+  { href: '/saadan-virker-det/#faq', label: 'Spørgsmål og svar', key: 'nav.faq' }
 ] as const;

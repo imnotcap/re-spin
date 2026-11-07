@@ -4,6 +4,7 @@ import { AuthPage } from '../../components/AuthPage';
 import { ChangePasswordForm } from '../../components/AuthForms';
 import { getAuth, requireSession } from '../../lib/auth';
 import { revokeSessionAction, signOutAction, signOutOthersAction } from '../../lib/actions';
+import { T } from '../../lib/i18n/client';
 
 export const metadata = { title: 'Min konto' };
 
@@ -16,7 +17,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const sp = await searchParams;
   const list = await getAuth().listSessions(current.user.id);
   return (
-    <AuthPage width="page" title="Min konto" crumbs={[{ label: 'Forside', href: '/' }, { label: 'Min konto' }]}>
+    <AuthPage width="page" title="Min konto" crumbs={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Min konto' }]}>
       {sp.welcome && <Notice icon="check" role="status">Din e-mail er bekræftet. Velkommen til re:spin!</Notice>}
       {sp.others && <Notice icon="check" role="status">Du er logget ud på alle andre enheder.</Notice>}
 

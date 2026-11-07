@@ -147,9 +147,9 @@ export function similarTo(item: Item, n = 6): Item[] {
 }
 
 /** Mærker med flest varer (mindst 2), derefter alfabetisk */
-export function popularBrands(n = 12): { brand: string; count: number }[] {
+export function popularBrands(n = 12, slug?: CategorySlug): { brand: string; count: number }[] {
   const m = new Map<string, number>();
-  for (const i of ITEMS) if (i.brand !== 'Vintage') m.set(i.brand, (m.get(i.brand) ?? 0) + 1);
+  for (const i of ITEMS) if (i.brand !== 'Vintage' && (!slug || i.category === slug)) m.set(i.brand, (m.get(i.brand) ?? 0) + 1);
   return [...m].map(([brand, count]) => ({ brand, count }))
     .sort((a, b) => b.count - a.count || a.brand.localeCompare(b.brand, 'da'))
     .slice(0, n);
@@ -188,3 +188,8 @@ export function toCard(item: Item) {
 
 /** Det en filtrerbar liste skal bruge */
 export const toBrowse = (item: Item) => ({ ...toCard(item), category: item.category, sub: item.sub, uploaded: item.uploaded });
+
+/** Lille opsummering pr. kategori til menuen (antal varer, populære mærker) – beregnes på serveren */
+export type MenuMeta = Record<CategorySlug, { count: number; brands: string[] }>;
+export const menuMeta = (): MenuMeta =>
+  Object.fromEntries(CATEGORIES.map((c) => [c.slug, { count: countIn(c.slug), brands: popularBrands(6, c.slug).map((b) => b.brand) }])) as MenuMeta;

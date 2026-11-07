@@ -3,6 +3,7 @@ import { Breadcrumbs, Button, Icon, Notice, PriceSummary, StepList } from '@resp
 import { sellerFee, sellerPayout } from '@respin/core/fees';
 import { formatOre, fromKr } from '@respin/core/money';
 import { STEPS } from '../../lib/content';
+import { T } from '../../lib/i18n/client';
 
 export const metadata: Metadata = {
   title: 'Sælg på re:spin',
@@ -21,7 +22,7 @@ const TIPS = [
 export default function SellPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
-      <Breadcrumbs items={[{ label: 'Forside', href: '/' }, { label: 'Sælg' }]} />
+      <Breadcrumbs items={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Sælg' }]} />
 
       <div className="mt-6 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-14">
         <div>

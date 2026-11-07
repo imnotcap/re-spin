@@ -7,6 +7,7 @@ import { Providers } from './providers';
 import { CategoryNav, Header } from '../components/Header';
 import { TopBar } from '../components/TopBar';
 import { Footer } from '../components/Footer';
+import { menuMeta } from '../lib/catalog';
 import { SITE_URL, SITE } from '../lib/site';
 
 // Inter (variabel, latin-delsæt inkl. æ/ø/å) – selv-hostet. next/font laver en størrelsestilpasset
@@ -38,15 +39,15 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   // Next læser nonce fra CSP-headeren og sætter den på sine egne scripts. Statisk eksport kalder den ikke.
   if (isServer) await headers();
   return (
-    <html lang="da" className={inter.variable}>
+    <html lang="da" className={inter.variable} data-scroll-behavior="smooth">
       <body className="rs-flat min-h-dvh">
         <a href="#indhold" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-lime focus:px-4 focus:py-2 focus:font-bold">
           Spring til indhold
         </a>
         <Providers>
           <TopBar />
-          <Header />
-          <CategoryNav />
+          <Header meta={menuMeta()} />
+          <CategoryNav meta={menuMeta()} />
           <main id="indhold">{children}</main>
           <Footer />
         </Providers>

@@ -66,7 +66,7 @@ export function PriceSummary({ rows, total, className }: PriceSummaryProps) {
   );
 }
 
-export interface EmptyStateProps { icon?: IconName; title: string; description?: string; action?: ReactNode; className?: string; /** Overskriftsniveau – brug 1, når tom-tilstanden er hele sidens indhold (fx 404) */ headingLevel?: 1 | 2 | 3 }
+export interface EmptyStateProps { icon?: IconName; title: ReactNode; description?: ReactNode; action?: ReactNode; className?: string; /** Overskriftsniveau – brug 1, når tom-tilstanden er hele sidens indhold (fx 404) */ headingLevel?: 1 | 2 | 3 }
 
 export function EmptyState({ icon = 'heart', title, description, action, className, headingLevel = 2 }: EmptyStateProps) {
   const Heading = `h${headingLevel}` as 'h1' | 'h2' | 'h3';

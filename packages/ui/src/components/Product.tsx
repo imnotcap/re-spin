@@ -199,7 +199,7 @@ export function ProductRow({ product, href, trailing }: { product: Product; href
 
 export interface CategoryTileProps {
   icon: IconName;
-  label: string;
+  label: ReactNode;
   href: string;
   /** Antal varer – vises under navnet i `card`-varianten */
   count?: number;
@@ -242,10 +242,10 @@ export function CategoryTile({ icon, label, href, count, variant = 'icon', image
 }
 
 export interface SectionHeaderProps {
-  title: string;
+  title: ReactNode;
   /** Kort forklaring under titlen */
-  description?: string;
-  action?: { label: string; href: string };
+  description?: ReactNode;
+  action?: { label: ReactNode; href: string };
   /** Id på overskriften – brug til `aria-labelledby` på sektionen */
   id?: string;
   className?: string;

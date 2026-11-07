@@ -59,6 +59,11 @@ Forside, kategorier og søgning viser medlemmernes annoncer øverst ("Lige sat t
 - **Annoncer:** en annonce kan kun bruge egne, færdigbehandlede billeder, som ikke er brugt før. Ellers rulles alt tilbage. Højst 20 nye annoncer i døgnet.
 - **Gennemgang:** tekst om MobilePay, telefonnumre, e-mails eller links sender annoncen til gennemgang, før andre kan se den.
 
+## Menu og sprog
+
+- **Kategorier** (`lib/categories.ts`): 8 hovedkategorier med grupper og i alt 80 typer. Desktop har en megamenu med genveje (nyeste, populære, under 200 kr.), alle grupper som kolonner, et fotokort og populære mærker. Den åbner ved hover med en lille forsinkelse eller med pilen/↓ på tastaturet, og Escape lukker. På mobil vælger man en kategori i menuen (☰) og ser derefter dens grupper og typer. En type uden varer viser "ingen varer" i stedet for alle varer.
+- **Sprog** (`lib/i18n/`): dansk, engelsk, svensk, norsk og tysk vælges i topbjælken eller mobilmenuen. Valget huskes i browseren, og `<html lang>` følger med. Serveren viser altid dansk, og de andre sprog hentes først, når de vælges, som en lille fil pr. sprog. Brugernes egne tekster (titler, beskrivelser) oversættes ikke. Lange informationssider og konto-sider er endnu kun på dansk. En test sikrer, at alle sprog har de samme nøgler og pladsholdere.
+
 ## Offentlige sider
 
 | Sti | Indhold |

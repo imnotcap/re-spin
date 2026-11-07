@@ -4,6 +4,7 @@ import { ProductCard, useToast } from '@respin/ui';
 import type { IconName } from '@respin/ui';
 import { useFavorites } from '../lib/favorites';
 import { itemImage } from '../lib/images';
+import { useI18n } from '../lib/i18n/client';
 
 /** Det kortet skal bruge – sendes fra serveren, så hele kataloget ikke skal med i browserens bundle. */
 export interface CardItem {
@@ -27,10 +28,11 @@ export function ItemCard({ item, showSeller = false }: { item: CardItem; showSel
   const fav = useFavorites();
   const { toast } = useToast();
   const on = fav.has(item.id);
+  const { t } = useI18n();
   const photo = item.image ?? itemImage(item.id);
   return (
     <ProductCard
-      product={{ id: item.id, title: item.title, brand: item.brand, size: item.size, condition: item.condition, price: item.price, imageUrl: photo.src, imageSrcSet: photo.srcSet }}
+      product={{ id: item.id, title: item.title, brand: item.brand, size: item.size, condition: t(`cond.${item.condition}`, undefined, item.condition), price: item.price, imageUrl: photo.src, imageSrcSet: photo.srcSet }}
       href={item.href ?? `/vare/${item.id}/`}
       badge={item.vintage ? 'Vintage' : undefined}
       placeholderIcon={item.icon}
@@ -39,7 +41,7 @@ export function ItemCard({ item, showSeller = false }: { item: CardItem; showSel
       favorite={on}
       onFavoriteChange={(next) => {
         fav.set(item.id, next);
-        toast(next ? 'Gemt i dine favoritter' : 'Fjernet fra dine favoritter', { icon: 'heart' });
+        toast(next ? t('fav.saved') : t('fav.removed'), { icon: 'heart' });
       }}
     />
   );

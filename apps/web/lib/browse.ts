@@ -74,11 +74,12 @@ export function optionsFor(items: readonly BrowseItem[], types: readonly string[
 }
 
 /** Læs filtre fra URL'en. Ukendte eller ugyldige værdier ignoreres. */
-export function parseFilters(params: URLSearchParams, opt: BrowseOptions): Filters {
+export function parseFilters(params: URLSearchParams, opt: BrowseOptions, knownTypes: readonly string[] = opt.types): Filters {
   const get = (k: string) => params.get(k) ?? undefined;
   const pick = <T extends string>(v: string | undefined, allowed: readonly T[]): T | undefined => (v !== undefined && (allowed as readonly string[]).includes(v) ? (v as T) : undefined);
   return {
-    type: pick(get('type'), opt.types),
+    // Alle kategoriens typer accepteres (også dem uden varer endnu → "ingen varer" i stedet for alle varer)
+    type: pick(get('type'), knownTypes),
     kategori: pick(get('kategori'), opt.categories),
     str: pick(get('str'), opt.sizes),
     stand: pick(get('stand'), opt.conditions),

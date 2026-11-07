@@ -26,7 +26,6 @@ body { background: var(--rs-bg); color: var(--rs-text); font-family: var(--rs-fo
 @media (max-width: 1023.98px) { body:has(.rs-buybar) footer { padding-bottom: 76px; } }
 @media print { .rs-buybar { display: none !important; } }
 
-/* Sektioner langt nede på forsiden: browseren springer layout (og dermed billedhentning) over, til man
-   nærmer sig dem. Sparer arbejde og data ved første visning. Ved print vises alt. */
-.cv-auto { content-visibility: auto; contain-intrinsic-size: auto 720px; }
-@media print { .cv-auto { content-visibility: visible; } }
+
+/* Megamenuen glider blødt ind (slået fra ved "reducer bevægelse" via motion-safe) */
+@keyframes rs-mega-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }

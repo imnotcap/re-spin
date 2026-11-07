@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Breadcrumbs } from '@respin/ui';
+import { T } from '../../lib/i18n/client';
 
 export const metadata: Metadata = { title: 'Licenser' };
 
@@ -15,7 +16,7 @@ const ITEMS = [
 export default function LicensesPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 pt-5 sm:px-6">
-      <Breadcrumbs items={[{ label: 'Forside', href: '/' }, { label: 'Licenser' }]} />
+      <Breadcrumbs items={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Licenser' }]} />
       <h1 className="mt-6 text-h1">Licenser</h1>
       <p className="mt-2 text-body text-muted">Siden bruger fotos, software og en skrifttype fra andre. Her er deres licenser.</p>
       <ul className="mt-6 divide-y divide-line rounded-lg bg-surface shadow-line">

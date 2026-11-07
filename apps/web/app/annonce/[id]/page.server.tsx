@@ -12,6 +12,7 @@ import { getImageStore } from '../../../lib/image-store';
 import { getListing } from '../../../lib/listings';
 import { CONDITION_HELP, getCategory, uploadedLabel } from '../../../lib/catalog';
 import { PARCEL_LABEL } from '../../../lib/listing-labels';
+import { T } from '../../../lib/i18n/client';
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ ny?: string; gemt?: string; gennemgang?: string }> };
 
@@ -38,7 +39,7 @@ export default async function ListingPage({ params, searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
-      <Breadcrumbs items={[{ label: 'Forside', href: '/' }, { label: cat.label, href: `/kategori/${cat.slug}/` }, ...(l.sub ? [{ label: l.sub, href: `/kategori/${cat.slug}/?type=${encodeURIComponent(l.sub)}` }] : []), { label: l.title }]} />
+      <Breadcrumbs items={[{ label: <T k="crumb.home" />, href: '/' }, { label: cat.label, href: `/kategori/${cat.slug}/` }, ...(l.sub ? [{ label: l.sub, href: `/kategori/${cat.slug}/?type=${encodeURIComponent(l.sub)}` }] : []), { label: l.title }]} />
 
       <div className="mt-4 flex flex-col gap-3" aria-live="polite">
         {sp.ny && l.isOwner && <Notice icon="check" role="status"><b>Din vare er til salg.</b> Den vises nu på forsiden og i {cat.label}.</Notice>}

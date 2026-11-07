@@ -10,7 +10,7 @@ import { Avatar, CertifiedBadge, Rating } from './Badge';
  * gennemskuelig pris, tryghedslinje og produktgalleri.
  * ------------------------------------------------------------------------- */
 
-export interface Crumb { label: string; href?: string }
+export interface Crumb { label: ReactNode; href?: string }
 
 /** Brødkrummer. Sidste punkt er den aktuelle side (`aria-current="page"`). */
 export function Breadcrumbs({ items, className }: { items: ReadonlyArray<Crumb>; className?: string }) {
@@ -32,11 +32,11 @@ export function Breadcrumbs({ items, className }: { items: ReadonlyArray<Crumb>;
 }
 
 /** Nøgle/værdi-liste (`<dl>`), fx varens detaljer: Mærke, Størrelse, Stand … */
-export function DetailList({ items, className }: { items: ReadonlyArray<readonly [label: string, value: ReactNode]>; className?: string }) {
+export function DetailList({ items, className }: { items: ReadonlyArray<readonly [label: ReactNode, value: ReactNode]>; className?: string }) {
   return (
     <dl className={cx('rs-details', className)}>
-      {items.map(([label, value]) => (
-        <div key={label} className="rs-details__row">
+      {items.map(([label, value], i) => (
+        <div key={typeof label === 'string' ? label : i} className="rs-details__row">
           <dt>{label}</dt>
           <dd>{value}</dd>
         </div>
@@ -117,7 +117,7 @@ export function PriceDetails({ price, shippingFrom, className }: PriceDetailsPro
   );
 }
 
-export interface TrustItem { icon: IconName; title: string; text?: string; href?: string }
+export interface TrustItem { icon: IconName; title: ReactNode; text?: ReactNode; href?: string }
 
 /**
  * Række af korte løfter (køberbeskyttelse, gratis oprettelse …) med ikon.
@@ -126,9 +126,9 @@ export interface TrustItem { icon: IconName; title: string; text?: string; href?
 export function TrustBar({ items, variant = 'cards', className }: { items: ReadonlyArray<TrustItem>; variant?: 'cards' | 'compact'; className?: string }) {
   return (
     <ul className={cx('rs-trust', variant === 'compact' && 'rs-trust--compact', className)}>
-      {items.map((it) => {
+      {items.map((it, i) => {
         const body = (<><span className="rs-trust__icon"><Icon name={it.icon} size={variant === 'compact' ? 18 : 20} /></span><span><b>{it.title}</b>{it.text && variant === 'cards' && <span className="rs-trust__text">{it.text}</span>}</span></>);
-        return <li key={it.title}>{it.href ? <AppLink href={it.href} className="rs-trust__item">{body}</AppLink> : <span className="rs-trust__item">{body}</span>}</li>;
+        return <li key={typeof it.title === 'string' ? it.title : i}>{it.href ? <AppLink href={it.href} className="rs-trust__item">{body}</AppLink> : <span className="rs-trust__item">{body}</span>}</li>;
       })}
     </ul>
   );
