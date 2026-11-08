@@ -77,7 +77,7 @@ Overslag i USD (med DKK ved 1 USD ≈ 6,5 kr.). **Kortgebyrer er ikke med her** 
 ### D · Stor (≈ 250.000 aktive, 2 mio. annoncer, 80.000 ordrer/md., 5 TB billeder)
 Størrelsesorden **$8.000–20.000/md. (≈ 50.000–130.000 kr.)**. På dette niveau forhandler I Enterprise-aftaler (Vercel, Neon/AWS, Sentry), overvejer at flytte web til containere i egen cloud-konto, køber reserveret database-kapacitet og har en dedikeret søge-klynge. Tallene er grove – lav et nyt overslag ud fra målt forbrug, når I nærmer jer.
 
-**Perspektiv:** i fase D giver 80.000 ordrer à ~21 kr. i gebyrer ≈ 1,7 mio. kr./md. i bruttogebyrer. Infrastrukturen er ikke den store post – **kortgebyrer, svindel og kundeservice er**.
+**Perspektiv:** i fase D giver 80.000 ordrer à ~18 kr. i køberbeskyttelse ≈ 1,4 mio. kr./md. (plus fremhævning) i bruttogebyrer. Infrastrukturen er ikke den store post – **kortgebyrer, svindel og kundeservice er**.
 
 ## 4. Økonomi pr. ordre (det vigtigste regnestykke)
 
@@ -86,12 +86,12 @@ Eksempel: vare til **300 kr.**, lille pakke **39 kr.**, standard EEA-kort.
 | | Beløb |
 |---|---|
 | Køber betaler | 300 + 18 (5 % + 3 kr.) + 39 = **357 kr.** |
-| Videros gebyrer | 18 (køber) + 3 (1 % sælger) = **21 kr.** (certificeret sælger: 19,50 kr.) |
+| Videros gebyrer | 18 (køber) + 0 (sælger, 0 % kommission) = **18 kr.** (+ evt. fremhævning) |
 | Stripe kortgebyr ⚠️ | 1,5 % af 357 + 1,80 = **≈ 7,16 kr.** (premium-kort ≈ 8,58 kr.) |
 | Connect-gebyrer (overførsel/aktiv konto) | **ukendt for DK – spørg Stripe** |
 | Fragt | 39 kr. ind, labelpris ud (forskellen er gevinst eller tab) |
-| **Tilbage før moms, Connect, svindel og support** | **≈ 13,8 kr.** |
-| Hvis gebyrerne er momspligtige (25 %, **bekræft med revisor**) | 21 / 1,25 − 7,16 ≈ **9,6 kr.** |
+| **Tilbage før moms, Connect, svindel og support** | **≈ 10,8 kr.** |
+| Hvis gebyrerne er momspligtige (25 %, **bekræft med revisor**) | 18 / 1,25 − 7,16 ≈ **7,2 kr.** |
 
 Konklusioner:
 - **Faste driftsomkostninger ved lancering (≈ 1.300 kr.) er dækket ved ca. 100–140 ordrer/md.**

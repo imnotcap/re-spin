@@ -2,12 +2,13 @@ import { add, ore, percentOf, sub, type Ore } from './money';
 
 /**
  * Gebyrer (kilde til sandhed – UI'et viser kun resultatet).
- *  - Køber: køberbeskyttelse 5 % + 3 kr.
- *  - Sælger: 1 % til Videro, 0,5 % for certificerede sælgere
+ *  - Køber: køberbeskyttelse 5 % + 3 kr. (det er her, Videro tjener penge på handler)
+ *  - Sælger: 0 % i kommission – sælger får hele salgsprisen. Videro tjener derudover på fremhævning af annoncer.
+ * Sælgergebyret findes stadig som felt på ordren (altid 0), så gamle ordrer og regnskabet er uændrede.
  */
 export const BUYER_PROTECTION_BPS = 500;
 export const BUYER_PROTECTION_FIXED: Ore = ore(300);
-export const SELLER_FEE_BPS = { standard: 100, certified: 50 } as const;
+export const SELLER_FEE_BPS = { standard: 0, certified: 0 } as const;
 
 export const buyerProtectionFee = (price: Ore): Ore => add(percentOf(price, BUYER_PROTECTION_BPS), BUYER_PROTECTION_FIXED);
 export const sellerFee = (price: Ore, certified: boolean): Ore => percentOf(price, certified ? SELLER_FEE_BPS.certified : SELLER_FEE_BPS.standard);
@@ -20,7 +21,7 @@ export interface OrderAmounts {
   shipping: Ore;
   /** Det køber betaler: pris + køberbeskyttelse + fragt */
   buyerTotal: Ore;
-  /** Det sælger får udbetalt: pris − sælgergebyr */
+  /** Det sælger får udbetalt: pris − sælgergebyr (0 %, dvs. hele prisen) */
   sellerPayout: Ore;
 }
 

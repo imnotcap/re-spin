@@ -91,7 +91,7 @@ export function ItemActions({ id, title, meta, price, parcel, favorites, sellerN
             total={[t('buy.total'), formatOre(a.buyerTotal)]}
           />
           <Notice icon="shield">
-            {t('buy.held', { seller: sellerName, payout: formatOre(a.sellerPayout), pct: n(sellerCertified ? 0.5 : 1) })}
+            {t('buy.held', { seller: sellerName, payout: formatOre(a.sellerPayout) })}
           </Notice>
           <Notice icon="info" warn>{t('buy.testNotice')}</Notice>
         </div>

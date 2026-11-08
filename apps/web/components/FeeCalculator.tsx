@@ -4,11 +4,14 @@
  * Gebyrberegner. Bruger præcis de samme funktioner som backend (@respin/core), så tallene altid stemmer
  * med det, køber og sælger faktisk betaler/får. Beløb regnes i øre (ingen afrundingsfejl).
  */
-import { useId, useState } from 'react';
-import { Field, PriceSummary, Select, Toggle } from '@respin/ui';
+import { useState } from 'react';
+import { Field, PriceSummary, Select } from '@respin/ui';
 import { computeOrderAmounts, SHIPPING_PRICE_ORE } from '@respin/core/fees';
-import { formatOre, fromKr } from '@respin/core/money';
+import { formatOre, fromKr, ore } from '@respin/core/money';
 import { MAX_PRICE_ORE, MIN_PRICE_ORE } from '@respin/core/limits';
+import { PROMOTION_PACKAGES } from '@respin/core/promotions';
+
+const PROMO_FROM = ore(Math.min(...PROMOTION_PACKAGES.map((p) => p.priceOre)));
 
 const MIN_KR = MIN_PRICE_ORE / 100;
 const MAX_KR = MAX_PRICE_ORE / 100;
@@ -26,10 +29,8 @@ export function parsePriceKr(raw: string): number | null {
 export function FeeCalculator() {
   const [raw, setRaw] = useState('300');
   const [size, setSize] = useState<Size>('small');
-  const [certified, setCertified] = useState(false);
-  const toggleId = useId();
   const price = parsePriceKr(raw);
-  const a = price === null ? null : computeOrderAmounts({ price: fromKr(price), shipping: SHIPPING_PRICE_ORE[size], sellerCertified: certified });
+  const a = price === null ? null : computeOrderAmounts({ price: fromKr(price), shipping: SHIPPING_PRICE_ORE[size], sellerCertified: false });
   const error = raw.trim() === '' ? 'Skriv en pris.' : price === null ? `Prisen skal være et helt beløb mellem ${MIN_KR} og ${MAX_KR.toLocaleString('da-DK')} kr.` : undefined;
 
   return (
@@ -39,10 +40,6 @@ export function FeeCalculator() {
           onChange={(e) => setRaw(e.target.value)} error={error} hint={error ? undefined : 'Hele kroner'} />
         <Select label="Fragt" name="size" value={size} onChange={(e) => setSize(e.target.value as Size)}
           options={(Object.keys(SHIPPING_PRICE_ORE) as Size[]).map((s) => ({ value: s, label: `${SIZE_LABEL[s]} – ${formatOre(SHIPPING_PRICE_ORE[s])}` }))} />
-        <div className="flex items-center justify-between gap-4">
-          <label htmlFor={toggleId} className="text-body font-semibold">Certificeret sælger <span className="block text-small font-normal text-muted">0,5 % i stedet for 1 %</span></label>
-          <Toggle id={toggleId} label="Certificeret sælger" checked={certified} onChange={(e) => setCertified(e.target.checked)} />
-        </div>
       </form>
 
       <div className="flex flex-col gap-5" aria-live="polite">
@@ -56,7 +53,8 @@ export function FeeCalculator() {
         <div className="rounded-lg bg-grad-deep p-6 text-cream">
           <h2 className="text-h3">Sælger får udbetalt</h2>
           <p className="mt-2 text-[40px] font-extrabold leading-[44px] tracking-[-0.02em] text-lime" data-testid="payout">{a ? formatOre(a.sellerPayout) : '–'}</p>
-          <p className="mt-1 text-small text-cream/80">{a ? `${formatOre(a.price)} − ${formatOre(a.sellerFee)} (${certified ? '0,5' : '1'} % til Videro)` : ' '}</p>
+          <p className="mt-1 text-small text-cream/80">Hele salgsprisen – 0 % i kommission til Videro.</p>
+          <p className="mt-4 border-t border-cream/20 pt-4 text-small text-cream/80">Vil du sælge hurtigere? Fremhæv annoncen øverst i søgninger og kategorier fra {formatOre(PROMO_FROM)} – helt valgfrit.</p>
         </div>
       </div>
     </div>

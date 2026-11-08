@@ -164,7 +164,7 @@ export function ListingForm({ initial, certified = false }: { initial?: ListingF
       <fieldset className="flex flex-col gap-4">
         <legend className="text-h3">Pris og fragt</legend>
         <Field label="Pris" name="price" inputMode="decimal" required suffix="kr." value={price} onChange={(e) => setPrice(e.target.value)} error={err('priceOre')}
-          hint={payout ? `Du får ${payout} udbetalt (${certified ? '0,5' : '1'} % i gebyr). Køberen betaler køberbeskyttelse og fragt.` : 'Mellem 1 og 100.000 kr.'} />
+          hint={payout ? `Du får hele beløbet: ${payout}. Ingen kommission – køberen betaler køberbeskyttelse og fragt.` : 'Mellem 1 og 100.000 kr.'} />
         <div className="flex flex-col gap-2" role="radiogroup" aria-label="Pakkestørrelse">
           <OptionCard name="shippingSize" value="small" title="Lille pakke" description="Op til 2 kg – fx tøj og tasker" right={formatOre(SHIPPING_PRICE_ORE.small)} defaultChecked={v.shippingSize === 'small'} />
           <OptionCard name="shippingSize" value="medium" title="Mellem pakke" description="Op til 5 kg – fx sko, støvler og ting til hjemmet" right={formatOre(SHIPPING_PRICE_ORE.medium)} defaultChecked={v.shippingSize === 'medium'} />

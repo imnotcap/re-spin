@@ -20,7 +20,7 @@ Symboler: ✅ bygget og testet · 🟡 bygget, men ikke afprøvet i drift/mod ri
 
 | Område | Status | Hvor | Bevis |
 |---|---|---|---|
-| Pengetyper, gebyrer (5 % + 3 kr. / 1 % / 0,5 %) | ✅ | `packages/core` | enhedstests |
+| Pengetyper, gebyrer (5 % + 3 kr. fra køber / 0 % fra sælger) | ✅ | `packages/core` | enhedstests |
 | Ordre-tilstandsmaskine (hvem må hvad, hvornår) | ✅ | `packages/core` | tests inkl. udtømmende egenskabstests |
 | Dobbelt bogholderi (balance-invarianter) | ✅ | `packages/core`, `packages/db` | tests + database-trigger |
 | Input-validering, usynlige tegn, svindel-heuristik | ✅ | `packages/core` | tests |

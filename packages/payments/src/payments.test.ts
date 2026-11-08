@@ -66,11 +66,12 @@ describe('checkout', () => {
     expect((await order(r.orderId)).status).toBe('pending_payment');
     expect((await db.select().from(s.listings).where(eq(s.listings.id, m.listing.id)))[0]!.status).toBe('reserved');
   });
-  it('certificeret sælger giver 0,5 % gebyr, fastfrosset på ordren', async () => {
+  it('0 % i kommission – også for certificerede; sælgeren får hele prisen, fastfrosset på ordren', async () => {
     const { gw } = fakeGateway(); const m = await setupMarket({ certified: true });
     const r = await createCheckout(db, gw, { buyerId: m.buyer.id, listingId: m.listing.id });
     if (!r.ok) throw new Error('forventede ok');
-    expect(r.amounts.sellerFee).toBe(225);
+    expect(r.amounts.sellerFee).toBe(0);
+    expect(r.amounts.sellerPayout).toBe(r.amounts.price);
     expect((await order(r.orderId)).sellerCertifiedAtOrder).toBe(true);
   });
   it('kan ikke købe sin egen vare, en reserveret vare eller en ugodkendt-mangler vare', async () => {
@@ -189,7 +190,8 @@ describe('ordre-overgange og ejerskab', () => {
 
     expect(await runOutbox(db, gw)).toEqual({ done: 1, retried: 0, failed: 0 });
     expect(calls.transfer).toHaveLength(1);
-    expect(calls.transfer[0]).toMatchObject({ amount: 44_775, destination: expect.stringMatching(/^acct_/), sourceTransaction: 'ch_1', idempotencyKey: `transfer:${co.orderId}` });
+    expect(calls.transfer[0]).toMatchObject({ amount: 45_000, // hele prisen (0 % i kommission)
+      destination: expect.stringMatching(/^acct_/), sourceTransaction: 'ch_1', idempotencyKey: `transfer:${co.orderId}` });
     expect(await runOutbox(db, gw)).toEqual({ done: 0, retried: 0, failed: 0 }); // intet at gøre – ingen dobbeltudbetaling
     expect(calls.transfer).toHaveLength(1);
 

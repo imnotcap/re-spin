@@ -89,9 +89,9 @@ const da = {
   'sellBanner.title': 'Sælg det, du ikke bruger',
   'sellBanner.text': 'Tag et par billeder, sæt en pris, og læg det op på få minutter.',
   'sellBanner.p1': 'Gratis at sætte til salg',
-  'sellBanner.p2': 'Kun 1 % til Videro, når varen er solgt',
+  'sellBanner.p2': '0 % i kommission – du får hele salgsprisen',
   'sellBanner.p3': 'Fragtlabel med det samme – aflevér i pakkeshop',
-  'sellBanner.calc': 'Beregn din udbetaling',
+  'sellBanner.calc': 'Se alle gebyrer',
 
   // Lister, filtre og søgning
   'crumb.home': 'Forside',
@@ -247,7 +247,7 @@ const da = {
   'buy.fee': "Køberbeskyttelse (5 % + 3 kr.)",
   'buy.shipping': "Fragt ({parcel}, pakkeshop)",
   'buy.total': "I alt",
-  'buy.held': "Vi holder pengene, til du har modtaget varen. {seller} får {payout} udbetalt ({pct} % går til Videro).",
+  'buy.held': "Vi holder pengene, til du har modtaget varen. {seller} får hele salgsprisen, {payout} – Videro tager 0 % i kommission.",
   'buy.testNotice': "Testversion: du kan ikke købe endnu.",
   'buy.parcel.small': "lille pakke",
   'buy.parcel.medium': "mellem pakke",

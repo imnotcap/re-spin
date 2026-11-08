@@ -26,7 +26,7 @@ export default function TermsPage() {
           <li>Du giver Videro ret til at vise dine annoncer og billeder på platformen, så længe annoncen er aktiv.</li>
         </ul> },
         { id: 'gebyrer', title: '3. Gebyrer', body: <>
-          <p>Det er gratis at sætte til salg. Når en vare er solgt, betaler sælgeren 1 % (0,5 % som certificeret sælger). Køberen betaler køberbeskyttelse (5 % + 3 kr.) og fragt. Alle priser vises, før du køber. Se <Link href="/gebyrer/">gebyrer</Link>.</p>
+          <p>Det er gratis at sætte til salg, og Videro tager 0 % i kommission: sælgeren får hele salgsprisen. Fremhævning af annoncer er valgfri og betales på forhånd. Køberen betaler køberbeskyttelse (5 % + 3 kr.) og fragt. Alle priser vises, før du køber. Se <Link href="/gebyrer/">gebyrer</Link>.</p>
         </> },
         { id: 'beskyttelse', title: '4. Køberbeskyttelse', body: <p>Pengene holdes, til køberen har modtaget varen. Er varen ikke som beskrevet, kan køberen inden for 48 timer efter levering melde det, og vi hjælper med at finde en løsning, herunder returnering og refusion. Læs mere under <Link href="/sikkerhed/">køberbeskyttelse</Link>.</p> },
         { id: 'fremhaevning', title: '5. Fremhævning af annoncer', body: <>

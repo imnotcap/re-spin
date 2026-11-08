@@ -7,7 +7,8 @@ Alt her er implementeret i `packages/core` (regler), `packages/db` (invarianter)
 | Regel | Værdi | Kode |
 |---|---|---|
 | Køberbeskyttelse | 5 % + 3 kr. af varens pris | `buyerProtectionFee` |
-| Gebyr til Videro ved salg | 1 % (0,5 % for certificerede sælgere) | `sellerFee` |
+| Gebyr til Videro ved salg | 0 % (ingen kommission – sælger får hele prisen; feltet findes stadig og er 0) | `sellerFee` |
+| Fremhævning af annonce (valgfri) | 19 / 39 / 69 kr. for 1 / 3 / 7 dage | `PROMOTION_PACKAGES` |
 | Fragt | Fast pris pr. pakkestørrelse, bestemt af serveren | `SHIPPING_PRICE_ORE` |
 | Beløb | Heltal i øre, aldrig kr. med decimaler; loft 1.000.000 kr. pr. beløb, 100.000 kr. pr. annonce | `money.ts`, DB-`CHECK` |
 | Afrunding | Half-up til hele øre | `percentOf` |
@@ -63,7 +64,7 @@ Hver postering har en **idempotensnøgle** (`payment_captured:<ordre>`, `funds_r
 - **Sælger-onboarding:** hostet Connect-onboarding (Express) → KYC og bankkonto hos Stripe. Vi gemmer kun `stripe_account_id`, `payouts_enabled` og `kyc_status`. **Ingen bankoplysninger hos os.**
 - **`source_transaction`:** overførslen knyttes til den oprindelige betaling (`stripeChargeId`), så den kan ske, selv før Stripe-saldoen er frigivet.
 - **MobilePay:** Stripe understøtter MobilePay som betalingsmetode, men dokumentationen er modstridende om, hvilke Connect-chargetyper det kan bruges med. **Skal afklares med Stripe, før MobilePay lover køberne beskyttelse.**
-- **Gebyrøkonomi:** 1 % fra sælger er mindre end typiske kortgebyrer. Det er købers gebyr (5 % + 3 kr.), der dækker betalingsomkostningerne. **Regn efter med Stripes aktuelle priser** (inkl. MobilePay-gebyrer og Connect-gebyrer) før priser fastlåses.
+- **Gebyrøkonomi:** Videro tager 0 % fra sælger. Indtægterne er købers køberbeskyttelse (5 % + 3 kr.), som også skal dække betalingsomkostningerne, og betalt fremhævning af annoncer. **Regn efter med Stripes aktuelle priser** (inkl. MobilePay-gebyrer og Connect-gebyrer) før priser fastlåses.
 
 ## Outbox: hvorfor penge ikke går tabt eller dobbeltbetales
 
@@ -116,6 +117,6 @@ Sælgere kan købe fremhævning af egne annoncer (1 dag 19 kr, 3 dage 39 kr, 7 d
 
 1. Kan I holde købers penge via Connect (separate charges and transfers) inden for gældende regler for jeres virksomhedsform – eller kræves en anden model/licens? *(juridisk/Stripe)*
 2. MobilePay + Connect + tilbageholdte penge: understøttet? *(Stripe)*
-3. Moms på gebyrer (køberbeskyttelse og sælgergebyr) og regnskabsbehandling. *(revisor)*
+3. Moms på gebyrer (køberbeskyttelse og fremhævning) og regnskabsbehandling. *(revisor)*
 4. Hvor længe må penge holdes, og hvad sker der ved sælgers konkurs/lukning af konto? *(Stripe/jurist)*
 5. Udbetalingsgrænser og -pauser for nye sælgere: hvor strenge, uden at skræmme ærlige sælgere væk? *(produkt + risiko)*

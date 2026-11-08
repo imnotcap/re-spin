@@ -84,5 +84,5 @@ Dedikeret søgemaskine, læse-replika, partitionering af store tabeller, udskiln
 | 6 | MitID-formidler (til certificering/KYC) | Udvælg efter pris/dækning; ikke nødvendigt før certificering | Certificering |
 | 7 | Hosting og budget (Vercel + managed Postgres i EU?) | Start enkelt; hold data i EU | Fase 1 |
 | 8 | Teamstørrelse og on-call | Mindst to personer med adgang til alt kritisk | Drift |
-| 9 | Sælger-gebyrer (1 % / 0,5 %) og køberbeskyttelse (5 % + 3 kr.) endelige? | Efter økonomi-regnestykke med Stripe-priser | Checkout |
+| 9 | 0 % sælgergebyr og køberbeskyttelse (5 % + 3 kr.) endelige? Dækker køberbeskyttelse + fremhævning betalingsomkostningerne? | Efter økonomi-regnestykke med Stripe-priser | Checkout |
 | 10 | Certificeringskriterier | Mine eksempler (10 salg, 4,5 i vurdering, MitID) er forslag | Certificering |
