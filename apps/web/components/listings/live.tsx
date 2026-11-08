@@ -48,14 +48,14 @@ export async function MemberProfile({ name }: { name: string }) {
       <ProfileHeader
         name={m.displayName} handle={m.username} banner={bannerById(m.banner)} sharePath={profilePath(m.username)} certified={badges.some((b) => b.id === 'certified' && b.earned)}
         bio={m.bio ?? undefined}
+        extra={<BadgeStrip badges={badges} />}
         facts={[
-          { icon: 'tag', label: <T k="profile.forSale" />, value: items.length },
-          { icon: 'user', label: <T k="profile.memberSince" />, value: m.createdAt.getFullYear() },
-          { icon: 'shield', label: <T k="profile.member" />, value: '✓' },
-          { icon: 'star', label: <T k="profile.reviews" />, value: 0 }
+          { icon: 'tag', label: <T k="profile.statForSale" />, value: items.length },
+          { icon: 'star', label: <T k="profile.statBadges" />, value: earned },
+          { icon: 'star', label: <T k="profile.statReviews" />, value: 0 },
+          { icon: 'user', label: <T k="profile.statMemberSince" />, value: m.createdAt.getFullYear(), labelFirst: true }
         ]}
       />
-      <div className="mt-4"><BadgeStrip badges={badges} /></div>
       <ProfileTabs tabs={[
         { id: 'til-salg', label: <T k="profile.forSale" />, count: items.length, panel: items.length
           ? <ProductGrid layout="responsive">{items.map((l) => <ItemCard key={l.id} item={listingToCard(l)} />)}</ProductGrid>

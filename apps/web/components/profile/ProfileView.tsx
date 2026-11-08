@@ -7,7 +7,7 @@ import { ProfileTabs, type ProfileTab } from './ProfileTabs';
 
 export interface Review { id: string; author: string; rating: 1 | 2 | 3 | 4 | 5; daysAgo: number; text: string; itemTitle?: string }
 
-export interface ProfileFact { icon: IconName; label: ReactNode; value: ReactNode }
+export interface ProfileFact { icon: IconName; label: ReactNode; value: ReactNode; /** Teksten før tallet (fx "medlem siden 2026") */ labelFirst?: boolean }
 
 /** Banner (foto eller farve) */
 export function BannerArt({ banner, className = '' }: { banner: Banner; className?: string }) {
@@ -25,48 +25,54 @@ const stars = (v: number) => (
   </span>
 );
 
-/** Profilens top: banner, avatar oven på banneret, navn, vurdering, mærker, fakta og bio */
-export function ProfileHeader({ name, handle, banner, certified, rating, reviews, facts, bio, sharePath }: {
+/**
+ * Profilens top: banner, avatar oven på banneret, og én række med navn, nøgletal og "Del profil" på samme linje
+ * (på mobil under hinanden). Badges og beskrivelse står under navnet.
+ */
+export function ProfileHeader({ name, handle, banner, certified, rating, reviews, facts, bio, sharePath, extra }: {
   name: string; handle: string; banner: Banner; certified?: boolean; rating?: number; reviews?: number; facts: ProfileFact[]; bio?: string; sharePath: string;
+  /** Fx badges – vises under navnet */
+  extra?: ReactNode;
 }) {
   return (
     <header className="mt-5 overflow-hidden rounded-xl border border-line bg-surface">
-      <div className="h-32 bg-stone-100 sm:h-48">
+      <div className="h-36 bg-stone-100 sm:h-56">
         <BannerArt banner={banner} />
       </div>
-      <div className="px-5 pb-6 sm:px-8">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <Avatar name={name} size="xl" className="-mt-12 ring-4 ring-white sm:-mt-14" />
-          <ShareButton path={sharePath} title={name} />
+      <div className="px-5 pb-6 sm:px-8 sm:pb-7">
+        <div className="flex items-end justify-between gap-4">
+          <Avatar name={name} size="xl" className="-mt-12 shrink-0 ring-4 ring-white sm:-mt-16" />
+          <div className="pb-0.5 sm:hidden"><ShareButton path={sharePath} title={name} /></div>
         </div>
-        <div className="mt-3">
-          <h1 className="break-words text-h1 leading-tight">{name}</h1>
-          <p className="text-body text-muted">@{handle}</p>
-        </div>
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-          {rating !== undefined && reviews !== undefined && reviews > 0 && (
-            <a href="#anmeldelser" className="inline-flex items-center gap-2 rounded-sm text-small hover:underline">
-              {stars(rating)}
-              <b className="text-body">{rating.toLocaleString('da-DK', { minimumFractionDigits: 1 })}</b>
-              <span className="text-muted"><T k="profile.reviewsCount" v={{ n: reviews }} /></span>
-            </a>
-          )}
-          {certified && <CertifiedBadge />}
+        <div className="mt-3 flex items-start justify-between gap-6">
+          <div className="min-w-0">
+            <h1 className="flex flex-wrap items-center gap-x-3 gap-y-1 break-words text-[28px] font-extrabold leading-tight tracking-[-0.02em] sm:text-[36px]">
+              <span className="min-w-0">{name}</span>
+              {certified && <CertifiedBadge />}
+            </h1>
+            <p className="text-body text-muted">@{handle}</p>
+            {/* Nøgletal i én linje: "2 til salg · 3 badges · …" */}
+            <dl className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-body">
+              {facts.map((f, i) => (
+                <div key={i} className={`flex items-baseline gap-1.5 ${f.labelFirst ? '' : 'flex-row-reverse justify-end'}`}>
+                  <dt className="text-muted">{f.label}</dt>
+                  <dd className="font-extrabold tabular-nums text-ink">{f.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+          <div className="hidden shrink-0 pt-1.5 sm:block"><ShareButton path={sharePath} title={name} /></div>
         </div>
 
-        <dl className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line lg:grid-cols-4">
-          {facts.map((f, i) => (
-            <div key={i} className="relative min-w-0 bg-surface p-4 pl-16">
-              <dt className="text-caption text-muted">
-                <span aria-hidden="true" className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-md bg-stone-100 text-forest"><Icon name={f.icon} size={18} /></span>
-                {f.label}
-              </dt>
-              <dd className="font-semibold">{f.value}</dd>
-            </div>
-          ))}
-        </dl>
-
-        {bio && <p className="mt-5 max-w-3xl whitespace-pre-line text-body text-slate-700">{bio}</p>}
+        {rating !== undefined && reviews !== undefined && reviews > 0 && (
+          <a href="#anmeldelser" className="mt-4 inline-flex items-center gap-2 rounded-sm text-small hover:underline">
+            {stars(rating)}
+            <b className="text-body">{rating.toLocaleString('da-DK', { minimumFractionDigits: 1 })}</b>
+            <span className="text-muted"><T k="profile.reviewsCount" v={{ n: reviews }} /></span>
+          </a>
+        )}
+        {extra && <div className="mt-5">{extra}</div>}
+        {bio && <p className="mt-4 max-w-3xl whitespace-pre-line text-body text-slate-700">{bio}</p>}
         {certified && <p className="mt-3 flex items-start gap-2 text-small text-muted"><Icon name="shield" size={16} className="mt-0.5 shrink-0 text-forest" /><T k="profile.certifiedText" /></p>}
       </div>
     </header>
