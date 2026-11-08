@@ -70,7 +70,7 @@ function AccountButton({ me, pathname }: { me: { name: string } | null; pathname
     <Link
       href={me ? '/konto/' : '/log-ind/'}
       aria-current={active ? 'page' : undefined}
-      className="inline-flex h-tap w-tap items-center justify-center rounded-md text-ink transition-colors hover:bg-sunken"
+      className="hidden h-tap w-tap items-center justify-center rounded-md text-ink transition-colors hover:bg-sunken md:inline-flex"
     >
       {me ? <Avatar name={me.name} size="sm" /> : <Icon name="user" size={22} />}
       <span className="sr-only">{me ? t('header.accountNamed', { name: me.name }) : t('header.login')}</span>
@@ -112,10 +112,11 @@ export function Header({ meta }: { meta: MenuMeta }) {
         <SearchForm id={searchId} className="min-w-0 flex-1 lg:max-w-2xl" />
 
         <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+          {/* Favoritter og konto ligger i bundmenuen på mobil */}
           <Link
             href="/favoritter/"
             aria-current={pathname === '/favoritter/' ? 'page' : undefined}
-            className="relative inline-flex h-tap w-tap items-center justify-center rounded-md text-ink transition-colors hover:bg-sunken"
+            className="relative hidden h-tap w-tap items-center justify-center rounded-md text-ink transition-colors hover:bg-sunken md:inline-flex"
           >
             <span className="sr-only">{favLabel}</span>
             <Icon name="heart" size={22} />
@@ -126,7 +127,7 @@ export function Header({ meta }: { meta: MenuMeta }) {
             )}
           </Link>
           <AccountButton me={me} pathname={pathname} />
-          <Button href={AUTH ? '/saelg/ny/' : '/saelg/'} size="sm" icon="plus" className="hidden sm:inline-flex">{t('header.sell')}</Button>
+          <Button href={AUTH ? '/saelg/ny/' : '/saelg/'} size="sm" icon="plus" className="hidden md:inline-flex">{t('header.sell')}</Button>
           <button
             ref={buttonRef}
             type="button"
@@ -142,7 +143,7 @@ export function Header({ meta }: { meta: MenuMeta }) {
       </div>
 
       <nav id={menuId} aria-label={t('menu.label')} hidden={!open} className="max-h-[calc(100dvh-64px)] overflow-y-auto border-t border-line bg-surface lg:hidden">
-        <div className="mx-auto max-w-7xl px-4 pb-6 pt-2 sm:px-6">
+        <div className="mx-auto max-w-7xl px-4 pb-24 pt-2 sm:px-6 md:pb-6">
           <h2 className="px-2 pt-3 text-caption font-bold uppercase tracking-[0.08em] text-muted">{t('menu.categories')}</h2>
           <div className="mt-1">
             {/* key: start altid på kategorilisten, når menuen åbnes */}
@@ -163,7 +164,7 @@ export function Header({ meta }: { meta: MenuMeta }) {
             <span className="text-caption font-bold uppercase tracking-[0.08em] text-muted">{t('lang.label')}</span>
             <LanguageMenu align="right" />
           </div>
-          <Button href={AUTH ? '/saelg/ny/' : '/saelg/'} full icon="plus" className="mt-4 sm:hidden" onClick={() => setOpen(false)}>{t('header.sell')}</Button>
+          <Button href={AUTH ? '/saelg/ny/' : '/saelg/'} full icon="plus" className="mt-4 md:hidden" onClick={() => setOpen(false)}>{t('header.sell')}</Button>
         </div>
       </nav>
     </header>

@@ -21,9 +21,9 @@ describe('filtre', () => {
   });
 
   it('kombinerede filtre er OG, og sortering efter pris virker begge veje', () => {
-    const r = applyFilters(all, { sort: 'pris-lav', kategori: 'sko', stand: 'Meget god' });
+    const r = applyFilters(all, { sort: 'pris-lav', kategori: 'maend', stand: 'Meget god' });
     expect(r.length).toBeGreaterThan(0);
-    for (const i of r) { expect(i.category).toBe('sko'); expect(i.condition).toBe('Meget god'); }
+    for (const i of r) { expect(i.category).toBe('maend'); expect(i.condition).toBe('Meget god'); }
     const lav = applyFilters(all, { sort: 'pris-lav' }).map((i) => i.price);
     expect(lav).toEqual([...lav].sort((a, b) => a - b));
     const hoej = applyFilters(all, { sort: 'pris-hoej' }).map((i) => i.price);
@@ -31,18 +31,37 @@ describe('filtre', () => {
   });
 
   it('valgmuligheder findes kun, hvis de giver resultater', () => {
-    const sko = itemsIn('sko').map(toBrowse);
-    const o = optionsFor(sko, CATEGORIES.find((c) => c.slug === 'sko')!.subs);
-    for (const s of o.sizes) expect(applyFilters(sko, { ...DEFAULT_FILTERS, str: s }).length).toBeGreaterThan(0);
-    for (const b of o.brands) expect(applyFilters(sko, { ...DEFAULT_FILTERS, maerke: b }).length).toBeGreaterThan(0);
-    expect(o.types).toEqual(['Sneakers', 'Støvler', 'Sandaler']);
+    const maend = CATEGORIES.find((c) => c.slug === 'maend')!;
+    const xs = itemsIn('maend').map(toBrowse);
+    const o = optionsFor(xs, maend.subs, maend.groups);
+    for (const s of o.sizes) expect(applyFilters(xs, { ...DEFAULT_FILTERS, str: s }).length).toBeGreaterThan(0);
+    for (const b of o.brands) expect(applyFilters(xs, { ...DEFAULT_FILTERS, maerke: b }).length).toBeGreaterThan(0);
+    // Typer i kategoriens rækkefølge, kun dem med varer; sektioner kun dem med varer
+    expect(o.types).toEqual(maend.subs.filter((s) => xs.some((i) => i.sub === s)));
+    expect(o.groups).toEqual(['Tøj', 'Sko', 'Tasker og rygsække', 'Accessories']);
+  });
+
+  it('sektion filtrerer på sektionens underkategorier', () => {
+    const maend = CATEGORIES.find((c) => c.slug === 'maend')!;
+    const xs = itemsIn('maend').map(toBrowse);
+    const sko = applyFilters(xs, { ...DEFAULT_FILTERS, gruppe: 'Sko' }, maend.groups);
+    expect(sko.length).toBeGreaterThan(0);
+    for (const i of sko) expect(maend.groups.find((g) => g.label === 'Sko')!.items).toContain(i.sub);
+    const o = optionsFor(xs, maend.subs, maend.groups);
+    expect(parseFilters(new URLSearchParams('gruppe=Sko'), o).gruppe).toBe('Sko');
+    expect(parseFilters(new URLSearchParams('gruppe=Findes%20ikke'), o).gruppe).toBeUndefined();
+  });
+
+  it('børnestørrelser sorteres efter alder', () => {
+    expect(['2-3 år', '14+ år', '12-18 mdr.', '0-3 mdr.', '6-9 mdr.', '10-11 år'].sort(compareSizes))
+      .toEqual(['0-3 mdr.', '6-9 mdr.', '12-18 mdr.', '2-3 år', '10-11 år', '14+ år']);
   });
 });
 
 describe('URL', () => {
   it('ukendte og ondsindede værdier ignoreres', () => {
     const f = parseFilters(new URLSearchParams('pris=gratis&sort=<script>&maerke=Findes%20ikke&stand=God&kategori=__proto__'), opt);
-    expect(f).toEqual({ ...DEFAULT_FILTERS, stand: 'God', type: undefined, kategori: undefined, str: undefined, pris: undefined, maerke: undefined });
+    expect(f).toEqual({ ...DEFAULT_FILTERS, stand: 'God', gruppe: undefined, type: undefined, kategori: undefined, str: undefined, pris: undefined, maerke: undefined });
   });
 
   it('skriv → læs giver de samme filtre, og andre parametre (q) bevares', () => {
@@ -51,7 +70,7 @@ describe('URL', () => {
     const p = new URLSearchParams(qs);
     expect(p.get('q')).toBe('jeans');
     expect(p.has('type')).toBe(false);
-    expect(parseFilters(p, opt)).toEqual({ ...DEFAULT_FILTERS, ...f, type: undefined, kategori: undefined, stand: undefined });
+    expect(parseFilters(p, opt)).toEqual({ ...DEFAULT_FILTERS, ...f, gruppe: undefined, type: undefined, kategori: undefined, stand: undefined });
     expect(filtersToSearch(DEFAULT_FILTERS, new URLSearchParams())).toBe('');
     expect(activeFilterCount(f)).toBe(3);
   });
@@ -87,5 +106,17 @@ describe('størrelser fra menuen', () => {
     expect(parseFilters(new URLSearchParams('str=XS'), opt).str).toBe('XS'); // kendt størrelse uden varer → 0 resultater, ikke alle
     expect(applyFilters(all, parseFilters(new URLSearchParams('str=XS'), opt))).toHaveLength(0);
     expect(parseFilters(new URLSearchParams('str=<script>'), opt).str).toBeUndefined();
+  });
+});
+
+describe('søgning i kategoritræet', () => {
+  it('typer fra listen finder underkategorien, også uden ordet i titlen', async () => {
+    const { subsMatching } = await import('./categories');
+    const { searchItems } = await import('./catalog');
+    expect(subsMatching('trenchcoat')).toContain('Frakker og jakker');
+    expect(subsMatching('chelsea')).toEqual(expect.arrayContaining(['Støvler']));
+    expect(subsMatching('ab')).toEqual([]);
+    // "Frakke med bindebælte" står under Frakker og jakker – findes via "uldfrakke"
+    expect(searchItems('uldfrakke').map((i) => i.id)).toContain('1001-ganni-uldjakke');
   });
 });

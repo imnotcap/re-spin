@@ -100,7 +100,7 @@ describe('brugere og moderation', () => {
 
   it('annoncer til gennemgang kan godkendes eller afvises (én gang)', async () => {
     const seller = await user();
-    const [l] = await db.insert(s.listings).values({ sellerId: seller, title: 'Ring til mig', category: 'sko', condition: 'good', priceOre: 10_000, shippingSize: 'small', status: 'active', moderationStatus: 'pending' }).returning();
+    const [l] = await db.insert(s.listings).values({ sellerId: seller, title: 'Ring til mig', category: 'kvinder', condition: 'good', priceOre: 10_000, shippingSize: 'small', status: 'active', moderationStatus: 'pending' }).returning();
     expect((await pendingListings(db)).map((x) => x.id)).toContain(l!.id);
     expect(await moderateListing(db, l!.id, 'rejected')).toBe(true);
     expect(await moderateListing(db, l!.id, 'approved')).toBe(false);

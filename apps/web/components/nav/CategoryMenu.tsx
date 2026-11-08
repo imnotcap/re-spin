@@ -12,20 +12,35 @@ import { categoryImage, itemImage } from '../../lib/images';
 import { useI18n } from '../../lib/i18n/client';
 
 const typeHref = (slug: string, sub?: string) => `/kategori/${slug}/${sub ? `?type=${encodeURIComponent(sub)}` : ''}`;
+const groupHref = (slug: string, group: string) => `/kategori/${slug}/?gruppe=${encodeURIComponent(group)}`;
 const OPEN_DELAY = 110;   // musen skal "hvile" et øjeblik, før menuen åbner (ingen blinken når man bare passerer)
 const CLOSE_DELAY = 180;
 const SHIPPING_FROM_KR = Number(SHIPPING_PRICE_ORE.small) / 100;
 
-/** Fordel grupper i to kolonner med så lige højde som muligt; rækkefølgen bevares inden for hver kolonne */
-function balance<G extends { items: readonly string[] }>(groups: readonly G[]): [G[], G[]] {
-  const h = (g: G) => g.items.length + 2; // overskrift og luft tæller med
-  const cols: [Array<{ g: G; i: number }>, Array<{ g: G; i: number }>] = [[], []];
-  const height = [0, 0];
-  [...groups.map((g, i) => ({ g, i }))].sort((a, b) => h(b.g) - h(a.g)).forEach((x) => {
-    const k = height[0]! <= height[1]! ? 0 : 1;
-    cols[k].push(x); height[k]! += h(x.g);
-  });
-  return [cols[0].sort((a, b) => a.i - b.i).map((x) => x.g), cols[1].sort((a, b) => a.i - b.i).map((x) => x.g)];
+/**
+ * Fordel sektionerne i højst n kolonner i rækkefølge (Tøj · Sko · Tasker …), så den højeste kolonne er så lav
+ * som muligt. Få sektioner – prøv alle delinger.
+ */
+function balance<G extends { items: readonly string[] }>(groups: readonly G[], n: number): G[][] {
+  const h = groups.map((g) => g.items.length + 2); // overskrift og luft tæller med
+  let best: G[][] = [groups.slice()];
+  let bestMax = Infinity;
+  const split = (start: number, left: number, acc: G[][], max: number) => {
+    if (max >= bestMax) return;
+    if (left === 1 || start === groups.length) {
+      const rest = groups.slice(start);
+      const m = Math.max(max, rest.reduce((s, _, i) => s + h[start + i]!, 0));
+      if (m < bestMax) { bestMax = m; best = rest.length ? [...acc, rest] : acc; }
+      return;
+    }
+    let sum = 0;
+    for (let end = start + 1; end <= groups.length; end++) {
+      sum += h[end - 1]!;
+      split(end, left - 1, [...acc, groups.slice(start, end)], Math.max(max, sum));
+    }
+  };
+  split(0, n, [], 0);
+  return best;
 }
 
 const catHref = (slug: string, q = '') => `/kategori/${slug}/${q}`;
@@ -43,10 +58,11 @@ function MegaPanel({ c, meta, brandTotal, onNavigate, id }: { c: Category; meta:
     meta.under200 > 0 ? { href: catHref(c.slug, '?pris=under-200'), label: t('price.under-200', undefined, 'Under 200 kr.'), extra: <span className={count}>{n(meta.under200)}</span> } : null
   ].filter((x) => x !== null);
   const focusImg = meta.focus ? itemImage(meta.focus.itemId) : undefined;
+  const cols = c.subs.length > 24 ? 3 : 2;
 
   return (
     <div id={id} className="mx-auto max-w-7xl">
-      <div className="grid grid-cols-[290px_minmax(0,1fr)_220px_200px]">
+      <div className="grid grid-cols-[280px_minmax(0,1fr)_200px_180px]">
         {/* Udforsk */}
         <div className="flex flex-col border-r border-line bg-sunken px-7 py-7">
           <p className={`${kicker} text-muted`}>{t('mega.explore', { cat })}</p>
@@ -80,19 +96,19 @@ function MegaPanel({ c, meta, brandTotal, onNavigate, id }: { c: Category; meta:
           )}
         </div>
 
-        {/* Typer: grupperne fordelt i to lige høje kolonner (den største for sig selv) */}
-        <div className="grid min-w-0 grid-cols-2 gap-10 px-8 py-7">
-          {balance(c.groups).map((col, i) => (
+        {/* Underkategorier: sektionerne fordelt i lige høje kolonner (tre, når kategorien er stor) */}
+        <div className={`grid min-w-0 gap-8 px-8 py-7 ${cols === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+          {balance(c.groups, cols).map((col, i) => (
             <div key={i} className="flex min-w-0 flex-col gap-6">
               {col.map((g) => {
                 const label = t(`group.${g.label}`, undefined, g.label);
                 return (
                   <section key={g.label} aria-label={label}>
-                    <p className={`${kicker} border-b border-line pb-3 text-ink`}>{label}</p>
+                    <Link href={groupHref(c.slug, g.label)} onClick={onNavigate} className={`${kicker} block border-b border-line pb-3 text-ink hover:text-forest`}>{label}</Link>
                     <ul className="mt-2">
                       {g.items.map((x) => (
                         <li key={x}>
-                          <Link href={typeHref(c.slug, x)} onClick={onNavigate} className="block py-1.5 text-body text-slate-700 underline-offset-4 hover:text-forest hover:underline">
+                          <Link href={typeHref(c.slug, x)} onClick={onNavigate} className={`block text-slate-700 underline-offset-4 hover:text-forest hover:underline ${cols === 3 ? 'py-1 text-small' : 'py-1.5 text-body'}`}>
                             {t(`sub.${x}`, undefined, x)}
                           </Link>
                         </li>
@@ -265,7 +281,7 @@ export function MobileCategories({ meta, onNavigate }: { meta: MenuMeta; onNavig
         </Link>
         {c.groups.map((g) => (
           <section key={g.label} className="mt-4" aria-label={t(`group.${g.label}`, undefined, g.label)}>
-            <p className="flex items-center gap-2 px-2 text-caption font-bold uppercase tracking-[0.08em] text-muted"><Icon name={g.icon} size={16} />{t(`group.${g.label}`, undefined, g.label)}</p>
+            <Link href={groupHref(c.slug, g.label)} onClick={onNavigate} className="flex items-center gap-2 rounded-md px-2 py-1 text-caption font-bold uppercase tracking-[0.08em] text-muted hover:text-ink"><Icon name={g.icon} size={16} />{t(`group.${g.label}`, undefined, g.label)}<Icon name="next" size={14} className="ml-auto" /></Link>
             <ul className="mt-1 grid grid-cols-2 gap-x-2">
               {g.items.map((s) => (
                 <li key={s}><Link href={typeHref(c.slug, s)} onClick={onNavigate} className="block rounded-md px-2 py-2.5 text-body hover:bg-sunken">{t(`sub.${s}`, undefined, s)}</Link></li>

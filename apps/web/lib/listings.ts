@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { schema, type Db } from '@respin/db';
 import { CATEGORIES as CATEGORY_CODES, assessMessageRisk, createListingInput, type ListingCategory, type ListingCondition } from '@respin/core';
 import { CONDITION_LABEL, subsOf } from './listing-labels';
+import { subsMatching } from './categories';
 import { thumbKey, type ImageStore } from './image-store';
 
 const { listings, listingImages, users, sellerProfiles, listingPromotions } = schema;
@@ -147,7 +148,10 @@ export async function listFeed(db: Db, store: ImageStore, input: z.input<typeof 
   if (f.sellerId) where.push(eq(listings.sellerId, f.sellerId));
   for (const w of (f.q ?? '').normalize('NFC').toLocaleLowerCase('da-DK').split(/\s+/).filter(Boolean).slice(0, 6)) {
     const pat = `%${likeEscape(w)}%`;
-    where.push(sql`(${listings.title} ILIKE ${pat} OR coalesce(${listings.brand}, '') ILIKE ${pat} OR coalesce(${listings.subcategory}, '') ILIKE ${pat})`);
+    // Typer fra kategoritræet: "trenchcoat" finder også annoncer under "Frakker og jakker"
+    const subs = subsMatching(w);
+    const bySub = subs.length ? sql` OR ${inArray(listings.subcategory, subs)}` : sql``;
+    where.push(sql`(${listings.title} ILIKE ${pat} OR coalesce(${listings.brand}, '') ILIKE ${pat} OR coalesce(${listings.subcategory}, '') ILIKE ${pat}${bySub})`);
   }
   // Fremhævede annoncer først, derefter nyeste
   const rows = await db.select({ ...cardColumns, promoted: promotedNow }).from(listings).innerJoin(users, eq(users.id, listings.sellerId))

@@ -1,6 +1,6 @@
 import { LiveSection } from '@respin-live';
 import { T } from '../lib/i18n/client';
-import { CategoryTile, Chip, HScroll, ProductGrid, SectionHeader, TrustBar } from '@respin/ui';
+import { CategoryTile, Chip, ProductGrid, SectionHeader, TrustBar } from '@respin/ui';
 import { HomeHero } from '../components/home/HomeHero';
 import { SellBanner } from '../components/home/SellBanner';
 import { ItemCard } from '../components/ItemCard';
@@ -56,15 +56,8 @@ export default function HomePage() {
 
       <section aria-labelledby="kategorier" className={`${container} mt-10`}>
         <SectionHeader id="kategorier" title={<T k="home.categories" />} className={head} />
-        {/* Mobil: vandret række. Fra tablet: gitter. */}
-        <HScroll className="-mx-4 gap-3 px-4 sm:hidden">
-          {CATEGORIES.map((c) => (
-            <div key={c.slug} className="w-[116px] shrink-0">
-              <CategoryTile variant="photo" icon={c.icon} label={<T k={`cat.${c.slug}`} />} href={`/kategori/${c.slug}/`} imageSrc={categoryImage(c.slug).src} imageSrcSet={categoryImage(c.slug).srcSet} />
-            </div>
-          ))}
-        </HScroll>
-        <ul className="hidden gap-4 sm:grid sm:grid-cols-4 lg:grid-cols-8">
+        {/* Seks kategorier: 3 × 2 på mobil og tablet, én række på store skærme */}
+        <ul className="grid grid-cols-3 gap-3 sm:gap-4 lg:grid-cols-6">
           {CATEGORIES.map((c) => (
             <li key={c.slug}>
               <CategoryTile variant="photo" icon={c.icon} label={<T k={`cat.${c.slug}`} />} count={countIn(c.slug)} href={`/kategori/${c.slug}/`} imageSrc={categoryImage(c.slug).src} imageSrcSet={categoryImage(c.slug).srcSet} />

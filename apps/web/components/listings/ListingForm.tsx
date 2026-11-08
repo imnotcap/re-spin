@@ -4,8 +4,8 @@ import { startTransition, useActionState, useEffect, useRef, useState, type Form
 import { Button, Field, Icon, Notice, OptionCard, Select, Textarea } from '@respin/ui';
 import { SHIPPING_PRICE_ORE, sellerPayout } from '@respin/core/fees';
 import { formatOre, ore } from '@respin/core/money';
-import { CATEGORIES, CONDITION_HELP } from '../../lib/categories';
-import { CONDITION_CODES, CONDITION_LABEL, parseKr, subsOf } from '../../lib/listing-labels';
+import { CATEGORIES, CONDITION_HELP, KIDS_SIZES, examplesOf } from '../../lib/categories';
+import { CONDITION_CODES, CONDITION_LABEL, parseKr } from '../../lib/listing-labels';
 import { createListingAction, updateListingAction, type ListingFormState } from '../../lib/listing-actions';
 
 export interface ListingFormValues {
@@ -100,6 +100,9 @@ export function ListingForm({ initial, certified = false }: { initial?: ListingF
   const v = initial ?? EMPTY;
   const [state, action, pending] = useActionState<ListingFormState, FormData>(editing ? updateListingAction : createListingAction, undefined);
   const [category, setCategory] = useState(v.category);
+  const [sub, setSub] = useState(v.subcategory);
+  const sections = CATEGORIES.find((c) => c.slug === category)?.groups ?? [];
+  const examples = sub ? examplesOf(category, sub) : undefined;
   const [price, setPrice] = useState(v.price);
   const [photos, setPhotos] = useState<Photo[]>([]);
   /** Felter rettet siden sidste forsøg – deres fejl skjules, så hjælpeteksten (fx udbetalingen) kommer tilbage */
@@ -134,14 +137,17 @@ export function ListingForm({ initial, certified = false }: { initial?: ListingF
         <legend className="text-h3">Om varen</legend>
         <Field label="Titel" name="title" required minLength={3} maxLength={80} defaultValue={v.title} error={err('title')} hint="Fx “Ganni uldjakke, sort”" />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Select label="Kategori" name="category" required value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Vælg kategori"
+          <Select label="Kategori" name="category" required value={category} onChange={(e) => { setCategory(e.target.value); setSub(''); }} placeholder="Vælg kategori"
             options={CATEGORIES.map((c) => ({ value: c.slug, label: c.label }))} error={err('category')} />
-          <Select key={category} label="Type" name="subcategory" optional defaultValue={category === v.category ? v.subcategory : ''} emptyOption="Vælg type"
-            options={[...subsOf(category)]} disabled={!category} error={err('subcategory')} />
+          <Select label="Type" name="subcategory" optional value={sub} onChange={(e) => setSub(e.target.value)} emptyOption="Vælg type"
+            groups={sections.map((g) => ({ label: g.label, options: [...g.items] }))} disabled={!category} error={err('subcategory')}
+            hint={examples ? `Fx ${examples}` : undefined} />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Mærke" name="brand" optional maxLength={60} defaultValue={v.brand} error={err('brand')} />
-          <Field label="Størrelse" name="size" optional maxLength={20} defaultValue={v.size} error={err('size')} hint="Fx M, 38 eller 104 cm" />
+          <Field label="Størrelse" name="size" optional maxLength={20} defaultValue={v.size} error={err('size')} list={category === 'boern' ? 'boernestoerrelser' : undefined}
+            hint={category === 'boern' ? 'Alder, fx 6-9 mdr. eller 4-5 år' : 'Fx M, 38 eller 104 cm'} />
+          <datalist id="boernestoerrelser">{KIDS_SIZES.map((s) => <option key={s} value={s} />)}</datalist>
         </div>
         <Textarea label="Beskrivelse" name="description" optional rows={5} maxLength={2000} defaultValue={v.description} error={err('description')}
           hint="Mål, materiale, pasform og evt. fejl. Del ikke telefonnummer eller betaling uden om Videro – så mister du køberbeskyttelsen." />

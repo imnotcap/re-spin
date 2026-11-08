@@ -77,7 +77,7 @@ Forside, kategorier og søgning viser medlemmernes annoncer øverst ("Lige sat t
 | `/saelg/`, `/saadan-virker-det/`, `/gebyrer/`, `/sikkerhed/` | Sælg-guide, sådan virker det (trin, nøgletal, FAQ), gebyrberegner og køberbeskyttelse |
 | `/licenser/` | Licenser for tredjeparts-software og skrift |
 
-Varerne og sælgerne er eksempeldata (`lib/catalog.ts`): 38 varer og 8 sælgere. Fotos er fra Unsplash (Unsplash-licensen) og ligger på siden selv i `public/img` (WebP, 480/960 px, i alt ca. 2,9 MB), så ingen tredjepart får besøgendes IP-adresse. Når backend'en er klar, erstattes kataloget af rigtige data. Kort, filtre og sider er uændrede.
+Varerne og sælgerne er eksempeldata (`lib/catalog.ts`): 43 varer og 8 sælgere i seks kategorier (Kvinder, Mænd, Børn, Hjem, Underholdning, Kæledyr – se `lib/categories.ts`). Fotos er fra Unsplash (Unsplash-licensen) og ligger på siden selv i `public/img` (WebP, 480/960 px, i alt ca. 2,9 MB), så ingen tredjepart får besøgendes IP-adresse. Når backend'en er klar, erstattes kataloget af rigtige data. Kort, filtre og sider er uændrede.
 
 ## Ydelse og lazy load
 

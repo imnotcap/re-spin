@@ -57,6 +57,13 @@
       "when": 1794089383554,
       "tag": "0007_support_approvals",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794143059849,
+      "tag": "0008_category_tree",
+      "breakpoints": true
     }
   ]
 }

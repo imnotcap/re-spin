@@ -8,6 +8,7 @@ import { CategoryNav, Header } from '../components/Header';
 import { TopBar } from '../components/TopBar';
 import { Footer } from '../components/Footer';
 import { CookieBanner } from '../components/consent/CookieBanner';
+import { BottomNav } from '../components/nav/BottomNav';
 import { menuMeta } from '../lib/catalog';
 import { SITE_URL, SITE } from '../lib/site';
 import { DEFAULT_OG_IMAGE } from '../lib/seo';
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
   formatDetection: { telephone: false }
 };
 
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#ffffff' };
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#ffffff' };
 
 const isServer = process.env.NEXT_PUBLIC_AUTH_ENABLED === '1';
 
@@ -57,6 +58,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <CategoryNav meta={meta} />
           <main id="indhold" className="flex-1">{children}</main>
           <Footer />
+          <BottomNav />
           <CookieBanner />
         </Providers>
       </body>

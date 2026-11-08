@@ -5,14 +5,16 @@ import { Breadcrumbs } from '@respin/ui';
 import { LiveSearch } from '@respin-live';
 import { T } from '../../lib/i18n/client';
 import { SearchResults } from '../../components/search/SearchResults';
+import { serverQuery, type SearchParams } from '../../lib/query';
 
 export const metadata: Metadata = pageMetadata({ title: 'Søg i brugt tøj og ting', description: 'Søg i brugt tøj, sko, tasker og boligting fra folk i hele Danmark – med køberbeskyttelse på alle køb.', path: '/soeg/' });
 
-export default function SearchPage() {
+export default async function SearchPage({ searchParams }: { searchParams: SearchParams }) {
+  const query = await serverQuery(searchParams);
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
       <Breadcrumbs items={[{ label: <T k="crumb.home" />, href: '/' }, { label: <T k="crumb.search" /> }]} />
-      <SearchResults />
+      <SearchResults key={query} query={query} />
       <Suspense><LiveSearch /></Suspense>
     </div>
   );
