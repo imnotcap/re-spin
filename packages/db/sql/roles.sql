@@ -22,7 +22,7 @@ GRANT INSERT ON ledger_entries, audit_log TO respin_web;
 GRANT SELECT, INSERT, UPDATE ON stripe_events TO respin_web;
 -- Kundeservice: kunden opretter sager og skriver beskeder; kan kun ændre status/ulæst på sagen
 GRANT SELECT, INSERT ON support_cases, support_messages TO respin_web;
-GRANT UPDATE (status, customer_unread, last_customer_at, resolved_at, updated_at) ON support_cases TO respin_web;
+GRANT UPDATE (status, customer_unread, last_customer_at, resolved_at, updated_at, customer_notified_at) ON support_cases TO respin_web;
 GRANT USAGE ON SEQUENCE support_cases_number_seq TO respin_web;
 
 -- ---------- admin ----------

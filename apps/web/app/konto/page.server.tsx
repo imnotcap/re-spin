@@ -15,6 +15,7 @@ import { unreadCountForUser } from '@respin/support';
 import { warningsFor } from '../../lib/listings';
 import { badgesFor } from '../../lib/badges';
 import { BadgeList } from '../../components/badges/BadgeList';
+import { unreadConversations } from '../../lib/conversations';
 
 export const metadata = { title: 'Min konto' };
 
@@ -31,6 +32,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const unread = await unreadCountForUser(getDb(), current.user.id);
   const warnings = await warningsFor(getDb(), current.user.id).catch(() => []);
   const badges = await badgesFor(getDb(), current.user.id).catch(() => []);
+  const unreadChats = await unreadConversations(getDb(), current.user.id).catch(() => 0);
   return (
     <AuthPage width="page" title="Min konto" crumbs={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Min konto' }]}>
       {sp.welcome && <Notice icon="check" role="status">Din e-mail er bekræftet. Velkommen til Videro!</Notice>}
@@ -82,6 +84,18 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           <div className="mt-4"><BadgeList badges={badges} showLocked /></div>
         </section>
       )}
+
+      <Link href="/konto/beskeder/" className="flex items-center gap-4 rounded-lg border border-line p-4 transition-colors hover:border-slate">
+        <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-100 text-forest">
+          <Icon name="chat" size={20} />
+          {unreadChats > 0 && <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-surface bg-coral-600" aria-hidden="true" />}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">Beskeder og bud</span>
+          <span className="block text-small text-muted">{unreadChats > 0 ? (unreadChats === 1 ? '1 samtale med nye beskeder' : `${unreadChats} samtaler med nye beskeder`) : 'Dine samtaler med købere og sælgere'}</span>
+        </span>
+        <Icon name="next" size={20} className="text-muted" />
+      </Link>
 
       <Link href="/konto/annoncer/" className="flex items-center gap-4 rounded-lg border border-line p-4 transition-colors hover:border-slate">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-100 text-forest"><Icon name="tag" size={20} /></span>

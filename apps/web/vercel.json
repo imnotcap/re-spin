@@ -3,5 +3,13 @@
   "framework": "nextjs",
   "installCommand": "cd ../.. && npm ci --ignore-scripts",
   "buildCommand": "cd ../.. && npm run build:ui && npm run build -w web",
-  "regions": ["fra1"]
+  "regions": [
+    "fra1"
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/notifikationer/",
+      "schedule": "*/5 * * * *"
+    }
+  ]
 }

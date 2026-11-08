@@ -2,12 +2,12 @@
 
 /**
  * Hvem er logget ind – delt mellem header, bundmenu og varekort, så /api/me kun hentes én gang pr. sideskift.
- * `listingIds` er brugerens egne annoncer: dem kan man ikke sætte hjerte på.
+ * `listingIds` er brugerens egne annoncer: dem kan man ikke sætte hjerte på. `unread`: samtaler med ulæste beskeder.
  */
 import { useSyncExternalStore } from 'react';
 import { removeFavorites } from './favorites';
 
-export interface Me { name: string; listingIds: readonly string[] }
+export interface Me { name: string; listingIds: readonly string[]; unread: number }
 
 let current: Me | null = null;
 let inflight: AbortController | null = null;
@@ -31,9 +31,10 @@ export function refreshMe(): void {
   fetch('/api/me/', { cache: 'no-store', credentials: 'same-origin', signal: ctrl.signal })
     .then((r) => (r.ok ? r.json() : null))
     .then((d: unknown) => {
-      const o = d && typeof d === 'object' ? (d as { name?: unknown; listingIds?: unknown }) : null;
+      const o = d && typeof d === 'object' ? (d as { name?: unknown; listingIds?: unknown; unread?: unknown }) : null;
       const ids = Array.isArray(o?.listingIds) ? o.listingIds.filter((x): x is string => typeof x === 'string') : [];
-      set(o && typeof o.name === 'string' ? { name: o.name, listingIds: ids } : null);
+      const unread = typeof o?.unread === 'number' && o.unread > 0 ? Math.floor(o.unread) : 0;
+      set(o && typeof o.name === 'string' ? { name: o.name, listingIds: ids, unread } : null);
     })
     .catch((e: unknown) => { if (!(e instanceof DOMException && e.name === 'AbortError')) set(null); });
 }

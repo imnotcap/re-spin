@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Icon, type IconName } from '@respin/ui';
 import { useFavorites } from '../../lib/favorites';
+import { useMe } from '../../lib/me';
 import { useI18n } from '../../lib/i18n/client';
 import type { MessageKey } from '../../lib/i18n';
 
@@ -31,6 +32,7 @@ export function BottomNav() {
   const pathname = usePathname();
   const { t } = useI18n();
   const { count } = useFavorites();
+  const unread = useMe()?.unread ?? 0;
   const [typing, setTyping] = useState(false);
 
   useEffect(() => {
@@ -60,6 +62,11 @@ export function BottomNav() {
                 ) : (
                   <span className="relative flex h-8 items-center">
                     <Icon name={tab.icon} size={22} />
+                    {tab.icon === 'user' && unread > 0 && (
+                      <span className="absolute -right-2.5 top-0 min-w-[18px] rounded-pill bg-coral-600 px-1 text-center text-[10px] font-bold leading-[18px] text-white">
+                        <span aria-hidden="true">{unread > 99 ? '99+' : unread}</span><span className="sr-only">{t('account.unread', { n: unread })}</span>
+                      </span>
+                    )}
                     {tab.icon === 'heart' && count > 0 && (
                       <span aria-hidden="true" className="absolute -right-2.5 top-0 min-w-[18px] rounded-pill bg-coral-600 px-1 text-center text-[10px] font-bold leading-[18px] text-white">{count > 99 ? '99+' : count}</span>
                     )}

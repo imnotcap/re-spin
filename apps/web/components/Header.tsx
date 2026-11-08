@@ -115,6 +115,16 @@ export function Header({ meta }: { meta: MenuMeta }) {
               </span>
             )}
           </Link>
+          {AUTH && me && (
+            <Link href="/konto/beskeder/" aria-current={pathname.startsWith('/konto/beskeder/') ? 'page' : undefined}
+              className="relative hidden h-tap w-tap items-center justify-center rounded-md text-ink transition-colors hover:bg-sunken md:inline-flex">
+              <span className="sr-only">{me.unread > 0 ? t('account.unread', { n: me.unread }) : t('bottom.messages')}</span>
+              <Icon name="chat" size={22} />
+              {me.unread > 0 && (
+                <span aria-hidden="true" className="absolute right-1 top-1 min-w-[18px] rounded-pill bg-coral-600 px-1 text-center text-[11px] font-bold leading-[18px] text-white">{me.unread > 99 ? '99+' : me.unread}</span>
+              )}
+            </Link>
+          )}
           <AccountButton me={me} pathname={pathname} />
           <Button href={AUTH ? '/saelg/ny/' : '/saelg/'} size="sm" icon="plus" className="hidden md:inline-flex" data-track="header_sell">{t('header.sell')}</Button>
           <button
