@@ -9,6 +9,8 @@ import { itemImage } from '../../../lib/images';
 import { ItemActions } from '../../../components/item/ItemActions';
 import { T } from '../../../lib/i18n/client';
 import { profilePath } from '../../../lib/profile-url';
+import { jsonLd, pageMetadata, priceMeta, productJsonLd } from '../../../lib/seo';
+import { BASE_PATH, SITE_URL } from '../../../lib/site';
 import { CONDITION_HELP, ITEMS, categoryOf, getItem, itemsBySeller, sellerOf, similarTo, toCard } from '../../../lib/catalog';
 
 export const dynamicParams = false;
@@ -19,7 +21,13 @@ type Props = { params: Promise<{ id: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const item = getItem((await params).id);
   if (!item) return {};
-  return { title: `${item.title} – ${item.brand}`, description: `${item.brand}, str. ${item.size}, ${item.condition.toLowerCase()}. ${formatKr(item.price)} ${item.description}` };
+  return pageMetadata({
+    title: `${item.title} – ${item.brand}`,
+    description: `${formatKr(item.price)} · Str. ${item.size} · ${item.condition} · ${item.brand}. ${item.description}`,
+    path: `/vare/${item.id}/`,
+    images: [{ url: `${BASE_PATH}/img/vare/${item.id}-960.webp`, width: 960, height: 1200, alt: `${item.title} fra ${item.brand}` }],
+    other: priceMeta(item.price, true)
+  });
 }
 
 const PARCEL = { small: 'Lille pakke (op til 2 kg)', medium: 'Mellem pakke (op til 5 kg)' } as const;
@@ -38,6 +46,10 @@ export default async function ItemPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(productJsonLd({
+        name: `${item.title} – ${item.brand}`, description: item.description, url: `${SITE_URL}/vare/${item.id}/`,
+        images: [`${SITE_URL}/img/vare/${item.id}-960.webp`], priceKr: item.price, available: true, brand: item.brand, seller: seller.name
+      })) }} />
       <Breadcrumbs items={[{ label: <T k="crumb.home" />, href: '/' }, { label: <T k={`cat.${cat.slug}`} />, href: `/kategori/${cat.slug}/` }, { label: <T k={`sub.${item.sub}`} fallback={item.sub} />, href: `/kategori/${cat.slug}/?type=${encodeURIComponent(item.sub)}` }, { label: item.title }]} />
 
       <div className="mt-5 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-12">

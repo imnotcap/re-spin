@@ -10,6 +10,7 @@ import { Footer } from '../components/Footer';
 import { CookieBanner } from '../components/consent/CookieBanner';
 import { menuMeta } from '../lib/catalog';
 import { SITE_URL, SITE } from '../lib/site';
+import { DEFAULT_OG_IMAGE } from '../lib/seo';
 
 // Schibsted Grotesk (variabel, latin-delsæt inkl. æ/ø/å, vægt 400–800) – selv-hostet. next/font laver en
 // størrelsestilpasset reserveskrift, så skiftet til skriften ikke flytter noget på siden (CLS 0). Delsættet er 36 KB
@@ -26,9 +27,12 @@ const brandFont = localFont({
 export const metadata: Metadata = {
   title: { default: SITE.title, template: `%s · ${SITE.name}` },
   description: SITE.description,
+  applicationName: SITE.name,
   metadataBase: new URL(`${SITE_URL}/`),
   alternates: { canonical: './' },
-  openGraph: { title: SITE.title, description: SITE.description, locale: 'da_DK', type: 'website', siteName: SITE.name },
+  openGraph: { title: SITE.title, description: SITE.description, locale: 'da_DK', type: 'website', siteName: SITE.name, url: './', images: [DEFAULT_OG_IMAGE] },
+  twitter: { card: 'summary_large_image', title: SITE.title, description: SITE.description, images: [DEFAULT_OG_IMAGE.url] },
+  appleWebApp: { title: SITE.name, statusBarStyle: 'default' },
   formatDetection: { telephone: false }
 };
 

@@ -5,15 +5,23 @@ import { LiveSection } from '@respin-live';
 import { T } from '../../../lib/i18n/client';
 import { Browse } from '../../../components/browse/Browse';
 import { CATEGORIES, getCategory, itemsIn, newest, toBrowse } from '../../../lib/catalog';
+import { pageMetadata } from '../../../lib/seo';
+import { BASE_PATH } from '../../../lib/site';
 
 export const dynamicParams = false;
 export const generateStaticParams = () => CATEGORIES.map((c) => ({ slug: c.slug }));
 
 type Props = { params: Promise<{ slug: string }> };
 
+/** Titel i søgeresultater og delinger – skrevet, som folk søger */
+const SHARE_TITLE: Record<string, string> = {
+  kvinder: 'Brugt tøj til kvinder', maend: 'Brugt tøj til mænd', boern: 'Brugt børnetøj og legetøj', sko: 'Brugte sko og sneakers',
+  tasker: 'Brugte tasker', accessories: 'Brugte smykker, ure og accessories', bolig: 'Brugte møbler og boligting', sport: 'Brugt sportsudstyr'
+};
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const c = getCategory((await params).slug);
-  return c ? { title: `${c.label} – brugt`, description: c.intro } : {};
+  return c ? pageMetadata({ title: SHARE_TITLE[c.slug] ?? `${c.label} – brugt`, description: `${c.intro} Køb brugt med køberbeskyttelse på Videro.`, path: `/kategori/${c.slug}/`, images: [{ url: `${BASE_PATH}/img/kategori/${c.slug}.webp`, width: 480, height: 480, alt: c.label }] }) : {};
 }
 
 export default async function CategoryPage({ params }: Props) {

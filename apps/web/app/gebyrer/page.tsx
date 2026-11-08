@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '../../lib/seo';
 import { Breadcrumbs, Notice } from '@respin/ui';
 import { FeeCalculator } from '../../components/FeeCalculator';
 import { T } from '../../lib/i18n/client';
 
-export const metadata: Metadata = { title: 'Gebyrer', description: 'Se præcis, hvad køber betaler, og hvad sælger får udbetalt på Videro.' };
+export const metadata: Metadata = pageMetadata({ title: 'Gebyrer', description: 'Se præcis, hvad køber betaler, og hvad sælger får udbetalt på Videro. Gratis at oprette annoncer.', path: '/gebyrer/' });
 
 export default function FeesPage() {
   return (

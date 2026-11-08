@@ -1,14 +1,12 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '../../lib/seo';
 import Link from 'next/link';
 import { Accordion, Breadcrumbs, Button, StepList } from '@respin/ui';
 import { FAQ, STEPS } from '../../lib/content';
 import { bannerImage } from '../../lib/images';
 import { T } from '../../lib/i18n/client';
 
-export const metadata: Metadata = {
-  title: 'Sådan virker det',
-  description: 'Sådan køber og sælger du på Videro: tre trin, gebyrer, køberbeskyttelse og svar på de mest stillede spørgsmål.'
-};
+export const metadata: Metadata = pageMetadata({ title: 'Sådan virker det', description: 'Sådan køber og sælger du på Videro: tre trin, gebyrer, køberbeskyttelse og svar på de mest stillede spørgsmål.', path: '/saadan-virker-det/' });
 
 const FEES = [
   ['At sætte en vare til salg', 'Sælger', 'Gratis'],

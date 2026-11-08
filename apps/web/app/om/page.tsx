@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '../../lib/seo';
 import Link from 'next/link';
 import { LegalPage } from '../../components/legal/LegalPage';
 
-export const metadata: Metadata = { title: 'Vores platform', description: 'Hvad Videro er, hvordan vi gør det trygt at handle brugt – og hvem der står bag teksterne, fotoene og skrifttypen.' };
+export const metadata: Metadata = pageMetadata({ title: 'Vores platform', description: 'Hvad Videro er, hvordan vi gør det trygt at handle brugt – og hvem der står bag teksterne, fotoene og skrifttypen.', path: '/om/' });
 
 export default function AboutPage() {
   return (

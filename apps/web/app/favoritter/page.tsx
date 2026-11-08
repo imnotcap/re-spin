@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '../../lib/seo';
 import { Breadcrumbs } from '@respin/ui';
 import { T } from '../../lib/i18n/client';
 import { FavoritesList } from '../../components/search/FavoritesList';
 
-export const metadata: Metadata = { title: 'Dine favoritter' };
+export const metadata: Metadata = pageMetadata({ title: 'Dine favoritter', description: 'De varer, du har gemt på Videro.', path: '/favoritter/', noindex: true });
 
 export default function FavoritesPage() {
   return (

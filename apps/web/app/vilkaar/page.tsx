@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '../../lib/seo';
 import Link from 'next/link';
 import { LegalPage } from '../../components/legal/LegalPage';
 import { PROMOTION_PACKAGES } from '../../lib/promotion-packages';
 import { formatOre, ore } from '@respin/core/money';
 
-export const metadata: Metadata = { title: 'Vilkår og betingelser', description: 'Vilkårene for at købe og sælge på Videro: konto, annoncer, gebyrer, køberbeskyttelse og fremhævning.' };
+export const metadata: Metadata = pageMetadata({ title: 'Vilkår og betingelser', description: 'Vilkårene for at købe og sælge på Videro: konto, annoncer, gebyrer, køberbeskyttelse og fremhævning.', path: '/vilkaar/' });
 
 export default function TermsPage() {
   return (

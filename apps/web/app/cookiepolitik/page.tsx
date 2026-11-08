@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '../../lib/seo';
 import Link from 'next/link';
 import { LegalPage } from '../../components/legal/LegalPage';
 import { CONSENT_MAX_AGE_DAYS } from '../../lib/consent-policy';
 
-export const metadata: Metadata = { title: 'Cookiepolitik', description: 'Hvilke cookies og hvilken lokal lagring Videro bruger – og hvordan du ændrer dit valg.' };
+export const metadata: Metadata = pageMetadata({ title: 'Cookiepolitik', description: 'Hvilke cookies og hvilken lokal lagring Videro bruger – og hvordan du ændrer dit valg.', path: '/cookiepolitik/' });
 
 export default function CookiePolicyPage() {
   return (

@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '../../lib/seo';
 import { Breadcrumbs, Notice, StepList, Timeline } from '@respin/ui';
 import { T } from '../../lib/i18n/client';
 
 const section = 'grid grid-cols-1 gap-6 border-t border-line py-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] md:gap-12 md:py-16';
 
-export const metadata: Metadata = { title: 'Tryghed og sikkerhed', description: 'Sådan beskytter Videro dig som køber og sælger.' };
+export const metadata: Metadata = pageMetadata({ title: 'Tryghed og sikkerhed', description: 'Sådan beskytter Videro dig som køber og sælger: køberbeskyttelse, betaling gennem Videro og gode råd mod svindel.', path: '/sikkerhed/' });
 
 const TIPS = [
   { title: 'Betal altid i appen', text: 'Betaler du med MobilePay, bankoverførsel eller gavekort direkte til sælger, er du ikke dækket af køberbeskyttelsen.' },
