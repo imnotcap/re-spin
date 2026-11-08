@@ -1,5 +1,5 @@
-/* re:spin – valgfri global reset. Importér kun hvis din app ikke har en. */
-/* re:spin — BASE (reset + typografi-klasser) */
+/* Videro – valgfri global reset. Importér kun hvis din app ikke har en. */
+/* Videro — BASE (reset + typografi-klasser) */
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
 body {

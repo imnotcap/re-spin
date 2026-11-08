@@ -9,7 +9,7 @@ const CATEGORIES = [
   { id: 'payment', title: 'Betaling og refundering', description: 'Betaling, gebyrer eller penge tilbage' },
   { id: 'account', title: 'Konto og login', description: 'Login, e-mail, passkey eller sletning' },
   { id: 'listing', title: 'Annonce', description: 'Din annonce er fjernet eller venter på gennemgang' },
-  { id: 'safety', title: 'Svindel og sikkerhed', description: 'Mistænkelige beskeder, betaling uden om re:spin' },
+  { id: 'safety', title: 'Svindel og sikkerhed', description: 'Mistænkelige beskeder, betaling uden om Videro' },
   { id: 'other', title: 'Andet', description: 'Alt det andet' }
 ] as const;
 

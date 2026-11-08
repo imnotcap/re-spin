@@ -2,7 +2,7 @@
   "name": "admin",
   "private": true,
   "version": "0.1.0",
-  "description": "re:spin administration (admin.respin.dk) – kun for medarbejdere",
+  "description": "Videro administration (admin.videro.dk) – kun for medarbejdere",
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",

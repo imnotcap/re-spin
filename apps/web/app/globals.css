@@ -6,8 +6,8 @@
 /* Tailwind scanner ikke node_modules; kittets klasser kommer fra styles.css ovenfor */
 
 :root {
-  /* Selv-hostet Inter via next/font (ingen tredjeparts-fontserver → hurtigere og ingen IP-deling med Google) */
-  --rs-font-brand: var(--font-inter);
+  /* Selv-hostet Schibsted Grotesk via next/font (ingen tredjeparts-fontserver → hurtigere og ingen IP-deling med Google) */
+  --rs-font-brand: var(--font-brand);
 }
 
 html { scroll-behavior: smooth; scroll-padding-top: 80px; }

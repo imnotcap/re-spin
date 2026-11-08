@@ -23,7 +23,7 @@ export class MemoryMailer implements Mailer {
 export interface ResendMailerOptions {
   /** API-nøgle fra Resend ("re_…"). Opbevares som secret i hosting-platformen – aldrig i koden. */
   apiKey: string;
-  /** Afsender, fx "re:spin <noreply@respin.dk>". Domænet skal være verificeret hos Resend (SPF/DKIM). */
+  /** Afsender, fx "Videro <noreply@videro.dk>". Domænet skal være verificeret hos Resend (SPF/DKIM). */
   from: string;
   /** Til tests */
   fetch?: typeof fetch;
@@ -82,23 +82,23 @@ export class ResendMailer implements Mailer {
 
 export const templates = {
   verify: (link: string): Omit<Mail, 'to'> => ({
-    subject: 'Bekræft din e-mail til re:spin',
-    text: `Hej!\n\nBekræft din e-mail ved at åbne linket og logge ind med den adgangskode, du valgte:\n${link}\n\nLinket virker i 24 timer. Har du ikke oprettet en konto, kan du se bort fra denne mail.\n\n– re:spin`
+    subject: 'Bekræft din e-mail til Videro',
+    text: `Hej!\n\nBekræft din e-mail ved at åbne linket og logge ind med den adgangskode, du valgte:\n${link}\n\nLinket virker i 24 timer. Har du ikke oprettet en konto, kan du se bort fra denne mail.\n\n– Videro`
   }),
   alreadyRegistered: (loginLink: string, resetLink: string): Omit<Mail, 'to'> => ({
     subject: 'Forsøg på at oprette en konto med din e-mail',
-    text: `Hej!\n\nNogen (måske dig) forsøgte at oprette en ny re:spin-konto med din e-mail. Du har allerede en konto.\n\nLog ind: ${loginLink}\nGlemt adgangskode: ${resetLink}\n\nVar det ikke dig, behøver du ikke gøre noget.\n\n– re:spin`
+    text: `Hej!\n\nNogen (måske dig) forsøgte at oprette en ny Videro-konto med din e-mail. Du har allerede en konto.\n\nLog ind: ${loginLink}\nGlemt adgangskode: ${resetLink}\n\nVar det ikke dig, behøver du ikke gøre noget.\n\n– Videro`
   }),
   reset: (link: string): Omit<Mail, 'to'> => ({
-    subject: 'Nulstil din adgangskode til re:spin',
-    text: `Hej!\n\nVælg en ny adgangskode her:\n${link}\n\nLinket virker i 30 minutter og kan kun bruges én gang. Bad du ikke om det, kan du se bort fra denne mail – din adgangskode er uændret.\n\n– re:spin`
+    subject: 'Nulstil din adgangskode til Videro',
+    text: `Hej!\n\nVælg en ny adgangskode her:\n${link}\n\nLinket virker i 30 minutter og kan kun bruges én gang. Bad du ikke om det, kan du se bort fra denne mail – din adgangskode er uændret.\n\n– Videro`
   }),
   securityChange: (what: string, resetLink: string): Omit<Mail, 'to'> => ({
     subject: `Sikkerhedsændring på din konto: ${what}`,
-    text: `Hej!\n\nDer er lige foretaget en sikkerhedsændring på din re:spin-konto: ${what}.\n\nVar det ikke dig? Nulstil din adgangskode straks: ${resetLink}\n\n– re:spin`
+    text: `Hej!\n\nDer er lige foretaget en sikkerhedsændring på din Videro-konto: ${what}.\n\nVar det ikke dig? Nulstil din adgangskode straks: ${resetLink}\n\n– Videro`
   }),
   passwordChanged: (resetLink: string): Omit<Mail, 'to'> => ({
     subject: 'Din adgangskode er ændret',
-    text: `Hej!\n\nAdgangskoden til din re:spin-konto er lige blevet ændret, og du er logget ud på alle andre enheder.\n\nVar det ikke dig? Nulstil straks: ${resetLink}\n\n– re:spin`
+    text: `Hej!\n\nAdgangskoden til din Videro-konto er lige blevet ændret, og du er logget ud på alle andre enheder.\n\nVar det ikke dig? Nulstil straks: ${resetLink}\n\n– Videro`
   })
 };

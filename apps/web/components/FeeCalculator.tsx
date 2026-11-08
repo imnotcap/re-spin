@@ -56,7 +56,7 @@ export function FeeCalculator() {
         <div className="rounded-lg bg-grad-deep p-6 text-cream">
           <h2 className="text-h3">Sælger får udbetalt</h2>
           <p className="mt-2 text-[40px] font-extrabold leading-[44px] tracking-[-0.02em] text-lime" data-testid="payout">{a ? formatOre(a.sellerPayout) : '–'}</p>
-          <p className="mt-1 text-small text-cream/80">{a ? `${formatOre(a.price)} − ${formatOre(a.sellerFee)} (${certified ? '0,5' : '1'} % til re:spin)` : ' '}</p>
+          <p className="mt-1 text-small text-cream/80">{a ? `${formatOre(a.price)} − ${formatOre(a.sellerFee)} (${certified ? '0,5' : '1'} % til Videro)` : ' '}</p>
         </div>
       </div>
     </div>

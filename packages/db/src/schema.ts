@@ -1,5 +1,5 @@
 /**
- * re:spin databaseskema (PostgreSQL).
+ * Videro databaseskema (PostgreSQL).
  *
  * Principper:
  *  - Penge er `integer` i øre. CHECK-constraints sikrer interne sammenhænge (fx buyer_total = pris + gebyr + fragt).
@@ -267,7 +267,7 @@ export const staffUsers = pgTable('staff_users', {
   id: id(),
   email: text('email').notNull().unique(),
   role: staffRole('role').notNull(),
-  /** Fornavn, som kunden ser i support-samtaler ("Signe fra re:spin") */
+  /** Fornavn, som kunden ser i support-samtaler ("Signe fra Videro") */
   displayName: text('display_name'),
   active: boolean('active').notNull().default(true),
   createdAt: createdAt()

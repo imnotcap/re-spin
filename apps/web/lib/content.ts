@@ -14,10 +14,10 @@ export const STEPS = {
 } as const satisfies Record<string, ReadonlyArray<{ icon: IconName; title: string; text: string }>>;
 
 export const FAQ: ReadonlyArray<{ q: string; a: string }> = [
-  { q: 'Hvad koster det at sælge?', a: 'Det er gratis at oprette annoncer. Når en vare sælges, går 1 % af salgsprisen til re:spin – 0,5 % hvis du er certificeret sælger.' },
+  { q: 'Hvad koster det at sælge?', a: 'Det er gratis at oprette annoncer. Når en vare sælges, går 1 % af salgsprisen til Videro – 0,5 % hvis du er certificeret sælger.' },
   { q: 'Hvad betaler køber?', a: 'Varens pris, fragt og køberbeskyttelse på 5 % + 3 kr. Køberbeskyttelsen dækker, hvis varen ikke kommer frem eller ikke er som beskrevet.' },
   { q: 'Hvornår får jeg mine penge som sælger?', a: 'Når køber har godkendt varen – eller automatisk 48 timer efter levering, hvis køber ikke melder et problem.' },
   { q: 'Hvorfor skal jeg ikke betale med MobilePay direkte til sælger?', a: 'Betaler du uden om appen, er du ikke dækket af køberbeskyttelsen. Det er den mest almindelige form for svindel på markedspladser.' },
   { q: 'Hvad er en passkey?', a: 'En passkey er en login-nøgle, der ligger på din telefon eller computer. Du logger ind med Face ID, fingeraftryk eller PIN – der er ingen adgangskode, der kan stjæles eller phishes.' },
-  { q: 'Er re:spin åben endnu?', a: 'Nej. Det her er en testversion af hjemmesiden. Appen er under udvikling.' }
+  { q: 'Er Videro åben endnu?', a: 'Nej. Det her er en testversion af hjemmesiden. Appen er under udvikling.' }
 ];

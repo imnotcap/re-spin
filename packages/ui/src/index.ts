@@ -1,5 +1,5 @@
 /**
- * @respin/ui – re:spin UI-kit.
+ * @respin/ui – Videro UI-kit.
  * Komponenter her. Hjælpefunktioner/forretningsregler: `@respin/ui/utils`. Tokens: `@respin/ui/tokens`.
  * CSS: `import '@respin/ui/styles.css'`.
  */

@@ -2,7 +2,7 @@
   "name": "@respin/support",
   "version": "0.1.0",
   "private": true,
-  "description": "re:spin kundeservice: sager og samtaler mellem kunde og medarbejdere (adgang håndhæves i hver forespørgsel)",
+  "description": "Videro kundeservice: sager og samtaler mellem kunde og medarbejdere (adgang håndhæves i hver forespørgsel)",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

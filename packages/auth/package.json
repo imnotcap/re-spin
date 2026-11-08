@@ -2,7 +2,7 @@
   "name": "@respin/auth",
   "version": "0.1.0",
   "private": true,
-  "description": "re:spin login: Argon2id, sessioner (kun token-hash gemmes), e-mailbekr\u00e6ftelse, nulstilling, step-up, delt rate limiting. Kun server.",
+  "description": "Videro login: Argon2id, sessioner (kun token-hash gemmes), e-mailbekr\u00e6ftelse, nulstilling, step-up, delt rate limiting. Kun server.",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

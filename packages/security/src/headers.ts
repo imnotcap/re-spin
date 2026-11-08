@@ -8,7 +8,7 @@
 export interface CspOptions {
   nonce: string;
   isDev?: boolean;
-  /** Ekstra kilder, fx billed-CDN: ['https://cdn.respin.dk'] */
+  /** Ekstra kilder, fx billed-CDN: ['https://cdn.videro.dk'] */
   imgSrc?: string[];
   connectSrc?: string[];
   frameSrc?: string[];

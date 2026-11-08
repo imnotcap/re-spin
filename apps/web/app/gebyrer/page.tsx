@@ -3,7 +3,7 @@ import { Breadcrumbs, Notice } from '@respin/ui';
 import { FeeCalculator } from '../../components/FeeCalculator';
 import { T } from '../../lib/i18n/client';
 
-export const metadata: Metadata = { title: 'Gebyrer', description: 'Se præcis, hvad køber betaler, og hvad sælger får udbetalt på re:spin.' };
+export const metadata: Metadata = { title: 'Gebyrer', description: 'Se præcis, hvad køber betaler, og hvad sælger får udbetalt på Videro.' };
 
 export default function FeesPage() {
   return (

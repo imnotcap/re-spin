@@ -18,7 +18,7 @@ async function user(name = 'Bruger') {
   return u!.id;
 }
 async function staff(role: 'support' | 'finance' | 'admin' = 'finance') {
-  const [x] = await db.insert(s.staffUsers).values({ email: `staff${++k}@respin.dk`, role }).returning();
+  const [x] = await db.insert(s.staffUsers).values({ email: `staff${++k}@videro.dk`, role }).returning();
   return x!.id;
 }
 /** En betalt ordre til `kr` kroner */

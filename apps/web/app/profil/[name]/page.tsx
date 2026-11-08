@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { name } = await params;
   const s = sellerByName(name);
   if (!s) return memberMetadata(decodeURIComponent(name));
-  return { title: `${s.name} – profil`, description: `${s.name} fra ${s.city} sælger brugt tøj og ting på re:spin. ${s.reviews} anmeldelser, ${s.rating.toLocaleString('da-DK')} i vurdering.`, alternates: { canonical: profilePath(s.name) } };
+  return { title: `${s.name} – profil`, description: `${s.name} fra ${s.city} sælger brugt tøj og ting på Videro. ${s.reviews} anmeldelser, ${s.rating.toLocaleString('da-DK')} i vurdering.`, alternates: { canonical: profilePath(s.name) } };
 }
 
 export default async function ProfilePage({ params }: Props) {

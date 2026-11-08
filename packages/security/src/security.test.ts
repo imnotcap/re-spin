@@ -29,7 +29,7 @@ describe('CSP og headers', () => {
     expect(() => buildCsp({ nonce, imgSrc: ["https://a.dk; script-src *"] })).toThrow();
     expect(() => buildCsp({ nonce, connectSrc: ['*'] })).toThrow();
     expect(() => buildCsp({ nonce: "x'; script-src *" })).toThrow();
-    expect(buildCsp({ nonce, imgSrc: ['https://cdn.respin.dk'] })).toContain('https://cdn.respin.dk');
+    expect(buildCsp({ nonce, imgSrc: ['https://cdn.videro.dk'] })).toContain('https://cdn.videro.dk');
   });
   it('HSTS kun i produktion; admin er no-store og noindex', () => {
     expect(securityHeaders({ isProd: false })['Strict-Transport-Security']).toBeUndefined();
@@ -163,16 +163,16 @@ describe('åben redirect', () => {
 });
 
 describe('CSRF / origin', () => {
-  const allowed = ['https://respin.dk'];
+  const allowed = ['https://videro.dk'];
   it('læsende metoder er altid ok', () => expect(isRequestOriginAllowed('GET', new Headers(), allowed)).toBe(true));
   it('POST fra fremmed origin eller cross-site afvises', () => {
     expect(isRequestOriginAllowed('POST', new Headers({ origin: 'https://evil.example' }), allowed)).toBe(false);
-    expect(isRequestOriginAllowed('POST', new Headers({ origin: 'https://respin.dk', 'sec-fetch-site': 'cross-site' }), allowed)).toBe(false);
+    expect(isRequestOriginAllowed('POST', new Headers({ origin: 'https://videro.dk', 'sec-fetch-site': 'cross-site' }), allowed)).toBe(false);
     expect(isRequestOriginAllowed('POST', new Headers(), allowed)).toBe(false);
-    expect(isRequestOriginAllowed('POST', new Headers({ referer: 'https://respin.dk.evil.example/x' }), allowed)).toBe(false);
+    expect(isRequestOriginAllowed('POST', new Headers({ referer: 'https://videro.dk.evil.example/x' }), allowed)).toBe(false);
   });
   it('POST fra egen origin accepteres', () => {
-    expect(isRequestOriginAllowed('POST', new Headers({ origin: 'https://respin.dk' }), allowed)).toBe(true);
+    expect(isRequestOriginAllowed('POST', new Headers({ origin: 'https://videro.dk' }), allowed)).toBe(true);
     expect(isRequestOriginAllowed('DELETE', new Headers({ 'sec-fetch-site': 'same-origin' }), allowed)).toBe(true);
   });
 });
@@ -210,13 +210,13 @@ describe('Cloudflare Access-JWT', () => {
     const jwk = { ...(await exportJWK(publicKey)), kid: 'k1', alg: 'RS256', use: 'sig' };
     const verify = createAccessVerifier({ teamDomain: TEAM, audience: AUD, jwks: createLocalJWKSet({ keys: [jwk] }) });
     const sign = (claims: Record<string, unknown> = {}, o: { aud?: string; iss?: string; exp?: string | number } = {}) =>
-      new SignJWT({ email: 'Mette@Respin.dk', ...claims }).setProtectedHeader({ alg: 'RS256', kid: 'k1' }).setSubject('user-1')
+      new SignJWT({ email: 'Mette@Videro.dk', ...claims }).setProtectedHeader({ alg: 'RS256', kid: 'k1' }).setSubject('user-1')
         .setAudience(o.aud ?? AUD).setIssuer(o.iss ?? `https://${TEAM}`).setIssuedAt().setExpirationTime(o.exp ?? '5m').sign(privateKey);
     return { verify, sign };
   }
   it('accepterer gyldigt token og normaliserer e-mail', async () => {
     const { verify, sign } = await setup();
-    expect(await verify(await sign())).toEqual({ email: 'mette@respin.dk', subject: 'user-1' });
+    expect(await verify(await sign())).toEqual({ email: 'mette@videro.dk', subject: 'user-1' });
   });
   it('afviser manglende token', async () => {
     const { verify } = await setup();
@@ -235,15 +235,15 @@ describe('Cloudflare Access-JWT', () => {
   it('afviser alg=none og HS256-nøgleforveksling', async () => {
     const { verify } = await setup();
     const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString('base64url');
-    const none = `${b64({ alg: 'none', typ: 'JWT' })}.${b64({ email: 'x@respin.dk', sub: 'u', aud: AUD, iss: `https://${TEAM}`, exp: 9999999999 })}.`;
+    const none = `${b64({ alg: 'none', typ: 'JWT' })}.${b64({ email: 'x@videro.dk', sub: 'u', aud: AUD, iss: `https://${TEAM}`, exp: 9999999999 })}.`;
     await expect(verify(none)).rejects.toBeInstanceOf(AccessError);
-    const hs = await new SignJWT({ email: 'x@respin.dk' }).setProtectedHeader({ alg: 'HS256', kid: 'k1' }).setSubject('u').setAudience(AUD).setIssuer(`https://${TEAM}`).setExpirationTime('5m').sign(new TextEncoder().encode('any-secret-value-32-bytes-long!!!'));
+    const hs = await new SignJWT({ email: 'x@videro.dk' }).setProtectedHeader({ alg: 'HS256', kid: 'k1' }).setSubject('u').setAudience(AUD).setIssuer(`https://${TEAM}`).setExpirationTime('5m').sign(new TextEncoder().encode('any-secret-value-32-bytes-long!!!'));
     await expect(verify(hs)).rejects.toBeInstanceOf(AccessError);
   });
   it('afviser tamperet payload', async () => {
     const { verify, sign } = await setup();
     const [h, , s] = (await sign()).split('.');
-    const evil = Buffer.from(JSON.stringify({ email: 'ceo@respin.dk', sub: 'u', aud: AUD, iss: `https://${TEAM}`, exp: 9999999999 })).toString('base64url');
+    const evil = Buffer.from(JSON.stringify({ email: 'ceo@videro.dk', sub: 'u', aud: AUD, iss: `https://${TEAM}`, exp: 9999999999 })).toString('base64url');
     await expect(verify(`${h}.${evil}.${s}`)).rejects.toBeInstanceOf(AccessError);
   });
 });
@@ -256,7 +256,7 @@ describe('redaktion af logs', () => {
     expect(out.user).toBe('mette');
   });
   it('maskerer e-mail og JWT', () => {
-    expect(maskEmail('mette@respin.dk')).toBe('m***@respin.dk');
+    expect(maskEmail('mette@videro.dk')).toBe('m***@videro.dk');
     expect(redactString('token eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxIn0.c2lnbmF0dXJl')).toContain('[jwt]');
   });
 });
@@ -280,28 +280,28 @@ describe('miljø-validering og audit', () => {
 import { createAdminGuard, type AdminGuardConfig } from './admin-guard';
 
 describe('admin-guard', () => {
-  const ok = { email: 'mette@respin.dk', subject: 'u1' };
+  const ok = { email: 'mette@videro.dk', subject: 'u1' };
   const base = (o: Partial<AdminGuardConfig> = {}): AdminGuardConfig => ({
-    isProd: true, allowedHosts: ['admin.respin.dk'], ipAllowlist: ['203.0.113.0/24'], ipHeader: 'cf-connecting-ip',
+    isProd: true, allowedHosts: ['admin.videro.dk'], ipAllowlist: ['203.0.113.0/24'], ipHeader: 'cf-connecting-ip',
     verifyAccess: async (t) => { if (t === 'good') return ok; throw new Error('bad'); }, ...o
   });
-  const req = (h: Record<string, string>) => new Headers({ host: 'admin.respin.dk', 'cf-connecting-ip': '203.0.113.5', 'cf-access-jwt-assertion': 'good', ...h });
+  const req = (h: Record<string, string>) => new Headers({ host: 'admin.videro.dk', 'cf-connecting-ip': '203.0.113.5', 'cf-access-jwt-assertion': 'good', ...h });
 
   it('slipper igennem med rigtig host, IP og identitet', async () => {
     expect(await createAdminGuard(base())(req({}))).toEqual({ ok: true, identity: ok, ip: '203.0.113.5' });
   });
   it('forkert Host → 404 (afslører ikke at admin findes)', async () => {
-    expect(await createAdminGuard(base())(req({ host: 'respin.dk' }))).toEqual({ ok: false, status: 404, reason: 'host' });
-    expect(await createAdminGuard(base())(req({ host: 'admin.respin.dk.evil.example' }))).toMatchObject({ reason: 'host' });
-    expect(await createAdminGuard(base())(req({ host: 'ADMIN.respin.dk:443' }))).toMatchObject({ ok: true });
+    expect(await createAdminGuard(base())(req({ host: 'videro.dk' }))).toEqual({ ok: false, status: 404, reason: 'host' });
+    expect(await createAdminGuard(base())(req({ host: 'admin.videro.dk.evil.example' }))).toMatchObject({ reason: 'host' });
+    expect(await createAdminGuard(base())(req({ host: 'ADMIN.videro.dk:443' }))).toMatchObject({ ok: true });
   });
   it('IP uden for allowlist → 403, selv med gyldigt token', async () => {
     expect(await createAdminGuard(base())(req({ 'cf-connecting-ip': '198.51.100.1' }))).toEqual({ ok: false, status: 403, reason: 'ip' });
-    expect(await createAdminGuard(base())(new Headers({ host: 'admin.respin.dk', 'cf-access-jwt-assertion': 'good' }))).toMatchObject({ status: 403 }); // ingen IP-header
+    expect(await createAdminGuard(base())(new Headers({ host: 'admin.videro.dk', 'cf-access-jwt-assertion': 'good' }))).toMatchObject({ status: 403 }); // ingen IP-header
   });
   it('forfalsket X-Forwarded-For omgår ikke allowlisten', async () => {
     const g = createAdminGuard(base({ ipHeader: 'x-forwarded-for', trustedProxies: 1 }));
-    expect(await g(new Headers({ host: 'admin.respin.dk', 'cf-access-jwt-assertion': 'good', 'x-forwarded-for': '203.0.113.5, 198.51.100.66' }))).toMatchObject({ status: 403 });
+    expect(await g(new Headers({ host: 'admin.videro.dk', 'cf-access-jwt-assertion': 'good', 'x-forwarded-for': '203.0.113.5, 198.51.100.66' }))).toMatchObject({ status: 403 });
   });
   it('manglende eller ugyldigt token → 401', async () => {
     const g = createAdminGuard(base());

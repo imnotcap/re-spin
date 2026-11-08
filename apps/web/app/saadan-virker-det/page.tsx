@@ -7,7 +7,7 @@ import { T } from '../../lib/i18n/client';
 
 export const metadata: Metadata = {
   title: 'Sådan virker det',
-  description: 'Sådan køber og sælger du på re:spin: tre trin, gebyrer, køberbeskyttelse og svar på de mest stillede spørgsmål.'
+  description: 'Sådan køber og sælger du på Videro: tre trin, gebyrer, køberbeskyttelse og svar på de mest stillede spørgsmål.'
 };
 
 const FEES = [
@@ -27,7 +27,7 @@ export default function HowPage() {
 
       <header className="grid grid-cols-1 items-center gap-8 pb-12 pt-6 md:grid-cols-2 md:gap-12 md:pb-16">
         <div>
-          <h1 className="text-[32px] font-bold leading-[38px] tracking-[-0.01em] sm:text-[40px] sm:leading-[46px]">Sådan virker re:spin</h1>
+          <h1 className="text-[32px] font-bold leading-[38px] tracking-[-0.01em] sm:text-[40px] sm:leading-[46px]">Sådan virker Videro</h1>
           <p className="mt-3 max-w-lg text-[17px] leading-[27px] text-slate-700">
             Sæt dit tøj til salg gratis, og køb trygt fra folk i hele Danmark. Her er hele forklaringen – også det med småt.
           </p>
@@ -63,7 +63,7 @@ export default function HowPage() {
         </div>
         <div>
           <table className="w-full border-collapse text-left text-body">
-            <caption className="sr-only">Gebyrer på re:spin</caption>
+            <caption className="sr-only">Gebyrer på Videro</caption>
             <thead>
               <tr className="border-b border-slate text-small text-muted">
                 <th scope="col" className="py-3 pr-4 font-semibold">Hvad</th>

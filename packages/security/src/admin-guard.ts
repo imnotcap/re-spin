@@ -10,7 +10,7 @@ import type { StaffIdentity } from './access-jwt';
 
 export interface AdminGuardConfig {
   isProd: boolean;
-  /** Tilladte Host-headers, fx ['admin.respin.dk'] (i dev tilføjes localhost automatisk) */
+  /** Tilladte Host-headers, fx ['admin.videro.dk'] (i dev tilføjes localhost automatisk) */
   allowedHosts: string[];
   /** CIDR-liste. Tom liste i produktion = nægt alle, medmindre `ipAllowlistDisabled` er sat bevidst. */
   ipAllowlist: string[];

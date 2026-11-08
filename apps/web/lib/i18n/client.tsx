@@ -7,7 +7,7 @@ import { DEFAULT_MESSAGES, LOCALE_TAGS, isLocale, translate, type Locale, type M
  * Valgt sprog i browseren. Serveren og den første visning er altid dansk (ingen hydreringsforskel);
  * et andet valgt sprog hentes bagefter (egen lille fil pr. sprog) og huskes i localStorage.
  */
-const STORAGE_KEY = 'respin.lang';
+const STORAGE_KEY = 'videro.lang';
 type State = { locale: Locale; dict: Messages };
 const SERVER: State = { locale: 'da', dict: DEFAULT_MESSAGES };
 let state: State = SERVER;

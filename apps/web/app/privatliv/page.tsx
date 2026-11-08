@@ -2,17 +2,17 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LegalPage } from '../../components/legal/LegalPage';
 
-export const metadata: Metadata = { title: 'Privatlivscenter', description: 'Sådan behandler re:spin dine personoplysninger: hvad vi gemmer, hvorfor, hvor længe – og dine rettigheder.' };
+export const metadata: Metadata = { title: 'Privatlivscenter', description: 'Sådan behandler Videro dine personoplysninger: hvad vi gemmer, hvorfor, hvor længe – og dine rettigheder.' };
 
 export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privatlivscenter"
       updated="7. november 2026"
-      intro={<p>Her kan du læse, hvilke oplysninger re:spin behandler om dig, hvorfor vi gør det, hvem vi deler dem med, og hvilke rettigheder du har. Vi indsamler så lidt som muligt og gemmer det ikke længere end nødvendigt.</p>}
+      intro={<p>Her kan du læse, hvilke oplysninger Videro behandler om dig, hvorfor vi gør det, hvem vi deler dem med, og hvilke rettigheder du har. Vi indsamler så lidt som muligt og gemmer det ikke længere end nødvendigt.</p>}
       sections={[
         { id: 'dataansvarlig', title: 'Hvem er dataansvarlig', body: <>
-          <p>re:spin er dataansvarlig for de oplysninger, der behandles på platformen. Virksomhedens navn, CVR-nummer og adresse offentliggøres her, før platformen åbner for rigtige handler.</p>
+          <p>Videro er dataansvarlig for de oplysninger, der behandles på platformen. Virksomhedens navn, CVR-nummer og adresse offentliggøres her, før platformen åbner for rigtige handler.</p>
           <p>Har du spørgsmål om dine data, kan du kontakte os via kontaktoplysningerne på denne side, når de er offentliggjort.</p>
         </> },
         { id: 'hvad', title: 'Hvilke oplysninger vi behandler', body: <>

@@ -44,7 +44,7 @@ export async function AdminFrame({ staff, title, section, actions, crumbs, child
     <div className="grid min-h-dvh grid-cols-1 bg-sunken text-ink lg:grid-cols-[232px_minmax(0,1fr)]">
       <aside className="border-b border-line bg-surface lg:sticky lg:top-0 lg:h-dvh lg:border-b-0 lg:border-r">
         <div className="flex items-center justify-between gap-3 px-5 py-4 lg:block">
-          <Link href="/" className="flex items-baseline gap-1.5 text-[19px] font-bold tracking-tight text-forest">re:spin<span className="text-caption font-semibold uppercase tracking-[0.1em] text-muted">admin</span></Link>
+          <Link href="/" className="flex items-baseline gap-1.5 text-[19px] font-bold tracking-tight text-forest">Videro<span className="text-caption font-semibold uppercase tracking-[0.1em] text-muted">admin</span></Link>
         </div>
         <nav aria-label="Admin" className="overflow-x-auto px-3 pb-3 lg:pb-0">
           <ul className="flex gap-1 lg:flex-col">

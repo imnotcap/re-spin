@@ -15,7 +15,7 @@ const envSchema = z.object({
   /** console = mails i serverloggen (kun udvikling). resend = rigtig afsendelse via Resend (produktion). */
   MAIL_TRANSPORT: z.enum(['console', 'resend']).default('console'),
   RESEND_API_KEY: z.string().optional(),
-  /** Afsender, fx "re:spin <noreply@respin.dk>" – domænet skal være verificeret (SPF/DKIM) */
+  /** Afsender, fx "Videro <noreply@videro.dk>" – domænet skal være verificeret (SPF/DKIM) */
   MAIL_FROM: z.string().optional(),
   PWNED_CHECK: z.enum(['on', 'off']).default('on'),
   /** Header som den betroede proxy sætter med klientens IP */

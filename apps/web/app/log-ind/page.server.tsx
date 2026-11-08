@@ -17,7 +17,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       {sp.reset && <Notice icon="check" role="status">Din adgangskode er ændret. Log ind med den nye.</Notice>}
       <LoginForm next={next} />
       <p className="text-small"><Link className={linkCls} href="/glemt-adgangskode/">Glemt adgangskode?</Link></p>
-      <p className="border-t border-line pt-5 text-body text-slate-700">Ny på re:spin? <Link className={linkCls} href="/opret-konto/">Opret en konto</Link></p>
+      <p className="border-t border-line pt-5 text-body text-slate-700">Ny på Videro? <Link className={linkCls} href="/opret-konto/">Opret en konto</Link></p>
     </AuthPage>
   );
 }

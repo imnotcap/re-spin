@@ -1,4 +1,4 @@
-# re:spin – design-skelet (mobil marketplace)
+# Videro – design-skelet (mobil marketplace)
 
 Et klikbart skelet til en mobil marketplace-app (à la Vinted) med en fælles designpakke. Ren HTML/CSS/JS – **ingen build, ingen installation**. Åbn filerne direkte i en browser.
 
@@ -45,8 +45,8 @@ Skelet og plan for hele platformen ligger i `docs/platform/` (**start med [READM
 | `packages/security` | CSP/headers, IP-allowlist, RBAC + fire-øjne, rate limiter, upload-validering, Cloudflare Access-JWT, admin-vagt |
 | `packages/payments` | Checkout, ordre-overgange, Stripe-webhooks (idempotente), outbox |
 | `packages/auth` | Login: Argon2id, sessioner, e-mailbekræftelse, glemt adgangskode, step-up, passkeys, to-trins-login (TOTP), delt rate limiting |
-| `apps/web` | Hjemmesiden (`respin.dk`): varer, kategorier, søgning, favoritter + login, min konto, passkeys, to-trins-login, Stripe-webhook |
-| `apps/admin` | Medarbejderside (`admin.respin.dk`): Cloudflare Access + IP + roller |
+| `apps/web` | Hjemmesiden (`videro.dk`): varer, kategorier, søgning, favoritter + login, min konto, passkeys, to-trins-login, Stripe-webhook |
+| `apps/admin` | Medarbejderside (`admin.videro.dk`): Cloudflare Access + IP + roller |
 
 ```bash
 npm test            # alle tests (ingen database nødvendig – bruger PGlite)

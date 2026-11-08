@@ -65,7 +65,7 @@ export default async function UserPage({ params, searchParams }: { params: Promi
               <form action={userStatusAction} className="flex flex-col gap-2">
                 <input type="hidden" name="userId" value={u.id} />
                 <input type="hidden" name="status" value={u.status === 'active' ? 'suspended' : 'active'} />
-                <label className="text-small font-semibold">Begrundelse<textarea name="reason" rows={3} maxLength={500} required={u.status === 'active'} minLength={u.status === 'active' ? 5 : undefined} className="mt-1 block w-full rounded-md border border-line px-3 py-2 text-small" placeholder="Fx: Gentagne forsøg på betaling uden om re:spin" /></label>
+                <label className="text-small font-semibold">Begrundelse<textarea name="reason" rows={3} maxLength={500} required={u.status === 'active'} minLength={u.status === 'active' ? 5 : undefined} className="mt-1 block w-full rounded-md border border-line px-3 py-2 text-small" placeholder="Fx: Gentagne forsøg på betaling uden om Videro" /></label>
                 {u.status === 'active' && <p className="text-caption text-muted">Brugeren logges ud overalt og kan ikke logge ind, før spærringen ophæves.</p>}
                 <button className={`h-9 rounded-md text-small font-semibold text-white ${u.status === 'active' ? 'bg-coral-600' : 'bg-forest'}`}>{u.status === 'active' ? 'Spær' : 'Genåbn'}</button>
               </form>

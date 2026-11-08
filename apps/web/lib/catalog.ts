@@ -34,7 +34,7 @@ export const SELLERS: readonly Seller[] = [
   { id: 'hjem-hos-ida', name: 'hjem.hos.ida', city: 'Roskilde', rating: 4.9, reviews: 128, certified: true, responds: 'inden for få timer', memberSince: 2024, sold: 151, banner: 'butik', bio: 'Danske designklassikere og fine ting til hjemmet. Pakker alt grundigt ind, så intet går i stykker.' },
   { id: 'familien-berg', name: 'familien.berg', city: 'Vejle', rating: 4.8, reviews: 64, certified: false, responds: 'samme dag', memberSince: 2025, sold: 77, banner: 'sand', bio: 'Børnetøj og legetøj fra tre børn. Alt er brugt med kærlighed og stadig i god stand.' },
   { id: 'nordic-sneaks', name: 'nordic.sneaks', city: 'Frederiksberg', rating: 4.9, reviews: 301, certified: true, responds: 'inden for en time', memberSince: 2024, sold: 412, banner: 'saelg', bio: 'Sneakers og streetwear – kun ægte vare, og kvittering medfølger, hvor jeg har den.' },
-  { id: 'kamilla-k', name: 'kamilla.k', city: 'Esbjerg', rating: 4.6, reviews: 19, certified: false, responds: 'inden for et døgn', memberSince: 2026, sold: 21, banner: 'koral', bio: 'Sælger fine ting fra min egen garderobe. Ny på re:spin, så skriv endelig, hvis du har spørgsmål.' }
+  { id: 'kamilla-k', name: 'kamilla.k', city: 'Esbjerg', rating: 4.6, reviews: 19, certified: false, responds: 'inden for et døgn', memberSince: 2026, sold: 21, banner: 'koral', bio: 'Sælger fine ting fra min egen garderobe. Ny på Videro, så skriv endelig, hvis du har spørgsmål.' }
 ];
 
 export interface Item {

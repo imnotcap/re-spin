@@ -1,5 +1,5 @@
 /**
- * re:spin login. Sikkerhedsegenskaber (alle testet i auth.test.ts):
+ * Videro login. Sikkerhedsegenskaber (alle testet i auth.test.ts):
  *  - Ingen brugerenumerering: tilmelding og "glemt adgangskode" svarer altid ens; ukendt e-mail ved login
  *    bruger samme tid (dummy-hash) og samme fejl som forkert adgangskode.
  *  - Ingen account pre-hijacking: en konto aktiveres kun med bekræftelseslink OG den aktuelle adgangskode
@@ -55,7 +55,7 @@ export interface AuthDeps {
   mailer: Mailer;
   /** Fabrik der giver en limiter pr. konfiguration (PgRateLimiter i produktion) */
   limiter: (cfg: BucketConfig) => RateLimiter;
-  /** fx https://respin.dk – bruges til alle links i e-mails */
+  /** fx https://videro.dk – bruges til alle links i e-mails */
   appUrl: string;
   pwned?: PwnedChecker;
   hasher?: PasswordHasher;
@@ -333,7 +333,7 @@ export function createAuth(deps: AuthDeps) {
     db, now, appUrl, link, limit, audit, send, createSession, hasher,
     isElevated: (cur) => core.isElevated(cur),
     mfaKey: deps.mfaKey ? parseKey(deps.mfaKey) : null,
-    rpName: deps.rpName ?? 're:spin'
+    rpName: deps.rpName ?? 'Videro'
   };
   return Object.assign(core, { mfa: createMfa(internals), passkeys: createPasskeys(internals) });
 }

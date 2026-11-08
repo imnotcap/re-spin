@@ -2,7 +2,7 @@
   "name": "@respin/payments",
   "version": "0.1.0",
   "private": true,
-  "description": "re:spin betalinger: checkout, ordre-overgange med bogholderi, Stripe-webhooks (idempotente), outbox til overførsler og refunderinger",
+  "description": "Videro betalinger: checkout, ordre-overgange med bogholderi, Stripe-webhooks (idempotente), outbox til overførsler og refunderinger",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

@@ -10,7 +10,7 @@ let db: Db, close: () => Promise<void>;
 beforeAll(async () => { ({ db, close } = await createTestDb()); });
 afterAll(async () => { await close(); });
 
-const APP = 'https://respin.dk';
+const APP = 'https://videro.dk';
 const PW = 'grøn-uldjakke-2026';
 let n = 0;
 const email = (name = 'mette') => `${name}${++n}@example.dk`;
@@ -39,7 +39,7 @@ describe('tilmelding og bekræftelse', () => {
     const s = setup(); const m = email();
     expect(await s.auth.signUp({ email: m, password: PW, displayName: 'Mette' })).toEqual({ ok: true });
     expect(s.mailer.sent[0]).toMatchObject({ to: m, subject: expect.stringContaining('Bekræft') });
-    expect(s.mailer.linkFrom()).toMatch(/^https:\/\/respin\.dk\/bekraeft-email\/\?token=/);
+    expect(s.mailer.linkFrom()).toMatch(/^https:\/\/videro\.dk\/bekraeft-email\/\?token=/);
     expect(await s.auth.signIn({ email: m, password: PW })).toEqual({ ok: false, error: 'email_not_verified' });
   });
   it('aktivering kræver link OG adgangskode; linket kan kun bruges én gang', async () => {
@@ -195,7 +195,7 @@ describe('sessioner', () => {
     for (const t of [null, undefined, '', 'x', 'a'.repeat(5000), "' OR 1=1 --"]) expect(await s.auth.getSession(t)).toBeNull();
   });
   it('cookie: __Host- i produktion (Secure, Path=/, intet Domain), HttpOnly og SameSite=Lax', () => {
-    expect(sessionCookieName(true)).toBe('__Host-respin_session');
+    expect(sessionCookieName(true)).toBe('__Host-videro_session');
     expect(sessionCookieOptions(true, new Date())).toMatchObject({ httpOnly: true, secure: true, sameSite: 'lax', path: '/' });
     expect(sessionCookieOptions(true, new Date())).not.toHaveProperty('domain');
   });

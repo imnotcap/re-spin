@@ -2,7 +2,7 @@
   "name": "web",
   "private": true,
   "version": "0.1.0",
-  "description": "re:spin – hjemmeside og platform (respin.dk). Server-byg med login; statisk byg (STATIC_EXPORT=1) til GitHub Pages.",
+  "description": "Videro – hjemmeside og platform (videro.dk). Server-byg med login; statisk byg (STATIC_EXPORT=1) til GitHub Pages.",
   "scripts": {
     "dev": "next dev -p 3000",
     "dev:static": "STATIC_EXPORT=1 next dev -p 3030",

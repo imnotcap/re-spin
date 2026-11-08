@@ -16,7 +16,7 @@ async function user(name = 'Kunde') {
 }
 async function staff(name: string | null = 'Signe') {
   const i = ++k;
-  const [s] = await db.insert(schema.staffUsers).values({ email: `s${i}@respin.dk`, role: 'support', displayName: name }).returning();
+  const [s] = await db.insert(schema.staffUsers).values({ email: `s${i}@videro.dk`, role: 'support', displayName: name }).returning();
   return s!.id;
 }
 const MSG = 'Min pakke er ikke kommet frem endnu.';

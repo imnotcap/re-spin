@@ -144,7 +144,7 @@ export function ListingForm({ initial, certified = false }: { initial?: ListingF
           <Field label="Størrelse" name="size" optional maxLength={20} defaultValue={v.size} error={err('size')} hint="Fx M, 38 eller 104 cm" />
         </div>
         <Textarea label="Beskrivelse" name="description" optional rows={5} maxLength={2000} defaultValue={v.description} error={err('description')}
-          hint="Mål, materiale, pasform og evt. fejl. Del ikke telefonnummer eller betaling uden om re:spin – så mister du køberbeskyttelsen." />
+          hint="Mål, materiale, pasform og evt. fejl. Del ikke telefonnummer eller betaling uden om Videro – så mister du køberbeskyttelsen." />
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">

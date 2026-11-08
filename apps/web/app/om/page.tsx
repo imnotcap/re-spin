@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LegalPage } from '../../components/legal/LegalPage';
 
-export const metadata: Metadata = { title: 'Vores platform', description: 'Hvad re:spin er, hvordan vi gør det trygt at handle brugt – og hvem der står bag teksterne, fotoene og skrifttypen.' };
+export const metadata: Metadata = { title: 'Vores platform', description: 'Hvad Videro er, hvordan vi gør det trygt at handle brugt – og hvem der står bag teksterne, fotoene og skrifttypen.' };
 
 export default function AboutPage() {
   return (
@@ -10,7 +10,7 @@ export default function AboutPage() {
       title="Vores platform"
       updated="7. november 2026"
       draft={false}
-      intro={<p>re:spin er en dansk markedsplads for brugt tøj, sko, tasker og ting til hjemmet. Vi vil gøre det nemt og trygt at give ting et nyt liv – med en ærlig pris på hver vare og køberbeskyttelse på alle køb.</p>}
+      intro={<p>Videro er en dansk markedsplads for brugt tøj, sko, tasker og ting til hjemmet. Vi vil gøre det nemt og trygt at give ting et nyt liv – med en ærlig pris på hver vare og køberbeskyttelse på alle køb.</p>}
       sections={[
         { id: 'sadan', title: 'Sådan fungerer det', body: <ul>
           <li><b>Sælg gratis:</b> tag billeder, skriv en pris, og din vare er til salg på få minutter. Du betaler først et lille gebyr, når den er solgt.</li>

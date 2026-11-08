@@ -1,11 +1,11 @@
 import { Badge, Button } from '@respin/ui';
 
-/** Viser re:spin-temaet i Tailwind-klasser, og at utilities kan overstyre kit-komponenter. */
+/** Viser Videro-temaet i Tailwind-klasser, og at utilities kan overstyre kit-komponenter. */
 export function TailwindDemo() {
   return (
     <div className="flex w-full flex-wrap gap-4">
       <div data-testid="tw-card" className="w-[358px] max-w-full rounded-lg bg-surface p-gutter shadow-raised">
-        <h3 className="text-h2 text-forest">Tailwind × re:spin</h3>
+        <h3 className="text-h2 text-forest">Tailwind × Videro</h3>
         <p className="mt-2 text-body text-muted">Farver, typografi, radier og skygger fra tokens.</p>
         <div className="mt-4 flex gap-2">
           <span data-testid="tw-ink" className="rounded-md bg-grad-ink px-3 py-2 text-small text-cream">bg-grad-ink</span>
