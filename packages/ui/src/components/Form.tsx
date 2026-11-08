@@ -49,7 +49,9 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field({ l
 
 export interface SelectOption { value: string; label: string }
 export interface SelectProps extends FieldChrome, Omit<SelectHTMLAttributes<HTMLSelectElement>, 'className' | 'children'> {
-  options: Array<string | SelectOption>;
+  options?: Array<string | SelectOption>;
+  /** Valgmuligheder i grupper (<optgroup>), fx underkategorier efter sektion – vises efter `options` */
+  groups?: Array<{ label: string; options: Array<string | SelectOption> }>;
   /** Tekst i den deaktiverede første linje, når intet er valgt */
   placeholder?: string;
   /** Gør den tomme værdi valgbar med denne tekst, fx "Alle" i et filter (erstatter `placeholder`) */
@@ -57,7 +59,12 @@ export interface SelectProps extends FieldChrome, Omit<SelectHTMLAttributes<HTML
   className?: string;
 }
 
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select({ label, hint, error, optional, options, placeholder = 'Vælg…', emptyOption, className, id, defaultValue, value, ...rest }, ref) {
+const renderOption = (o: string | SelectOption) => {
+  const opt = typeof o === 'string' ? { value: o, label: o } : o;
+  return <option key={opt.value} value={opt.value}>{opt.label}</option>;
+};
+
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select({ label, hint, error, optional, options = [], groups = [], placeholder = 'Vælg…', emptyOption, className, id, defaultValue, value, ...rest }, ref) {
   const auto = useId();
   const selectId = id ?? auto;
   const controlled = value !== undefined;
@@ -66,10 +73,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       <Label htmlFor={selectId} text={label} optional={optional} />
       <select ref={ref} id={selectId} className="rs-select" aria-invalid={error ? true : undefined} {...(controlled ? { value } : { defaultValue: defaultValue ?? '' })} {...rest}>
         {emptyOption !== undefined ? <option value="">{emptyOption}</option> : <option value="" disabled>{placeholder}</option>}
-        {options.map((o) => {
-          const opt = typeof o === 'string' ? { value: o, label: o } : o;
-          return <option key={opt.value} value={opt.value}>{opt.label}</option>;
-        })}
+        {options.map(renderOption)}
+        {groups.map((g) => <optgroup key={g.label} label={g.label}>{g.options.map(renderOption)}</optgroup>)}
       </select>
       {(hint || error) && <span className="rs-field__hint">{error ?? hint}</span>}
     </div>

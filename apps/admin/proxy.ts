@@ -18,7 +18,10 @@ export async function proxy(request: NextRequest) {
   }
 
   const nonce = generateNonce();
-  const csp = buildCsp({ nonce, isDev: !isProd });
+  // Annoncebilleder fra Vercel Blob (kun oprindelsen, fra IMAGE_BASE_URL)
+  let imgOrigin: string | undefined;
+  try { imgOrigin = process.env.IMAGE_BASE_URL ? new URL(process.env.IMAGE_BASE_URL).origin : undefined; } catch { imgOrigin = undefined; }
+  const csp = buildCsp({ nonce, isDev: !isProd, imgSrc: imgOrigin?.startsWith('https://') ? [imgOrigin] : [] });
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-nonce', nonce);
   requestHeaders.set('content-security-policy', csp);

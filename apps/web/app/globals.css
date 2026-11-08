@@ -10,10 +10,12 @@
   --rs-font-brand: var(--font-brand);
 }
 
-html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+/* Bag siden (når man ruller forbi bunden på iPhone) vises footerens farve – ikke en hvid stribe */
+html { scroll-behavior: smooth; scroll-padding-top: 80px; background: var(--rs-forest-900); }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
-body { background: var(--rs-bg); color: var(--rs-text); font-family: var(--rs-font); -webkit-font-smoothing: antialiased; }
+/* viewport-fit=cover (bundmenuen bruger safe-area): hold indholdet fri af notch'en på liggende iPhone */
+body { height: auto; padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); background: var(--rs-bg); color: var(--rs-text); font-family: var(--rs-font); -webkit-font-smoothing: antialiased; }
 
 :focus-visible { outline: 3px solid var(--rs-forest); outline-offset: 2px; border-radius: 4px; }
 
@@ -23,7 +25,13 @@ body { background: var(--rs-bg); color: var(--rs-text); font-family: var(--rs-fo
 .rs-toast { bottom: max(24px, env(safe-area-inset-bottom)); }
 
 /* Varesiden på mobil: plads til den faste købsbjælke under footeren */
-@media (max-width: 1023.98px) { body:has(.rs-buybar) footer { padding-bottom: 76px; } }
+@media (max-width: 1023.98px) { body:has(.rs-buybar) footer { padding-bottom: calc(76px + env(safe-area-inset-bottom)); } }
+/* Bundmenuen på mobil: footeren fortsætter bag den, og beskeder vises over den */
+@media (max-width: 767.98px) {
+  body:has(.rs-bottomnav) footer { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  body:has(.rs-bottomnav) .rs-toast { bottom: calc(76px + env(safe-area-inset-bottom)); }
+}
+@media print { .rs-bottomnav { display: none !important; } }
 @media print { .rs-buybar { display: none !important; } }
 
 

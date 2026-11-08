@@ -2,13 +2,15 @@
  * Filtrering og sortering af varelister (kategori og søgning). Rene funktioner uden React,
  * så de kan testes. Filtrene ligger i URL'en; værdier, der ikke findes blandt valgmulighederne, ignoreres.
  */
-import { CATEGORIES, CONDITIONS, type CategorySlug, type Condition } from './categories';
+import { CATEGORIES, CONDITIONS, type CategoryGroup, type CategorySlug, type Condition } from './categories';
 import type { CardItem } from '../components/ItemCard';
 
 export interface BrowseItem extends CardItem {
   category: CategorySlug;
   sub: string;
   uploaded: number;
+  /** Visninger de seneste 30 dage – "Mest populære" */
+  popularity?: number;
 }
 
 export const PRICE_BUCKETS = [
@@ -28,6 +30,8 @@ export const SORTS = [
 export type Sort = (typeof SORTS)[number]['value'];
 
 export interface Filters {
+  /** Sektion i kategorien, fx "Sko" under Kvinder */
+  gruppe?: string;
   type?: string;
   kategori?: CategorySlug;
   str?: string;
@@ -39,23 +43,29 @@ export interface Filters {
 
 export const DEFAULT_FILTERS: Filters = { sort: 'nyeste' };
 /** Nøglerne i URL'en (sort tæller ikke som et filter) */
-export const FILTER_KEYS = ['type', 'kategori', 'str', 'stand', 'pris', 'maerke'] as const;
+export const FILTER_KEYS = ['gruppe', 'type', 'kategori', 'str', 'stand', 'pris', 'maerke'] as const;
 
 const LETTER_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
+/** Børnestørrelser efter alder: "6-9 mdr." før "2-3 år" */
+const AGE = /^(\d{1,2})(?:-\d{1,2}|\+)? (mdr\.|år)$/;
 const sizeRank = (s: string): number => {
+  const age = AGE.exec(s);
+  if (age) return 20 + (age[2] === 'år' ? 24 : 0) + Number(age[1]) / 100;
   const i = LETTER_SIZES.indexOf(s.split(/[\s/]/)[0] ?? '');
   return i === -1 ? 100 : i;
 };
 /** "M" passer til "M / 38" – så størrelsesknapperne i menuen også finder kombinerede størrelser */
 export const sizeMatches = (size: string, want: string): boolean => size === want || size.split(/\s*\/\s*/).includes(want);
 /** Størrelser, der kan vælges i menuen, selvom ingen vare har præcis den værdi */
-const MENU_SIZE = /^(XXS|XS|S|M|L|XL|XXL|\d{2})$/;
+const MENU_SIZE = /^(XXS|XS|S|M|L|XL|XXL|\d{2}|\d{1,2}-\d{1,2} (mdr\.|år)|14\+ år)$/;
 
 /** XS < S < M < L < XL, derefter tal i naturlig rækkefølge (36 < 38 < 104), "One size" sidst */
 export const compareSizes = (a: string, b: string): number =>
   Number(a === 'One size') - Number(b === 'One size') || sizeRank(a) - sizeRank(b) || a.localeCompare(b, 'da', { numeric: true });
 
 export interface BrowseOptions {
+  /** Sektioner med varer (kategorisiden) */
+  groups: string[];
   types: string[];
   categories: CategorySlug[];
   sizes: string[];
@@ -64,12 +74,13 @@ export interface BrowseOptions {
 }
 
 /** Kun de valg, der faktisk giver resultater i listen */
-export function optionsFor(items: readonly BrowseItem[], types: readonly string[] = []): BrowseOptions {
+export function optionsFor(items: readonly BrowseItem[], types: readonly string[] = [], groups: readonly CategoryGroup[] = []): BrowseOptions {
   const present = <T,>(f: (i: BrowseItem) => T) => new Set(items.map(f));
   const subs = present((i) => i.sub);
   const cats = present((i) => i.category);
   const conds = present((i) => i.condition);
   return {
+    groups: groups.filter((g) => g.items.some((s) => subs.has(s))).map((g) => g.label),
     types: types.filter((t) => subs.has(t)),
     categories: CATEGORIES.map((c) => c.slug).filter((c) => cats.has(c)),
     sizes: [...present((i) => i.size)].sort(compareSizes),
@@ -79,10 +90,11 @@ export function optionsFor(items: readonly BrowseItem[], types: readonly string[
 }
 
 /** Læs filtre fra URL'en. Ukendte eller ugyldige værdier ignoreres. */
-export function parseFilters(params: URLSearchParams, opt: BrowseOptions, knownTypes: readonly string[] = opt.types): Filters {
+export function parseFilters(params: URLSearchParams, opt: BrowseOptions, knownTypes: readonly string[] = opt.types, knownGroups: readonly string[] = opt.groups): Filters {
   const get = (k: string) => params.get(k) ?? undefined;
   const pick = <T extends string>(v: string | undefined, allowed: readonly T[]): T | undefined => (v !== undefined && (allowed as readonly string[]).includes(v) ? (v as T) : undefined);
   return {
+    gruppe: pick(get('gruppe'), knownGroups),
     // Alle kategoriens typer accepteres (også dem uden varer endnu → "ingen varer" i stedet for alle varer)
     type: pick(get('type'), knownTypes),
     kategori: pick(get('kategori'), opt.categories),
@@ -107,9 +119,11 @@ export function filtersToSearch(f: Filters, keep: URLSearchParams): string {
 
 export const activeFilterCount = (f: Filters): number => FILTER_KEYS.filter((k) => f[k] !== undefined).length;
 
-export function applyFilters(items: readonly BrowseItem[], f: Filters): BrowseItem[] {
+export function applyFilters(items: readonly BrowseItem[], f: Filters, groups: readonly CategoryGroup[] = []): BrowseItem[] {
   const bucket = PRICE_BUCKETS.find((b) => b.value === f.pris);
+  const inGroup = f.gruppe ? new Set(groups.find((g) => g.label === f.gruppe)?.items ?? []) : null;
   const out = items.filter((i) =>
+    (!inGroup || inGroup.has(i.sub)) &&
     (!f.type || i.sub === f.type) &&
     (!f.kategori || i.category === f.kategori) &&
     (!f.str || sizeMatches(i.size, f.str)) &&
@@ -121,7 +135,7 @@ export function applyFilters(items: readonly BrowseItem[], f: Filters): BrowseIt
     nyeste: tie,
     'pris-lav': (a, b) => a.price - b.price || tie(a, b),
     'pris-hoej': (a, b) => b.price - a.price || tie(a, b),
-    populaere: (a, b) => b.favorites - a.favorites || tie(a, b)
+    populaere: (a, b) => (b.popularity ?? b.favorites) - (a.popularity ?? a.favorites) || tie(a, b)
   };
   return out.sort(cmp[f.sort]);
 }

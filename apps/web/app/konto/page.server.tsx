@@ -12,6 +12,9 @@ import { profilePath } from '../../lib/profile-url';
 import { BASE_PATH } from '../../lib/site';
 import { ProfileForm } from '../../components/profile/ProfileForm';
 import { unreadCountForUser } from '@respin/support';
+import { warningsFor } from '../../lib/listings';
+import { badgesFor } from '../../lib/badges';
+import { BadgeList } from '../../components/badges/BadgeList';
 
 export const metadata = { title: 'Min konto' };
 
@@ -26,10 +29,28 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const username = await ensureUsername(getDb(), current.user.id);
   const profile = await profileFor(getDb(), current.user.id);
   const unread = await unreadCountForUser(getDb(), current.user.id);
+  const warnings = await warningsFor(getDb(), current.user.id).catch(() => []);
+  const badges = await badgesFor(getDb(), current.user.id).catch(() => []);
   return (
     <AuthPage width="page" title="Min konto" crumbs={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Min konto' }]}>
       {sp.welcome && <Notice icon="check" role="status">Din e-mail er bekræftet. Velkommen til Videro!</Notice>}
       {sp.others && <Notice icon="check" role="status">Du er logget ud på alle andre enheder.</Notice>}
+
+      {warnings.length > 0 && (
+        <section aria-labelledby="advarsler" className={`rounded-lg border p-5 ${warnings.some((w) => w.isNew) ? 'border-red-300 bg-red-50' : 'border-line'}`}>
+          <h2 id="advarsler" className={h2}>{warnings.length === 1 ? 'Du har fået en advarsel fra Videro' : `Du har fået ${warnings.length} advarsler fra Videro`}</h2>
+          <p className="mt-1 text-small text-slate-700">Advarsler gives, når en annonce eller besked bryder <Link href="/vilkaar/" className="font-semibold underline underline-offset-2">reglerne</Link>. Gentagne brud kan føre til, at kontoen bliver spærret.</p>
+          <ul className="mt-3 flex flex-col gap-3">
+            {warnings.map((w) => (
+              <li key={w.id} className="rounded-md border border-line bg-surface p-3">
+                <p className="text-small font-semibold">{w.reasonLabel}{w.listingTitle ? ` · ${w.listingTitle}` : ''}{w.isNew && <span className="ml-2 rounded-pill bg-coral-600 px-2 py-0.5 text-caption font-bold text-white">Ny</span>}</p>
+                <p className="mt-1 whitespace-pre-line text-small text-slate-700">{w.message}</p>
+                <p className="mt-1 text-caption text-muted">{fmt(w.createdAt)} · Spørgsmål? <Link href="/konto/support/ny/" className="underline underline-offset-2">Skriv til kundeservice</Link></p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="flex items-center gap-4">
         <Avatar name={current.user.displayName} size="lg" />
@@ -51,6 +72,16 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           <ProfileForm username={username} bio={profile?.bio ?? ''} banner={isBannerId(profile?.banner) ? profile.banner : DEFAULT_BANNER} />
         </div>
       </section>
+
+      {badges.length > 0 && (
+        <section aria-labelledby="badges" className="rounded-lg border border-line p-5">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="badges" className={h2}>Dine badges</h2>
+            <span className="text-small text-muted">{badges.filter((b) => b.earned).length} af {badges.length} låst op · de optjente vises på din profil</span>
+          </div>
+          <div className="mt-4"><BadgeList badges={badges} showLocked /></div>
+        </section>
+      )}
 
       <Link href="/konto/annoncer/" className="flex items-center gap-4 rounded-lg border border-line p-4 transition-colors hover:border-slate">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-100 text-forest"><Icon name="tag" size={20} /></span>

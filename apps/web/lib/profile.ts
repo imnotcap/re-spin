@@ -4,7 +4,6 @@ import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { schema, type Db } from '@respin/db';
 import { normalizeUserText } from '@respin/core';
-import { SELLERS } from './catalog';
 import { isBannerId } from './banners';
 
 const { users } = schema;
@@ -12,8 +11,8 @@ const { users } = schema;
 /** Samme regel som databasens CHECK: 3–30 tegn, a-z 0-9 . _ -, starter og slutter med bogstav/tal */
 export const USERNAME = /^[a-z0-9][a-z0-9._-]{1,28}[a-z0-9]$/;
 
-/** Navne, som ingen medlemmer må få (sidens egne ord og testversionens sælgere) */
-const RESERVED = new Set(['admin', 'administrator', 'respin', 're-spin', 'support', 'hjaelp', 'help', 'konto', 'kontakt', 'system', 'moderator', 'staff', 'api', 'www', ...SELLERS.map((s) => s.name)]);
+/** Navne, som ingen medlemmer må få (sidens egne ord) */
+const RESERVED = new Set(['admin', 'administrator', 'respin', 're-spin', 'support', 'hjaelp', 'help', 'konto', 'kontakt', 'system', 'moderator', 'staff', 'api', 'www', 'videro']);
 export const isReservedUsername = (u: string) => RESERVED.has(u) || /^(re[._-]?spin)/.test(u);
 
 /** "Mette Ørsted" → "mette.oersted" */

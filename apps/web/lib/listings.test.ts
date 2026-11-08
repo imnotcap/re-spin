@@ -22,7 +22,7 @@ async function image(ownerId: string) {
   return (await saveProcessedImage(db, store, ownerId, { id, key: newImageKey(id), main: Buffer.from('main'), thumb: Buffer.from('thumb'), width: 1200, height: 1600 })).id;
 }
 const base = (imageKeys: string[], extra: Record<string, unknown> = {}) => ({
-  title: 'Ganni uldjakke', description: 'Brugt få gange.', category: 'kvinder', subcategory: 'Jakker og frakker', brand: 'Ganni', size: 'M',
+  title: 'Ganni uldjakke', description: 'Brugt få gange.', category: 'kvinder', subcategory: 'Frakker og jakker', brand: 'Ganni', size: 'M',
   condition: 'very_good', priceOre: 45_000, shippingSize: 'medium', imageKeys, ...extra
 });
 
@@ -35,7 +35,7 @@ describe('oprettelse', () => {
     if (!r.ok) return;
     const d = await getListing(db, store, r.id, null);
     expect(d?.images.map((i) => i.src)).toEqual([store.urlFor(newImageKey(b)).replace('.webp', '-480.webp'), store.urlFor(newImageKey(a)).replace('.webp', '-480.webp')]);
-    expect(d).toMatchObject({ title: 'Ganni uldjakke', price: 450, condition: 'Meget god', sub: 'Jakker og frakker', isOwner: false });
+    expect(d).toMatchObject({ title: 'Ganni uldjakke', price: 450, condition: 'Meget god', sub: 'Frakker og jakker', isOwner: false });
     expect((await listFeed(db, store, { category: 'kvinder' })).map((c) => c.id)).toContain(r.id);
     expect(await pendingImageCount(db, me)).toBe(0);
   });
@@ -64,7 +64,7 @@ describe('oprettelse', () => {
     expect(await createListing(db, me, base([img], { priceOre: 50 }))).toMatchObject({ ok: false, error: 'invalid_input', field: 'priceOre' });
     expect(await createListing(db, me, base([img], { title: 'ab' }))).toMatchObject({ ok: false, field: 'title' });
     expect(await createListing(db, me, base([img], { category: 'vintage' }))).toMatchObject({ ok: false, field: 'category' });
-    expect(await createListing(db, me, base([img], { subcategory: 'Sneakers' }))).toMatchObject({ ok: false, error: 'invalid_subcategory' });
+    expect(await createListing(db, me, base([img], { subcategory: 'Kufferter' }))).toMatchObject({ ok: false, error: 'invalid_subcategory' });
     expect(await createListing(db, me, base([]))).toMatchObject({ ok: false, field: 'imageKeys' });
     expect(await createListing(db, me, base([img], { sellerId: crypto.randomUUID() }))).toMatchObject({ ok: false, error: 'invalid_input' }); // ukendte felter afvises (strict)
     expect(await createListing(db, me, base([img], { title: '  Jakke​ med ‮skjult  ' }))).toMatchObject({ ok: true });
@@ -137,18 +137,18 @@ describe('ændringer kræver ejerskab (IDOR)', () => {
 describe('feed og søgning', () => {
   it('søger i titel, mærke og underkategori; alle ord skal passe; % og _ er almindelige tegn', async () => {
     const me = await user();
-    const a = await createListing(db, me, base([await image(me)], { title: 'Nike Air Max 90', category: 'sko', subcategory: 'Sneakers', brand: 'Nike' }));
-    const b = await createListing(db, me, base([await image(me)], { title: 'Rabat 50% på strik', category: 'kvinder', subcategory: 'Strik', brand: 'Samsøe' }));
+    const a = await createListing(db, me, base([await image(me)], { title: 'Nike Air Max 90', category: 'maend', subcategory: 'Sneakers', brand: 'Nike' }));
+    const b = await createListing(db, me, base([await image(me)], { title: 'Rabat 50% på strik', category: 'kvinder', subcategory: 'Trøjer og strik', brand: 'Samsøe' }));
     if (!a.ok || !b.ok) throw new Error();
-    const ids = async (q: string, category?: 'sko') => (await listFeed(db, store, { q, category })).map((c) => c.id);
+    const ids = async (q: string, category?: 'maend') => (await listFeed(db, store, { q, category })).map((c) => c.id);
     expect(await ids('nike sneakers')).toContain(a.id);
     expect(await ids('nike strik')).not.toContain(a.id);
-    expect(await ids('AIR', 'sko')).toEqual([a.id]);
+    expect(await ids('AIR', 'maend')).toEqual([a.id]);
     expect(await ids('50%')).toEqual([b.id]);
     expect(await ids('%')).toEqual([b.id]);
     expect(await ids('_')).toEqual([]);
     expect(likeEscape('a%b_c\\')).toBe('a\\%b\\_c\\\\');
-    await expect(listFeed(db, store, { category: 'vintage' as 'sko' })).rejects.toThrow();
+    await expect(listFeed(db, store, { category: 'vintage' as 'maend' })).rejects.toThrow();
   });
 });
 

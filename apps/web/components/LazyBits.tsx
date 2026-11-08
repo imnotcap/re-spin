@@ -46,9 +46,20 @@ function useLazyComponent<P>(loader: () => Promise<{ default: ComponentType<P> }
 
 const loadRotatingText = () => import('./reactbits/RotatingText');
 
-export function LazyRotatingText({ texts, interval = 2600 }: { texts: [string, ...string[]]; interval?: number }) {
+/** Hent og start først, når siden har stået stille et øjeblik – så det skiftende ord ikke forsinker første visning (Speed Index) */
+function useAfter(ready: boolean, ms: number): boolean {
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    if (!ready) return;
+    const t = window.setTimeout(() => setDone(true), ms);
+    return () => window.clearTimeout(t);
+  }, [ready, ms]);
+  return done;
+}
+
+export function LazyRotatingText({ texts, interval = 2600, startDelay = 3500 }: { texts: [string, ...string[]]; interval?: number; startDelay?: number }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const C = useLazyComponent(loadRotatingText, useLoadWhen(ref, 'idle'));
+  const C = useLazyComponent(loadRotatingText, useAfter(useLoadWhen(ref, 'idle'), startDelay));
   return (
     <span ref={ref} className="inline-block align-bottom">
       {C ? <C texts={texts} rotationInterval={interval} mainClassName="overflow-hidden" staggerDuration={0.02} /> : texts[0]}

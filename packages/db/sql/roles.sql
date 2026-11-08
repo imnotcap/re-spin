@@ -28,7 +28,14 @@ GRANT USAGE ON SEQUENCE support_cases_number_seq TO respin_web;
 -- ---------- admin ----------
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO respin_admin;
 GRANT UPDATE (status) ON users TO respin_admin;
-GRANT UPDATE (status, moderation_status) ON listings TO respin_admin;
+GRANT UPDATE (status, moderation_status, moderation_note, moderated_by, moderated_at, category, subcategory, updated_at) ON listings TO respin_admin;
+GRANT DELETE ON listings TO respin_admin;                                    -- permanent sletning af annoncer (uden ordrer)
+GRANT SELECT, INSERT ON user_warnings TO respin_admin;                       -- advarsler: kun tilføjes
+GRANT SELECT ON user_warnings TO respin_web;
+GRANT UPDATE (seen_at) ON user_warnings TO respin_web;
+GRANT INSERT, DELETE ON analytics_events TO respin_web;                      -- statistik uden cookies
+GRANT SELECT (at, type, listing_id) ON analytics_events TO respin_web;       -- oprydning og visninger pr. annonce
+GRANT SELECT, INSERT, DELETE ON analytics_salts TO respin_web;
 GRANT UPDATE (status, handled_by, handled_at) ON reports TO respin_admin;
 GRANT UPDATE (certified, certified_at) ON seller_profiles TO respin_admin;   -- kun admin-appen kan certificere
 GRANT INSERT ON audit_log, order_events, ledger_transactions, outbox TO respin_admin;

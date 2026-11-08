@@ -9,12 +9,7 @@
         "name": "next"
       }
     ],
-    "noUncheckedIndexedAccess": false,
-    "paths": {
-      "@respin-live": [
-        "./components/listings/live.tsx"
-      ]
-    }
+    "noUncheckedIndexedAccess": false
   },
   "include": [
     "next-env.d.ts",

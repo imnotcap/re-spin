@@ -7,14 +7,16 @@ import { db, type Staff } from '../lib/auth';
 import { pendingApprovalCount } from '../lib/orders';
 import { dashboardStats } from '../lib/people';
 
-export type Section = 'overview' | 'support' | 'orders' | 'approvals' | 'users' | 'moderation' | 'audit' | 'fees';
+export type Section = 'overview' | 'analytics' | 'support' | 'orders' | 'approvals' | 'users' | 'listings' | 'moderation' | 'audit' | 'fees';
 
 const NAV: Array<{ id: Section; href: string; label: string; icon: IconName; perm?: Permission }> = [
   { id: 'overview', href: '/', label: 'Oversigt', icon: 'grid' },
+  { id: 'analytics', href: '/analytics', label: 'Statistik', icon: 'chart', perm: 'analytics.view' },
   { id: 'support', href: '/support', label: 'Kundeservice', icon: 'chat', perm: 'support.handle' },
   { id: 'orders', href: '/orders', label: 'Ordrer', icon: 'package', perm: 'order.view' },
   { id: 'approvals', href: '/approvals', label: 'Godkendelser', icon: 'shield', perm: 'order.refund' },
   { id: 'users', href: '/users', label: 'Brugere', icon: 'user', perm: 'user.view' },
+  { id: 'listings', href: '/listings', label: 'Annoncer', icon: 'tag', perm: 'listing.view' },
   { id: 'moderation', href: '/moderation', label: 'Moderation', icon: 'flag', perm: 'report.handle' },
   { id: 'audit', href: '/audit', label: 'Audit-log', icon: 'eye', perm: 'audit.view' },
   { id: 'fees', href: '/settings/fees', label: 'Gebyrer', icon: 'wallet', perm: 'fees.edit' }

@@ -1,26 +1,21 @@
 # apps/web – Videro hjemmeside og login
 
-Markedspladsens hjemmeside med fokus på brugernes varer, som hos Vinted, og en ren, professionel opbygning i stil med store danske webshops. Testversionen ligger på GitHub Pages: <https://imnotcap.github.io/re-spin/>
+Markedspladsens hjemmeside med fokus på brugernes varer, som hos Vinted, og en ren, professionel opbygning i stil med store danske webshops. Kører på <https://videro.dk> (Vercel). Alle varer er rigtige annoncer fra databasen – der er ingen eksempelvarer.
 
 **Stak:** Next.js 16 (App Router), TypeScript, Tailwind CSS v4 og `@respin/ui` (kit og Tailwind-tema), Motion og React Bits. Gebyrer beregnes med `@respin/core`, med samme regler som checkout. Login kommer fra `@respin/auth`, headers og CSP fra `@respin/security`.
 
-## To måder at bygge den på
+## Udvikling
 
-| | Server | Statisk (`STATIC_EXPORT=1`) |
-|---|---|---|
-| Kommando | `npm run build -w web` | `npm run build:static -w web` → `out/` |
-| Til | Vercel/Node ([../../docs/platform/08-deploy.md](../../docs/platform/08-deploy.md)) | GitHub Pages |
-| Login, konto, `/api/*` | ja | nej – filerne er slet ikke med |
-| Sikkerheds-headers og nonce-CSP | ja (`proxy.server.ts`) | nej (Pages kan ikke sætte headers) |
-| Konto-knap i headeren | ja | nej |
-
-Filer, der hedder `*.server.tsx`/`*.server.ts`, er kun med i server-bygget (`pageExtensions` i `next.config.mjs`).
+Filer, der hedder `*.server.tsx`/`*.server.ts`, er sider og ruter (`pageExtensions` i `next.config.mjs`).
 
 ```bash
-npm run dev:site                                                  # statisk tilstand, ingen miljøvariabler: http://localhost:3030
-npm run dev:web                                                   # med login: kræver database og miljøvariabler, se .env.example
-NEXT_PUBLIC_BASE_PATH=/re-spin npm run build:static -w web        # → apps/web/out (som på GitHub Pages)
+npm run db:dev                                                    # lokal PostgreSQL (PGlite) med alle migrationer
+npm run dev:web                                                   # kræver miljøvariabler, se .env.example (brug DB_POOL_MAX=1 mod PGlite)
 ```
+
+## Statistik uden cookies
+
+`components/Tracker.tsx` tæller sidevisninger og klik på elementer med `data-track`, og `lib/analytics.ts` sender dem med `navigator.sendBeacon` til `/api/e/`. Der gemmes ingen cookies, ingen IP-adresser og ingen bruger-id'er – kun et daglig skiftende hash til at tælle unikke besøgende (`lib/analytics-server.ts`). Browsere med "Global Privacy Control" eller "Do Not Track" sender intet. Tallene vises i admin under **Statistik**.
 
 ## Login og sikkerhed (server-bygget)
 
@@ -77,7 +72,7 @@ Forside, kategorier og søgning viser medlemmernes annoncer øverst ("Lige sat t
 | `/saelg/`, `/saadan-virker-det/`, `/gebyrer/`, `/sikkerhed/` | Sælg-guide, sådan virker det (trin, nøgletal, FAQ), gebyrberegner og køberbeskyttelse |
 | `/licenser/` | Licenser for tredjeparts-software og skrift |
 
-Varerne og sælgerne er eksempeldata (`lib/catalog.ts`): 38 varer og 8 sælgere. Fotos er fra Unsplash (Unsplash-licensen) og ligger på siden selv i `public/img` (WebP, 480/960 px, i alt ca. 2,9 MB), så ingen tredjepart får besøgendes IP-adresse. Når backend'en er klar, erstattes kataloget af rigtige data. Kort, filtre og sider er uændrede.
+Kategori- og bannerfotos er fra Unsplash (Unsplash-licensen) og ligger på siden selv i `public/img` (WebP), så ingen tredjepart får besøgendes IP-adresse. Annoncernes egne billeder ligger i Vercel Blob.
 
 ## Ydelse og lazy load
 

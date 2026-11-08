@@ -8,7 +8,9 @@ import { CategoryNav, Header } from '../components/Header';
 import { TopBar } from '../components/TopBar';
 import { Footer } from '../components/Footer';
 import { CookieBanner } from '../components/consent/CookieBanner';
-import { menuMeta } from '../lib/catalog';
+import { BottomNav } from '../components/nav/BottomNav';
+import { getMenuMeta } from '../lib/site-stats';
+import { Tracker } from '../components/Tracker';
 import { SITE_URL, SITE } from '../lib/site';
 import { DEFAULT_OG_IMAGE } from '../lib/seo';
 
@@ -36,7 +38,7 @@ export const metadata: Metadata = {
   formatDetection: { telephone: false }
 };
 
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#ffffff' };
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#ffffff' };
 
 const isServer = process.env.NEXT_PUBLIC_AUTH_ENABLED === '1';
 
@@ -44,7 +46,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   // Server-tilstand: headers() gør hver side dynamisk, så den får sin egen CSP-nonce (sat af proxy.server.ts).
   // Next læser nonce fra CSP-headeren og sætter den på sine egne scripts. Statisk eksport kalder den ikke.
   if (isServer) await headers();
-  const meta = menuMeta();
+  const meta = await getMenuMeta();
   return (
     <html lang="da" className={brandFont.variable} data-scroll-behavior="smooth">
       <body className="rs-flat flex min-h-dvh flex-col">
@@ -57,6 +59,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <CategoryNav meta={meta} />
           <main id="indhold" className="flex-1">{children}</main>
           <Footer />
+          <BottomNav />
+          <Tracker />
           <CookieBanner />
         </Providers>
       </body>

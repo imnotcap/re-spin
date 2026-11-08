@@ -10,13 +10,14 @@ export default function CookiePolicyPage() {
   return (
     <LegalPage
       title="Cookiepolitik"
-      updated="7. november 2026"
+      updated="8. november 2026"
       intro={<p>En cookie er en lille fil, som hjemmesiden gemmer i din browser. Ud over cookies kan siden gemme små oplysninger lokalt i browseren (local storage). Her er alt, Videro gemmer – og hvorfor.</p>}
       sections={[
         { id: 'kort', title: 'Kort fortalt', body: <ul>
           <li>Vi bruger kun det, der er nødvendigt for, at siden virker, og for at huske de valg, du selv træffer.</li>
           <li>Vi bruger <b>ingen</b> cookies til statistik eller markedsføring, og ingen tredjeparter sætter cookies via Videro.</li>
-          <li>Tager vi statistik eller markedsføring i brug, sker det kun, hvis du har sagt ja. Dit valg respekteres allerede nu.</li>
+          <li>Vores egen besøgsstatistik bruger hverken cookies eller lokal lagring – se <a href="/privatliv/#statistik">Statistik uden cookies</a>.</li>
+          <li>Tager vi cookies til statistik eller markedsføring i brug, sker det kun, hvis du har sagt ja. Dit valg respekteres allerede nu.</li>
         </ul> },
         { id: 'liste', title: 'Det gemmer vi', body: (
           <div className="overflow-x-auto">

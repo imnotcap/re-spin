@@ -12,6 +12,7 @@ import type { Permission } from '@respin/security';
 import { audit, requireDb, requireStaff } from './auth';
 import { MONEY_ACTIONS, decideApproval, isMoneyAction, requestMoneyAction } from './orders';
 import { handleReport, moderateListing, setUserStatus } from './people';
+import { closeReportsFor, deleteListing, moderate, recategorize, warnUser } from './listings';
 
 const str = (fd: FormData, k: string) => { const v = fd.get(k); return typeof v === 'string' ? v : ''; };
 export type ActionState = { error?: string; ok?: string; at?: number } | undefined;
@@ -102,4 +103,78 @@ export async function reportAction(fd: FormData): Promise<void> {
   const ok = await handleReport(requireDb(), id, staff.id, decision);
   if (ok) await audit({ actorType: 'staff', actorId: staff.id, action: `report.${decision}`, targetType: 'report', targetId: id, ip: staff.ip });
   revalidatePath('/moderation');
+}
+
+/* ------------------------------ Annoncer ------------------------------ */
+
+const OPS = ['approve', 'reject', 'remove', 'restore', 'to_review'] as const;
+type Op = (typeof OPS)[number];
+
+/**
+ * Moderér én annonce. Valgfrit i samme handling: giv sælgeren en advarsel og luk åbne anmeldelser af annoncen.
+ * Advarslen kræver selv rettigheden user.warn.
+ */
+export async function listingAction(fd: FormData): Promise<void> {
+  const staff = await requireStaff('listing.moderate');
+  const id = str(fd, 'listingId');
+  const op = str(fd, 'op') as Op;
+  const back = `/listings/${/^[0-9a-f-]{36}$/i.test(id) ? id : ''}`;
+  if (!OPS.includes(op)) redirect(`${back}?fejl=ukendt`);
+  const note = str(fd, 'note');
+  const db = requireDb();
+  const r = await moderate(db, staff.id, id, op, note);
+  await audit({ actorType: 'staff', actorId: staff.id, action: r.ok ? `listing.${op}` : 'listing.moderate_failed', targetType: 'listing', targetId: id, ip: staff.ip, metadata: { note: note.slice(0, 500), ...(r.ok ? {} : { error: r.error }) } });
+  if (!r.ok) redirect(`${back}?fejl=${r.error}`);
+
+  let warned = false;
+  if (fd.get('warn') === 'on' && (op === 'reject' || op === 'remove')) {
+    const w = await requireStaff('user.warn');
+    const sellerId = str(fd, 'sellerId');
+    const res = await warnUser(db, w.id, { userId: sellerId, reason: str(fd, 'warnReason') || 'other', message: note, listingId: id });
+    if (res.ok) { warned = true; await audit({ actorType: 'staff', actorId: w.id, action: 'user.warned', targetType: 'user', targetId: sellerId, ip: w.ip, metadata: { listingId: id, reason: str(fd, 'warnReason'), total: res.total } }); }
+  }
+  if (fd.get('closeReports') === 'on') {
+    const n = await closeReportsFor(db, staff.id, id, op === 'approve' || op === 'restore' ? 'dismissed' : 'actioned');
+    if (n) await audit({ actorType: 'staff', actorId: staff.id, action: 'report.closed_for_listing', targetType: 'listing', targetId: id, ip: staff.ip, metadata: { count: n } });
+  }
+  revalidatePath('/listings'); revalidatePath('/moderation'); revalidatePath(back);
+  const to = str(fd, 'back') === '/moderation' ? '/moderation' : back;
+  redirect(`${to}?ok=${op}${warned ? '&advaret=1' : ''}`);
+}
+
+export async function recategorizeAction(fd: FormData): Promise<void> {
+  const staff = await requireStaff('listing.moderate');
+  const id = str(fd, 'listingId');
+  const [category, sub] = str(fd, 'target').split('|');
+  const ok = await recategorize(requireDb(), staff.id, id, category ?? '', sub ?? '');
+  await audit({ actorType: 'staff', actorId: staff.id, action: ok ? 'listing.recategorized' : 'listing.recategorize_failed', targetType: 'listing', targetId: id, ip: staff.ip, metadata: { category, sub } });
+  revalidatePath(`/listings/${id}`);
+  redirect(`/listings/${id}?${ok ? 'ok=kategori' : 'fejl=kategori'}`);
+}
+
+/** Slet permanent – kun administratorer, og kun når "SLET" er skrevet som bekræftelse */
+export async function deleteListingAction(fd: FormData): Promise<void> {
+  const staff = await requireStaff('listing.delete');
+  const id = str(fd, 'listingId');
+  if (str(fd, 'confirm').trim().toUpperCase() !== 'SLET') redirect(`/listings/${id}?fejl=bekraeft`);
+  const reason = str(fd, 'reason').trim().slice(0, 500);
+  if (reason.length < 5) redirect(`/listings/${id}?fejl=note_required`);
+  const r = await deleteListing(requireDb(), id);
+  await audit({ actorType: 'staff', actorId: staff.id, action: r.ok ? 'listing.deleted' : 'listing.delete_failed', targetType: 'listing', targetId: id, ip: staff.ip,
+    metadata: r.ok ? { title: r.title, sellerId: r.sellerId, reason } : { error: r.error, reason } });
+  if (!r.ok) redirect(`/listings/${id}?fejl=${r.error}`);
+  revalidatePath('/listings');
+  redirect('/listings?slettet=1');
+}
+
+/* ------------------------------ Advarsler ------------------------------ */
+
+export async function warnAction(fd: FormData): Promise<void> {
+  const staff = await requireStaff('user.warn');
+  const userId = str(fd, 'userId');
+  const listingId = str(fd, 'listingId') || undefined;
+  const r = await warnUser(requireDb(), staff.id, { userId, reason: str(fd, 'reason'), message: str(fd, 'message'), listingId });
+  await audit({ actorType: 'staff', actorId: staff.id, action: r.ok ? 'user.warned' : 'user.warn_failed', targetType: 'user', targetId: userId, ip: staff.ip, metadata: { reason: str(fd, 'reason'), listingId, ...(r.ok ? { total: r.total } : {}) } });
+  revalidatePath(`/users/${userId}`);
+  redirect(`/users/${userId}?${r.ok ? `advaret=${r.total}` : 'fejl=advarsel'}`);
 }

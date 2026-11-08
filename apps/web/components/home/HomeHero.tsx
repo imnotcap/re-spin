@@ -31,7 +31,7 @@ export function HomeHero() {
           </p>
           <p className="mt-1 text-body text-muted"><T k="hero.sub" /></p>
           <div className="mt-5 flex flex-wrap gap-2">
-            <Button href="/saelg/"><T k="header.sell" /></Button>
+            <Button href="/saelg/" data-track="hero_sell"><T k="header.sell" /></Button>
             <Button href="/saadan-virker-det/" variant="outline"><T k="nav.how" /></Button>
           </div>
         </div>

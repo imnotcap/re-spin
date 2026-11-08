@@ -1,38 +1,92 @@
 'use client';
 
-import { Suspense, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 import { Button, Chip, Dropdown, EmptyState, ProductGrid } from '@respin/ui';
 import { ItemCard } from '../ItemCard';
+import { track } from '../../lib/analytics';
 import { useI18n } from '../../lib/i18n/client';
+import { CATEGORIES, type CategoryGroup, type CategorySlug } from '../../lib/categories';
 import {
   DEFAULT_FILTERS, PRICE_BUCKETS, SORTS, activeFilterCount, compareSizes, applyFilters, filtersToSearch, optionsFor, parseFilters,
-  type BrowseItem, type BrowseOptions, type Filters
+  type BrowseItem, type Filters
 } from '../../lib/browse';
+
+/** Så mange kort vises ad gangen – resten med "Vis flere" (mindre HTML og hurtigere første visning på mobil) */
+export const PAGE_SIZE = 24;
+const NO_GROUPS: readonly CategoryGroup[] = [];
 
 export interface BrowseProps {
   items: readonly BrowseItem[];
-  /** Underkategorier som chips (kategorisiden) */
-  types?: readonly string[];
+  /** Kategorisiden: sektioner og underkategorier som chips */
+  category?: CategorySlug;
   /** Vis kategorier som chips (søgning og favoritter) */
   showCategories?: boolean;
   /** Vis sælger over kortene */
   showSeller?: boolean;
+  /** Adressens søgeparametre, som serveren har læst ("?type=…"), så første HTML allerede er filtreret */
+  query: string;
+  /** Søgeordet (søgesiden): tælles i statistikken sammen med antal resultater */
+  searchQuery?: string;
 }
 
-function BrowseView({ items, opt, filters, onChange, showSeller }: { items: readonly BrowseItem[]; opt: BrowseOptions; filters: Filters; onChange: (f: Filters) => void; showSeller?: boolean }) {
+/**
+ * Liste med filtre og sortering. Filtrene står i URL'en (kan deles og overlever genindlæsning) og skrives med
+ * history.replaceState – der hentes intet fra nettet. Ingen Suspense/useSearchParams: serveren sender listen én gang.
+ */
+export function Browse({ items, category, showCategories = false, showSeller = false, query, searchQuery }: BrowseProps) {
   const { t, n: num } = useI18n();
-  const result = useMemo(() => applyFilters(items, filters), [items, filters]);
-  const active = activeFilterCount(filters);
+  const cat = category ? CATEGORIES.find((c) => c.slug === category) : undefined;
+  const groups = cat?.groups ?? NO_GROUPS;
+  const opt = useMemo(() => {
+    const o = optionsFor(items, cat?.subs ?? [], groups);
+    return showCategories ? o : { ...o, categories: [] };
+  }, [items, cat, groups, showCategories]);
+
+  const [search, setSearch] = useState(query);
+  // Statistik: søgeord og antal resultater (uden cookies) – også søgninger uden resultater, så vi ser, hvad der mangler
+  useEffect(() => { if (searchQuery) track('search', { value: searchQuery, num: items.length }); }, [searchQuery, items.length]);
+  const filters = useMemo(() => parseFilters(new URLSearchParams(search), opt, cat?.subs ?? opt.types, groups.map((g) => g.label)), [search, opt, cat, groups]);
+  const result = useMemo(() => applyFilters(items, filters, groups), [items, filters, groups]);
+  const [shown, setShown] = useState(PAGE_SIZE);
+
+  const onChange = (f: Filters) => {
+    const qs = filtersToSearch(f, new URLSearchParams(window.location.search));
+    // Native replaceState (state = null, ellers tror Next.js, det er dets eget kald)
+    window.history.replaceState(null, '', `${window.location.pathname}${qs ? `?${qs}` : ''}`);
+    setSearch(qs ? `?${qs}` : '');
+    setShown(PAGE_SIZE);
+  };
   const set = (patch: Partial<Filters>) => onChange({ ...filters, ...patch });
+  const active = activeFilterCount(filters);
   const n = result.length;
+
+  // Sektion: valgt eller den, typen hører til. Typer vises kun inden for en sektion, når kategorien har flere.
+  const group = groups.find((g) => g.label === filters.gruppe) ?? (filters.type ? groups.find((g) => g.items.includes(filters.type!)) : undefined);
+  const typeChoices = groups.length > 1 ? (group ? opt.types.filter((x) => group.items.includes(x)) : []) : opt.types;
+  const types = filters.type && !typeChoices.includes(filters.type) ? [...typeChoices, filters.type] : typeChoices;
+
+  // Ingen annoncer overhovedet (ikke bare ingen, der passer til filtrene)
+  if (items.length === 0) {
+    return (
+      <EmptyState icon={searchQuery ? 'search' : 'tag'} className="py-12"
+        title={searchQuery ? t('browse.noResults', { q: searchQuery }) : t('browse.emptyTitle')}
+        description={searchQuery ? t('browse.noResultsDesc') : t('browse.emptyDesc')}
+        action={<Button href="/saelg/ny/" icon="plus">{t('browse.emptyCta')}</Button>} />
+    );
+  }
 
   return (
     <div>
-      {(opt.types.length > 1 || (filters.type && !opt.types.includes(filters.type))) && (
-        <div role="group" aria-label={t('browse.type')} className="flex flex-wrap gap-2">
+      {opt.groups.length > 1 && (
+        <div role="group" aria-label={t('browse.section')} className="flex flex-wrap gap-2">
+          <Chip pressed={!filters.gruppe} onClick={() => set({ gruppe: undefined, type: undefined })}>{t('browse.all')}</Chip>
+          {opt.groups.map((g) => <Chip key={g} pressed={filters.gruppe === g} onClick={() => set({ gruppe: filters.gruppe === g ? undefined : g, type: undefined })}>{t(`group.${g}`, undefined, g)}</Chip>)}
+        </div>
+      )}
+      {(types.length > 1 || (filters.type && types.length > 0)) && (
+        <div role="group" aria-label={t('browse.type')} className={`flex flex-wrap gap-2 ${opt.groups.length > 1 ? 'mt-3' : ''}`}>
           <Chip pressed={!filters.type} onClick={() => set({ type: undefined })}>{t('browse.all')}</Chip>
-          {(filters.type && !opt.types.includes(filters.type) ? [...opt.types, filters.type] : opt.types).map((x) => <Chip key={x} pressed={filters.type === x} onClick={() => set({ type: filters.type === x ? undefined : x })}>{t(`sub.${x}`, undefined, x)}</Chip>)}
+          {types.map((x) => <Chip key={x} pressed={filters.type === x} onClick={() => set({ type: filters.type === x ? undefined : x })}>{t(`sub.${x}`, undefined, x)}</Chip>)}
         </div>
       )}
       {opt.categories.length > 1 && (
@@ -62,40 +116,21 @@ function BrowseView({ items, opt, filters, onChange, showSeller }: { items: read
       </div>
 
       {n > 0 ? (
-        <ProductGrid layout="responsive" className="mt-6">
-          {result.map((it) => <ItemCard key={it.id} item={it} showSeller={showSeller} />)}
-        </ProductGrid>
+        <>
+          <ProductGrid layout="responsive" className="mt-6">
+            {result.slice(0, shown).map((it) => <ItemCard key={it.id} item={it} showSeller={showSeller} />)}
+          </ProductGrid>
+          {n > shown && (
+            <div className="mt-8 flex flex-col items-center gap-3">
+              <p className="text-small text-muted">{t('browse.showing', { shown: num(shown), n: num(n) })}</p>
+              <Button variant="outline" onClick={() => setShown((s) => s + PAGE_SIZE)}>{t('browse.more')}</Button>
+            </div>
+          )}
+        </>
       ) : (
         <EmptyState icon="search" title={t('browse.none')} description={t('browse.noneDesc')} className="py-12"
           action={<Button variant="outline" onClick={() => onChange({ ...DEFAULT_FILTERS })}>{t('browse.reset')}</Button>} />
       )}
     </div>
-  );
-}
-
-function BrowseWithParams({ items, opt, types, showSeller }: { items: readonly BrowseItem[]; opt: BrowseOptions; types: readonly string[]; showSeller?: boolean }) {
-  const params = useSearchParams();
-  const filters = useMemo(() => parseFilters(new URLSearchParams(params.toString()), opt, types.length ? types : opt.types), [params, opt, types]);
-  const onChange = (f: Filters) => {
-    // Native replaceState (state = null, ellers tror Next.js, det er dets eget kald): useSearchParams synkroniseres uden at hente noget fra serveren
-    const qs = filtersToSearch(f, new URLSearchParams(window.location.search));
-    window.history.replaceState(null, '', `${window.location.pathname}${qs ? `?${qs}` : ''}`);
-  };
-  return <BrowseView items={items} opt={opt} filters={filters} onChange={onChange} showSeller={showSeller} />;
-}
-
-/**
- * Liste med filtre og sortering. Filtrene står i URL'en (kan deles og overlever genindlæsning).
- * Server-HTML'en viser alle varer med standardfiltre – samme markup som efter hydrering, så intet hopper.
- */
-export function Browse({ items, types = [], showCategories = false, showSeller = false }: BrowseProps) {
-  const opt = useMemo(() => {
-    const o = optionsFor(items, types);
-    return showCategories ? o : { ...o, categories: [] };
-  }, [items, types, showCategories]);
-  return (
-    <Suspense fallback={<BrowseView items={items} opt={opt} filters={DEFAULT_FILTERS} onChange={() => {}} showSeller={showSeller} />}>
-      <BrowseWithParams items={items} opt={opt} types={types} showSeller={showSeller} />
-    </Suspense>
   );
 }

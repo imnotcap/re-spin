@@ -7,6 +7,7 @@ import { Avatar, Button, Icon, LogoMark, Wordmark } from '@respin/ui';
 import { BASE_PATH, HELP_NAV, SITE } from '../lib/site';
 import type { MenuMeta } from '../lib/catalog';
 import { useFavorites } from '../lib/favorites';
+import { refreshMe, useMe } from '../lib/me';
 import { useI18n } from '../lib/i18n/client';
 import { LanguageMenu } from './LanguageMenu';
 import { MobileCategories } from './nav/CategoryMenu';
@@ -43,22 +44,10 @@ function SearchForm({ id, className = '' }: { id: string; className?: string }) 
 
 const AUTH = process.env.NEXT_PUBLIC_AUTH_ENABLED === '1';
 
-/** Hvem er logget ind (kun når siden kører med server). Hentes igen ved sideskift, fx efter log ind/ud. */
-function useMe(pathname: string) {
-  const [me, setMe] = useState<{ name: string } | null>(null);
-  useEffect(() => {
-    if (!AUTH) return;
-    let alive = true;
-    fetch('/api/me/', { cache: 'no-store', credentials: 'same-origin' })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: unknown) => {
-        const name = d && typeof d === 'object' && typeof (d as { name?: unknown }).name === 'string' ? (d as { name: string }).name : null;
-        if (alive) setMe(name ? { name } : null);
-      })
-      .catch(() => { if (alive) setMe(null); });
-    return () => { alive = false; };
-  }, [pathname]);
-  return me;
+/** Hvem er logget ind. Hentes igen ved sideskift, fx efter log ind/ud (delt med varekortene, se lib/me.ts). */
+function useMeOnNavigate(pathname: string) {
+  useEffect(() => { refreshMe(); }, [pathname]);
+  return useMe();
 }
 
 /** Konto-knap: samme størrelse logget ind og ud, så intet i headeren flytter sig. */
@@ -70,7 +59,7 @@ function AccountButton({ me, pathname }: { me: { name: string } | null; pathname
     <Link
       href={me ? '/konto/' : '/log-ind/'}
       aria-current={active ? 'page' : undefined}
-      className="inline-flex h-tap w-tap items-center justify-center rounded-md text-ink transition-colors hover:bg-sunken"
+      className="hidden h-tap w-tap items-center justify-center rounded-md text-ink transition-colors hover:bg-sunken md:inline-flex"
     >
       {me ? <Avatar name={me.name} size="sm" /> : <Icon name="user" size={22} />}
       <span className="sr-only">{me ? t('header.accountNamed', { name: me.name }) : t('header.login')}</span>
@@ -86,7 +75,7 @@ export function Header({ meta }: { meta: MenuMeta }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   const { count } = useFavorites();
-  const me = useMe(pathname);
+  const me = useMeOnNavigate(pathname);
 
   // Luk også menuen ved sideskift, der ikke kommer fra menuen (fx tilbage-knappen)
   useEffect(() => { setOpen(false); }, [pathname]);
@@ -112,10 +101,11 @@ export function Header({ meta }: { meta: MenuMeta }) {
         <SearchForm id={searchId} className="min-w-0 flex-1 lg:max-w-2xl" />
 
         <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+          {/* Favoritter og konto ligger i bundmenuen på mobil */}
           <Link
             href="/favoritter/"
             aria-current={pathname === '/favoritter/' ? 'page' : undefined}
-            className="relative inline-flex h-tap w-tap items-center justify-center rounded-md text-ink transition-colors hover:bg-sunken"
+            className="relative hidden h-tap w-tap items-center justify-center rounded-md text-ink transition-colors hover:bg-sunken md:inline-flex"
           >
             <span className="sr-only">{favLabel}</span>
             <Icon name="heart" size={22} />
@@ -126,7 +116,7 @@ export function Header({ meta }: { meta: MenuMeta }) {
             )}
           </Link>
           <AccountButton me={me} pathname={pathname} />
-          <Button href={AUTH ? '/saelg/ny/' : '/saelg/'} size="sm" icon="plus" className="hidden sm:inline-flex">{t('header.sell')}</Button>
+          <Button href={AUTH ? '/saelg/ny/' : '/saelg/'} size="sm" icon="plus" className="hidden md:inline-flex" data-track="header_sell">{t('header.sell')}</Button>
           <button
             ref={buttonRef}
             type="button"
@@ -142,7 +132,7 @@ export function Header({ meta }: { meta: MenuMeta }) {
       </div>
 
       <nav id={menuId} aria-label={t('menu.label')} hidden={!open} className="max-h-[calc(100dvh-64px)] overflow-y-auto border-t border-line bg-surface lg:hidden">
-        <div className="mx-auto max-w-7xl px-4 pb-6 pt-2 sm:px-6">
+        <div className="mx-auto max-w-7xl px-4 pb-24 pt-2 sm:px-6 md:pb-6">
           <h2 className="px-2 pt-3 text-caption font-bold uppercase tracking-[0.08em] text-muted">{t('menu.categories')}</h2>
           <div className="mt-1">
             {/* key: start altid på kategorilisten, når menuen åbnes */}
@@ -163,7 +153,7 @@ export function Header({ meta }: { meta: MenuMeta }) {
             <span className="text-caption font-bold uppercase tracking-[0.08em] text-muted">{t('lang.label')}</span>
             <LanguageMenu align="right" />
           </div>
-          <Button href={AUTH ? '/saelg/ny/' : '/saelg/'} full icon="plus" className="mt-4 sm:hidden" onClick={() => setOpen(false)}>{t('header.sell')}</Button>
+          <Button href={AUTH ? '/saelg/ny/' : '/saelg/'} full icon="plus" className="mt-4 md:hidden" onClick={() => setOpen(false)}>{t('header.sell')}</Button>
         </div>
       </nav>
     </header>

@@ -12,7 +12,9 @@
     "./fees": "./src/fees.ts",
     "./limits": "./src/limits.ts",
     "./order": "./src/order.ts",
-    "./promotions": "./src/promotions.ts"
+    "./promotions": "./src/promotions.ts",
+    "./taxonomy": "./src/taxonomy.ts",
+    "./badges": "./src/badges.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

@@ -33,10 +33,10 @@ describe('profilnavne', () => {
     expect(ub).toMatch(/^mette\.oersted\.\d{3,4}$/);
   });
 
-  it('reserverede navne (inkl. testversionens sælgere) bruges ikke', async () => {
-    const u = await user('sofie.vintage');
-    expect(await ensureUsername(db, u)).not.toBe('sofie.vintage');
-    expect(await updateProfile(db, u, { username: 'sofie.vintage', bio: '', banner: 'skov' })).toEqual({ ok: false, error: 'reserved' });
+  it('reserverede navne (sidens egne ord) bruges ikke', async () => {
+    const u = await user('videro');
+    expect(await ensureUsername(db, u)).not.toBe('videro');
+    expect(await updateProfile(db, u, { username: 'videro', bio: '', banner: 'skov' })).toEqual({ ok: false, error: 'reserved' });
     expect(await updateProfile(db, u, { username: 'admin', bio: '', banner: 'skov' })).toEqual({ ok: false, error: 'reserved' });
   });
 });

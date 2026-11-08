@@ -1,16 +1,8 @@
 # 08 · Sæt login i drift (Vercel + Neon + Resend)
 
-GitHub Pages kan kun vise statiske filer. Derfor har testversionen på <https://imnotcap.github.io/re-spin/> **ingen login-knap**. Login, konto, passkeys og to-trins-login kræver en server og en database. Valgene bag (Vercel Pro, Neon i EU og Resend) står i [07-tools-and-costs.md](07-tools-and-costs.md).
+Hjemmesiden (`apps/web`) kører på Vercel med login, konto, passkeys, to-trins-login og sikkerheds-headers (nonce-CSP, HSTS osv. fra `proxy.server.ts`). Valgene bag (Vercel Pro, Neon i EU og Resend) står i [07-tools-and-costs.md](07-tools-and-costs.md).
 
-Det er den samme app (`apps/web`) i begge tilfælde:
-
-| | Server-byg (`npm run build -w web`) | Statisk byg (`npm run build:static -w web`) |
-|---|---|---|
-| Hvor | Vercel (eller anden Node-host) | GitHub Pages |
-| Sider | alle offentlige sider + `/log-ind/`, `/opret-konto/`, `/glemt-adgangskode/`, `/ny-adgangskode/`, `/bekraeft-email/`, `/konto/`, `/konto/sikkerhed/`, `/api/*` | kun de offentlige sider |
-| Sikkerhed | nonce-CSP, HSTS, X-Frame-Options osv. fra `proxy.server.ts` | Pages kan ikke sætte headers |
-
-Filer, der hedder `*.server.tsx` eller `*.server.ts`, er kun med i server-bygget. Det styres af `pageExtensions` i `apps/web/next.config.mjs`.
+Den tidligere statiske udgave på GitHub Pages er lukket: adressen sender videre til videro.dk. Filer, der hedder `*.server.tsx` eller `*.server.ts`, er stadig sider og ruter (se `pageExtensions` i `apps/web/next.config.mjs`).
 
 ## 1. Database (Neon, region EU – Frankfurt)
 

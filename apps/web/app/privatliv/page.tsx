@@ -9,7 +9,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privatlivscenter"
-      updated="7. november 2026"
+      updated="8. november 2026"
       intro={<p>Her kan du læse, hvilke oplysninger Videro behandler om dig, hvorfor vi gør det, hvem vi deler dem med, og hvilke rettigheder du har. Vi indsamler så lidt som muligt og gemmer det ikke længere end nødvendigt.</p>}
       sections={[
         { id: 'dataansvarlig', title: 'Hvem er dataansvarlig', body: <>
@@ -57,6 +57,15 @@ export default function PrivacyPage() {
         { id: 'rettigheder', title: 'Dine rettigheder', body: <>
           <p>Du har ret til at få indsigt i dine oplysninger, få dem rettet eller slettet, begrænse behandlingen, gøre indsigelse og få dine data udleveret (dataportabilitet). Profilnavn, tekst om dig og banner kan du selv rette under <Link href="/konto/">Min konto</Link>.</p>
           <p>Er du utilfreds med vores behandling, kan du klage til <a href="https://www.datatilsynet.dk" rel="noopener noreferrer">Datatilsynet</a>.</p>
+        </> },
+        { id: 'statistik', title: 'Statistik uden cookies', body: <>
+          <p>For at gøre siden bedre tæller vi, hvilke sider og annoncer der bliver set, hvad der bliver søgt på, og hvilke knapper der bliver brugt. Det sker <b>uden cookies</b> og uden at gemme noget på din enhed.</p>
+          <ul>
+            <li>Vi gemmer siden, evt. annoncen, søgeordet, hvilket domæne du kom fra (fx google.com) og om du bruger mobil, tablet eller computer.</li>
+            <li>Vi gemmer <b>ikke</b> din IP-adresse, din konto eller noget, der kan følge dig fra dag til dag. Til at tælle unikke besøgende samme dag bruger vi et kodet tal, der laves med et tilfældigt nøgletal, som skiftes og slettes hver nat.</li>
+            <li>Grundlag: vores legitime interesse i at forbedre siden (GDPR art. 6, stk. 1, litra f). Oplysningerne slettes efter 13 måneder.</li>
+            <li>Har din browser slået "Global Privacy Control" eller "Do Not Track" til, tæller vi slet ikke dine besøg.</li>
+          </ul>
         </> },
         { id: 'cookies', title: 'Cookies', body: <p>Vi bruger kun det, der er nødvendigt for at siden virker. Læs mere i vores <Link href="/cookiepolitik/">cookiepolitik</Link>, og ret dit valg under <Link href="/cookieindstillinger/">cookieindstillinger</Link>.</p> }
       ]}

@@ -55,7 +55,6 @@ npm run db:dev           # lokal Postgres (PGlite) på port 5433 med alle migrat
 APP_URL=http://localhost:3000 DATABASE_URL=postgres://postgres@127.0.0.1:5433/postgres DB_POOL_MAX=1 PWNED_CHECK=off MFA_ENCRYPTION_KEY=$(openssl rand -base64 32) npm run dev:web
 # → http://localhost:3000/opret-konto/ (bekræftelseslinket skrives i serverloggen)
 ADMIN_DEV_EMAIL=dig@videro.dk ADMIN_DEV_ROLE=admin DATABASE_URL=postgres://postgres@127.0.0.1:5433/postgres DB_POOL_MAX=1 npm run dev:admin   # http://localhost:3001 (dev-login kun uden for produktion; medarbejderen skal findes i staff_users)
-npm run dev:site         # hjemmesiden uden login på http://localhost:3030 (ingen miljøvariabler – som på GitHub Pages)
 ```
 
 ## Sæt det i drift

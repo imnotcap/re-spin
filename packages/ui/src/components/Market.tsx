@@ -1,4 +1,4 @@
-import { useId, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { AppLink } from '../provider';
 import { Icon } from '../icons/Icon';
 import type { IconName } from '../icons/paths';
@@ -145,9 +145,48 @@ export interface ProductGalleryProps {
   className?: string;
 }
 
-/** Produktgalleri med miniaturer. Miniaturerne er knapper (`aria-pressed`) – virker med tastatur. */
+/**
+ * Forstørret billede i fuld skærm: <dialog> giver fokusfælde, Escape og baggrund. Pile/tastatur skifter billede,
+ * swipe virker på mobil, og klik uden for billedet lukker. Billedet hentes i fuld opløsning (srcSet, 100vw).
+ */
+function Lightbox({ images, index, onIndex, onClose }: { images: ReadonlyArray<GalleryImage>; index: number; onIndex: (i: number) => void; onClose: () => void }) {
+  const ref = useRef<HTMLDialogElement>(null);
+  const touch = useRef<number | null>(null);
+  const n = images.length;
+  const go = (d: number) => onIndex((index + d + n) % n);
+  useEffect(() => {
+    const dlg = ref.current;
+    if (dlg && !dlg.open) dlg.showModal();
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+  const img = images[index]!;
+  return (
+    <dialog ref={ref} className="rs-lightbox" aria-label={`Billede ${index + 1} af ${n}`} onClose={onClose}
+      onClick={(e) => { if (e.target === e.currentTarget || (e.target as HTMLElement).classList.contains('rs-lightbox__stage')) ref.current?.close(); }}
+      onKeyDown={(e) => { if (n > 1 && e.key === 'ArrowRight') go(1); if (n > 1 && e.key === 'ArrowLeft') go(-1); }}
+      onTouchStart={(e) => { touch.current = e.touches[0]?.clientX ?? null; }}
+      onTouchEnd={(e) => { const x = e.changedTouches[0]?.clientX; if (touch.current != null && x != null && n > 1 && Math.abs(x - touch.current) > 40) go(x < touch.current ? 1 : -1); touch.current = null; }}>
+      <div className="rs-lightbox__stage">
+        {img.src && <img key={index} src={img.src} srcSet={img.srcSet} sizes="100vw" alt={img.alt} className="rs-lightbox__img" decoding="async" />}
+      </div>
+      <button type="button" className="rs-lightbox__btn rs-lightbox__close" aria-label="Luk" onClick={() => ref.current?.close()} autoFocus><Icon name="close" size={22} /></button>
+      {n > 1 && (
+        <>
+          <button type="button" className="rs-lightbox__btn rs-lightbox__prev" aria-label="Forrige billede" onClick={() => go(-1)}><Icon name="back" size={24} /></button>
+          <button type="button" className="rs-lightbox__btn rs-lightbox__next" aria-label="Næste billede" onClick={() => go(1)}><Icon name="next" size={24} /></button>
+          <span className="rs-lightbox__count" aria-live="polite">{index + 1} / {n}</span>
+        </>
+      )}
+    </dialog>
+  );
+}
+
+/** Produktgalleri med miniaturer. Miniaturerne er knapper (`aria-pressed`) – virker med tastatur. Klik på billedet forstørrer det. */
 export function ProductGallery({ images, placeholderIcon, sizes = '(min-width: 1024px) 50vw, 100vw', className }: ProductGalleryProps) {
   const [active, setActive] = useState(0);
+  const [zoom, setZoom] = useState(false);
   const uid = useId();
   const cur = images[Math.min(active, images.length - 1)];
   if (!cur) return null;
@@ -160,7 +199,12 @@ export function ProductGallery({ images, placeholderIcon, sizes = '(min-width: 1
   return (
     <div className={cx('rs-gallery', className)}>
       <div className="rs-gallery__main" id={`${uid}-main`} aria-live="polite">
-        {tile(cur, true)}
+        {cur.src ? (
+          <button type="button" className="rs-gallery__zoom" onClick={() => setZoom(true)} aria-haspopup="dialog" aria-label={`Forstør billede: ${cur.alt}`}>
+            {tile(cur, true)}
+            <span className="rs-gallery__zoomhint" aria-hidden="true"><Icon name="search" size={18} /></span>
+          </button>
+        ) : tile(cur, true)}
         {images.length > 1 && <span className="rs-gallery__count" aria-hidden="true">{active + 1}/{images.length}</span>}
       </div>
       {images.length > 1 && (
@@ -173,6 +217,7 @@ export function ProductGallery({ images, placeholderIcon, sizes = '(min-width: 1
           ))}
         </div>
       )}
+      {zoom && <Lightbox images={images.filter((i) => i.src)} index={Math.min(active, images.filter((i) => i.src).length - 1)} onIndex={setActive} onClose={() => setZoom(false)} />}
     </div>
   );
 }

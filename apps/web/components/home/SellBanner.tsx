@@ -21,7 +21,7 @@ export function SellBanner() {
             ))}
           </ul>
           <div className="mt-7 flex flex-wrap gap-2">
-            <Button href={process.env.NEXT_PUBLIC_AUTH_ENABLED === '1' ? '/saelg/ny/' : '/saelg/'}><T k="header.sell" /></Button>
+            <Button href="/saelg/ny/" data-track="banner_sell"><T k="header.sell" /></Button>
             <Button href="/gebyrer/" variant="outline"><T k="sellBanner.calc" /></Button>
           </div>
         </div>

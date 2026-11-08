@@ -21,7 +21,7 @@ async function seller() {
 async function listing(sellerId: string, title: string) {
   const id = crypto.randomUUID();
   await saveProcessedImage(db, store, sellerId, { id, key: newImageKey(id), main: Buffer.from('m'), thumb: Buffer.from('t'), width: 800, height: 1000 });
-  const r = await createListing(db, sellerId, { title, description: '', category: 'sko', condition: 'good', priceOre: 20_000, shippingSize: 'small', imageKeys: [id] });
+  const r = await createListing(db, sellerId, { title, description: '', category: 'kvinder', condition: 'good', priceOre: 20_000, shippingSize: 'small', imageKeys: [id] });
   if (!r.ok) throw new Error(r.error);
   return r.id;
 }
