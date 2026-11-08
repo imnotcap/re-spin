@@ -18,7 +18,7 @@ export default async function ModerationPage() {
     <AdminFrame staff={staff} title="Moderation" section="moderation">
       <div className="grid gap-5 xl:grid-cols-2">
         <Panel title={`Annoncer til gennemgang (${listings.length})`} pad={listings.length === 0}>
-          {listings.length === 0 ? <EmptyState icon="check" title="Ingen annoncer venter" description="Annoncer, der nævner betaling uden om re:spin, telefonnumre eller links, havner her." className="py-6" /> : (
+          {listings.length === 0 ? <EmptyState icon="check" title="Ingen annoncer venter" description="Annoncer, der nævner betaling uden om Videro, telefonnumre eller links, havner her." className="py-6" /> : (
             <ul className="divide-y divide-line">
               {listings.map((l) => (
                 <li key={l.id} className="p-5">

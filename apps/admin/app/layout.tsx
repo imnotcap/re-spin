@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import type { ReactNode } from 'react';
 import './globals.css';
 
-export const metadata: Metadata = { title: { default: 're:spin admin', template: '%s · re:spin admin' }, robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: { default: 'Videro admin', template: '%s · Videro admin' }, robots: { index: false, follow: false } };
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   await headers(); // dynamisk rendering → ny CSP-nonce pr. request

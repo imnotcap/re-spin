@@ -1,4 +1,4 @@
-/** re:spin – design tokens som TypeScript (spejler src/styles/tokens.css). Kan bruges i server components. */
+/** Videro – design tokens som TypeScript (spejler src/styles/tokens.css). Kan bruges i server components. */
 
 export const colors = {
   forest: '#0e5a2f', forest700: '#0b4725', forest900: '#07301a',

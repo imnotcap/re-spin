@@ -1,7 +1,7 @@
 /** Fælles indhold og konfiguration for hjemmesiden */
 export const SITE = {
-  name: 're:spin',
-  title: 're:spin – køb og sælg brugt tøj, sko og boligting',
+  name: 'Videro',
+  title: 'Videro – køb og sælg brugt tøj, sko og boligting',
   description: 'Dansk markedsplads for brugt tøj, sko og boligting. Gratis at oprette annoncer, og køberbeskyttelse på alle køb.',
   /** Testversion: banneret siger, at intet er til salg endnu (siden må gerne findes i søgemaskiner) */
   isTest: true
@@ -26,11 +26,11 @@ export const HELP_NAV = [
  * siden lanceres (linkene peger ellers på profiler, I ikke ejer).
  */
 export const SOCIAL = [
-  { name: 'Instagram', icon: 'instagram', href: 'https://www.instagram.com/respin.dk/' },
-  { name: 'TikTok', icon: 'tiktok', href: 'https://www.tiktok.com/@respin.dk' },
-  { name: 'Facebook', icon: 'facebook', href: 'https://www.facebook.com/respin.dk' },
-  { name: 'LinkedIn', icon: 'linkedin', href: 'https://www.linkedin.com/company/respin-dk/' },
-  { name: 'YouTube', icon: 'youtube', href: 'https://www.youtube.com/@respin.dk' }
+  { name: 'Instagram', icon: 'instagram', href: 'https://www.instagram.com/videro.dk/' },
+  { name: 'TikTok', icon: 'tiktok', href: 'https://www.tiktok.com/@videro.dk' },
+  { name: 'Facebook', icon: 'facebook', href: 'https://www.facebook.com/videro.dk' },
+  { name: 'LinkedIn', icon: 'linkedin', href: 'https://www.linkedin.com/company/videro-dk/' },
+  { name: 'YouTube', icon: 'youtube', href: 'https://www.youtube.com/@videro.dk' }
 ] as const;
 
 /** Juridiske sider og info – footerens nederste linje */

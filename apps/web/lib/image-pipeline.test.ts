@@ -78,8 +78,8 @@ describe('billed-oprindelse til CSP', () => {
   it('kun https; ugyldige værdier ignoreres i stedet for at lægge siden ned', async () => {
     const { imageOrigin } = await import('./blob-origin');
     expect(imageOrigin({ BLOB_READ_WRITE_TOKEN: 'vercel_blob_rw_TESTSTORE_FAKEFAKE' })).toBe('https://teststore.public.blob.vercel-storage.com'); // gitleaks:allow
-    expect(imageOrigin({ BLOB_PUBLIC_BASE_URL: 'https://cdn.respin.dk/x' })).toBe('https://cdn.respin.dk');
-    for (const bad of ['http://cdn.respin.dk', 'javascript:alert(1)', 'ikke en url', "https://x.dk'; script-src *"]) expect(imageOrigin({ BLOB_PUBLIC_BASE_URL: bad })).toBeNull();
+    expect(imageOrigin({ BLOB_PUBLIC_BASE_URL: 'https://cdn.videro.dk/x' })).toBe('https://cdn.videro.dk');
+    for (const bad of ['http://cdn.videro.dk', 'javascript:alert(1)', 'ikke en url', "https://x.dk'; script-src *"]) expect(imageOrigin({ BLOB_PUBLIC_BASE_URL: bad })).toBeNull();
     expect(imageOrigin({})).toBeNull();
   });
 });

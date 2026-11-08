@@ -1,6 +1,6 @@
 # @respin/ui
 
-re:spin UI-kit til **React + TypeScript**, bygget til **Next.js (App Router)**. Samme design som det klikbare skelet i `../../app`, men som typede komponenter, tokens og forretningsregler.
+Videro UI-kit til **React + TypeScript**, bygget til **Next.js (App Router)**. Samme design som det klikbare skelet i `../../app`, men som typede komponenter, tokens og forretningsregler.
 
 - 40+ komponenter (knapper, formularer, produktkort, navigation, bundark, toasts, chat …)
 - Design tokens som CSS-variabler (`--rs-*`) **og** som TypeScript (`@respin/ui/tokens`)
@@ -132,7 +132,7 @@ const tabs = RESPIN_TABS.items.map((t) => (t.id === 'messages' ? { ...t, badge: 
 | Regel | Funktion |
 |---|---|
 | Køberbeskyttelse 5 % + 3 kr. | `buyerFee(price)`, `buyerTotal(price, shipping)` |
-| Gebyr til re:spin: 1 % (0,5 % for certificerede) | `sellerFee(price, certified)`, `sellerPayout(price, certified)` |
+| Gebyr til Videro: 1 % (0,5 % for certificerede) | `sellerFee(price, certified)`, `sellerPayout(price, certified)` |
 | Formatering | `formatKr(450)` → `450 kr.` · `formatKr(475.5)` → `475,50 kr.` (øre kun når der er nogen; hårdt mellemrum før "kr.") |
 
 Gebyrerne regnes i hele øre med samme afrunding som `@respin/core` (kilde til sandhed). En test sammenligner kittet med core for alle priser fra 1 til 100.000 kr.
@@ -173,7 +173,7 @@ Klasser (begge versioner):
 
 Gode at vide:
 
-- `rounded-sm/md/lg/xl` **overskriver** Tailwinds standard med re:spins radier (6/10/14/20 px).
+- `rounded-sm/md/lg/xl` **overskriver** Tailwinds standard med Videros radier (6/10/14/20 px).
 - Brand-farver kan bruge opacity-modifikatorer (`bg-forest/50`). I v3 er de hex-værdier, i v4 følger de CSS-variablerne.
 - Du behøver ikke `reset.css` sammen med Tailwind (preflight klarer det).
 - I v4 giver `layer(components)`, at `className="rounded-pill"` på en kit-`Button` vinder over komponentens egen radius. Uden lag-importen vil kit-CSS'en (ulagret) slå Tailwind-klasser.

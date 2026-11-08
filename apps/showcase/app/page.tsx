@@ -22,7 +22,7 @@ export default function Gallery() {
       <style>{`.g-col{width:358px;max-width:100%;display:flex;flex-direction:column;gap:12px;position:relative;padding:12px;border-radius:14px;background:var(--rs-bg);border:1px solid var(--rs-border)}`}</style>
       <Wordmark size={36} color="var(--rs-forest)" onLight />
       <Text variant="display" style={{ marginTop: 16 }}>@respin/ui</Text>
-      <Text muted style={{ marginTop: 8, maxWidth: 560 }}>UI-kit til re:spin: React + TypeScript, App Router-klar. Denne side er en server component, der blander statiske og interaktive komponenter.</Text>
+      <Text muted style={{ marginTop: 8, maxWidth: 560 }}>UI-kit til Videro: React + TypeScript, App Router-klar. Denne side er en server component, der blander statiske og interaktive komponenter.</Text>
       <div style={{ marginTop: 16 }}><Button href="/demo" iconRight="arrow">Åbn app-demo</Button></div>
 
       <Section title="Tokens (fra @respin/ui/tokens, på serveren)">

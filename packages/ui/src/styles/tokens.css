@@ -1,11 +1,11 @@
 /* ==========================================================================
-   re:spin — DESIGN TOKENS
+   Videro — DESIGN TOKENS
    Eneste sted hvor farver, typografi, afstande, radier og motion defineres.
    Alt andet (components.css, app) refererer kun til disse variabler.
    ========================================================================== */
 
 :root, .rs-theme {
-  /* ---- Brand colors (fra brand identity) ---- */
+  /* ---- Brandfarver (Videro): skovgrøn = genbrug, lime = handling, koral = hjerte/køb ---- */
   --rs-forest-900: #07301a;
   --rs-forest-700: #0b4725;
   --rs-forest:     #0e5a2f;   /* Deep Forestgrøn */
@@ -69,7 +69,7 @@
   --rs-gradient-energy: linear-gradient(100deg, #0e5a2f 0%, #0a8a78 30%, #d2ff32 62%, #ff5a5f 92%);
 
   /* ---- Typografi ---- */
-  --rs-font: var(--rs-font-brand, "Satoshi"), "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --rs-font: var(--rs-font-brand, "Schibsted Grotesk"), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --rs-fs-display: 32px;  --rs-lh-display: 36px;
   --rs-fs-h1: 26px;       --rs-lh-h1: 32px;
   --rs-fs-h2: 20px;       --rs-lh-h2: 26px;

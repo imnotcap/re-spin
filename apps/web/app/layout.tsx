@@ -11,15 +11,16 @@ import { CookieBanner } from '../components/consent/CookieBanner';
 import { menuMeta } from '../lib/catalog';
 import { SITE_URL, SITE } from '../lib/site';
 
-// Inter (variabel, latin-delsæt inkl. æ/ø/å) – selv-hostet. next/font laver en størrelsestilpasset
-// reserveskrift, så skiftet til Inter ikke flytter noget på siden (CLS 0). Delsæt (latin + æøå, vægt 400–800):
-// 27 KB i stedet for 48 KB – lavet med fonttools (pyftsubset + varLib.instancer), se app/fonts/OFL-Inter.txt.
-const inter = localFont({
-  src: './fonts/inter-latin-wght-normal.woff2',
+// Schibsted Grotesk (variabel, latin-delsæt inkl. æ/ø/å, vægt 400–800) – selv-hostet. next/font laver en
+// størrelsestilpasset reserveskrift, så skiftet til skriften ikke flytter noget på siden (CLS 0). Delsættet er 36 KB
+// (original 47 KB), lavet med fonttools (varLib.instancer + subset). Funktionen tnum (tabelfigurer) er rettet, så den
+// kun gælder cifre: i originalen gør den også punktum, komma og kolon brede ("450 kr ."). Licens: app/fonts/OFL-Schibsted-Grotesk.txt.
+const brandFont = localFont({
+  src: './fonts/schibsted-grotesk-latin-wght.woff2',
   weight: '400 800',
   style: 'normal',
   display: 'swap',
-  variable: '--font-inter'
+  variable: '--font-brand'
 });
 
 export const metadata: Metadata = {
@@ -41,7 +42,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   if (isServer) await headers();
   const meta = menuMeta();
   return (
-    <html lang="da" className={inter.variable} data-scroll-behavior="smooth">
+    <html lang="da" className={brandFont.variable} data-scroll-behavior="smooth">
       <body className="rs-flat flex min-h-dvh flex-col">
         <a href="#indhold" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-lime focus:px-4 focus:py-2 focus:font-bold">
           Spring til indhold

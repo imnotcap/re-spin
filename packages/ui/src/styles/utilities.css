@@ -1,4 +1,4 @@
-/* re:spin – typografi- og layout-hjælpere (prefix rs-) */
+/* Videro – typografi- og layout-hjælpere (prefix rs-) */
 /* Typografi-skala */
 .rs-t-display { font-size: var(--rs-fs-display); line-height: var(--rs-lh-display); font-weight: 800; letter-spacing: -.02em; }
 .rs-t-h1 { font-size: var(--rs-fs-h1); line-height: var(--rs-lh-h1); font-weight: 800; letter-spacing: -.015em; }

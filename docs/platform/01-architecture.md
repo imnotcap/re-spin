@@ -15,8 +15,8 @@
 flowchart LR
   user([Køber / sælger]) --> cf[Cloudflare<br/>DNS · WAF · DDoS · rate limit]
   staff([Medarbejder]) --> cfa[Cloudflare Access<br/>SSO + MFA + IP-regler]
-  cf --> web[apps/web<br/>respin.dk · Next.js]
-  cfa --> admin[apps/admin<br/>admin.respin.dk · Next.js]
+  cf --> web[apps/web<br/>videro.dk · Next.js]
+  cfa --> admin[apps/admin<br/>admin.videro.dk · Next.js]
   web --> db[(PostgreSQL<br/>EU-region · PITR)]
   admin --> db
   worker[worker<br/>outbox · jobs] --> db
@@ -32,13 +32,13 @@ flowchart LR
 
 | Navn | Formål | Beskyttelse |
 |---|---|---|
-| `respin.dk` (+ `www` → redirect) | Forbrugersite og app | Cloudflare WAF, rate limiting, strikt CSP |
-| `admin.respin.dk` | Medarbejdere: moderation, ordrer, refunderinger, gebyrer | **Cloudflare Access** (SSO + MFA) + IP-allowlist + app-niveau tjek + `noindex` |
-| *(senere)* `pro.respin.dk` | Dashboard for erhvervs-/certificerede sælgere | Egen app, samme adgangsmønster som web (rigtige brugere, ikke Access) |
+| `videro.dk` (+ `www` → redirect) | Forbrugersite og app | Cloudflare WAF, rate limiting, strikt CSP |
+| `admin.videro.dk` | Medarbejdere: moderation, ordrer, refunderinger, gebyrer | **Cloudflare Access** (SSO + MFA) + IP-allowlist + app-niveau tjek + `noindex` |
+| *(senere)* `pro.videro.dk` | Dashboard for erhvervs-/certificerede sælgere | Egen app, samme adgangsmønster som web (rigtige brugere, ikke Access) |
 | Separat registrerbart domæne til billeder (fx `respin-cdn.dk`) | Brugeruploadet indhold | Cookie-løst; isolerer XSS-risiko fra brugerindhold fra hoveddomænet |
-| `status.respin.dk`, `mail.respin.dk` | Statusside, afsender-domæne | SPF + DKIM + DMARC; ingen dinglende DNS-poster |
+| `status.videro.dk`, `mail.videro.dk` | Statusside, afsender-domæne | SPF + DKIM + DMARC; ingen dinglende DNS-poster |
 
-Hvert subdomæne er **sin egen app med sin egen deploy og egne cookies** (aldrig `Domain=.respin.dk`-cookies). Det er mere robust end at skille dem ad med host-baseret middleware i én app.
+Hvert subdomæne er **sin egen app med sin egen deploy og egne cookies** (aldrig `Domain=.videro.dk`-cookies). Det er mere robust end at skille dem ad med host-baseret middleware i én app.
 
 ## Teknologivalg
 

@@ -9,6 +9,6 @@ export const MACROS = [
   { id: 'kigger', label: 'Vi kigger på det', text: 'Hej {navn}\n\nTak for din besked. Vi kigger på sagen og vender tilbage hurtigst muligt – senest inden for 1-2 hverdage.' },
   { id: 'info', label: 'Brug for mere info', text: 'Hej {navn}\n\nFor at kunne hjælpe har vi brug for lidt flere oplysninger:\n\n- Ordrenummer eller link til annoncen\n- Hvad skete der, og hvornår?\n- Billeder, hvis varen er beskadiget\n\nDu kan svare direkte her.' },
   { id: 'refunderet', label: 'Refunderet', text: 'Hej {navn}\n\nVi har nu refunderet købet. Pengene går tilbage til det kort eller den konto, du betalte med, og er normalt synlige inden for 5-10 bankdage.' },
-  { id: 'svindel', label: 'Svindel – gode råd', text: 'Hej {navn}\n\nTak, fordi du sagde det til os. Betal aldrig uden om re:spin, og klik ikke på links, du får i beskeder. Vi spørger aldrig om adgangskoder eller kortoplysninger. Vi har kigget på brugeren og taget hånd om det.' },
-  { id: 'afslut', label: 'Afslutning', text: '\n\nSkriv endelig igen her, hvis der er mere, vi kan hjælpe med.\n\nVenlig hilsen\n{mig}, re:spin' }
+  { id: 'svindel', label: 'Svindel – gode råd', text: 'Hej {navn}\n\nTak, fordi du sagde det til os. Betal aldrig uden om Videro, og klik ikke på links, du får i beskeder. Vi spørger aldrig om adgangskoder eller kortoplysninger. Vi har kigget på brugeren og taget hånd om det.' },
+  { id: 'afslut', label: 'Afslutning', text: '\n\nSkriv endelig igen her, hvis der er mere, vi kan hjælpe med.\n\nVenlig hilsen\n{mig}, Videro' }
 ] as const;

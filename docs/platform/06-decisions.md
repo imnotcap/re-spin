@@ -24,7 +24,7 @@ Format: **Beslutning · Hvorfor · Alternativer · Konsekvenser · Status.** Skr
 **Status:** Besluttet · e-mail/adgangskode, passkeys (`@simplewebauthn/server`) og TOTP (egen RFC 6238-implementering, testet mod RFC-vektorer) implementeret og testet.
 
 ## ADR-004 · Admin som separat app på eget subdomæne bag Cloudflare Access
-**Beslutning:** `apps/admin` på `admin.respin.dk`; Cloudflare Access (SSO+MFA) foran; IP-allowlist som ekstra lag; appen verificerer Access-JWT og rolle **selv**, i proxy **og** i hver side.
+**Beslutning:** `apps/admin` på `admin.videro.dk`; Cloudflare Access (SSO+MFA) foran; IP-allowlist som ekstra lag; appen verificerer Access-JWT og rolle **selv**, i proxy **og** i hver side.
 **Hvorfor:** Tidlig afvisning, uafhængige cookies/CSP, mindre angrebsflade, og beskyttelse selv hvis proxy/middleware omgås (bevist i test).
 **Alternativer:** Host-baseret routing i én app (delte cookies og kode, større risiko), VPN (kan kombineres), egen login for staff (flere egne sikkerhedsfejl).
 **Konsekvenser:** Cloudflare er en afhængighed; origin skal låses til Cloudflare (ellers kan IP-header forfalskes).

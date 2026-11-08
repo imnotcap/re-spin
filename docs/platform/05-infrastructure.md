@@ -26,10 +26,10 @@
 
 | Post | Formål |
 |---|---|
-| `respin.dk`, `www` | Web (Cloudflare proxy) |
-| `admin.respin.dk` | Admin (Cloudflare proxy + Access) |
+| `videro.dk`, `www` | Web (Cloudflare proxy) |
+| `admin.videro.dk` | Admin (Cloudflare proxy + Access) |
 | Separat CDN-domæne | Brugerindhold (cookie-løst) |
-| `status.respin.dk` | Statusside |
+| `status.videro.dk` | Statusside |
 | MX/SPF/DKIM/DMARC | E-mail; DMARC `p=reject` når det er verificeret |
 | **CAA** | Kun valgte certifikatudstedere |
 | **DNSSEC** | Slået til hos registrar |
@@ -39,8 +39,8 @@
 ## Cloudflare – opsætning
 
 1. **DNS** proxied (orange sky) for web og admin.
-2. **Access-applikation for `admin.respin.dk`:** politik = specifikke e-mails/grupper via jeres identitetsudbyder, **MFA påkrævet**, sessionsvarighed kort (fx 8 t). Noter *Application Audience (AUD) tag* og team-domæne → `ACCESS_AUD`, `ACCESS_TEAM_DOMAIN`.
-3. **WAF custom rule (ekstra lag):** `host == admin.respin.dk AND ip.src NOT IN {kontor/VPN}` → Block. (Appen håndhæver også `ADMIN_IP_ALLOWLIST`.)
+2. **Access-applikation for `admin.videro.dk`:** politik = specifikke e-mails/grupper via jeres identitetsudbyder, **MFA påkrævet**, sessionsvarighed kort (fx 8 t). Noter *Application Audience (AUD) tag* og team-domæne → `ACCESS_AUD`, `ACCESS_TEAM_DOMAIN`.
+3. **WAF custom rule (ekstra lag):** `host == admin.videro.dk AND ip.src NOT IN {kontor/VPN}` → Block. (Appen håndhæver også `ADMIN_IP_ALLOWLIST`.)
 4. **Rate limiting rules:** login, tilmelding, adgangskode-reset, checkout, beskeder, søgning (sæt grænser efter `LIMITS` i `packages/security`).
 5. **Bot management / Turnstile** på tilmelding, login, annonce-oprettelse.
 6. **Origin låst til Cloudflare:** brug Cloudflare Tunnel eller Authenticated Origin Pulls / kun Cloudflares IP-intervaller, så angribere ikke kan ramme serveren direkte og omgå WAF/Access.

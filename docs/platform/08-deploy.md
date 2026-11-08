@@ -24,7 +24,7 @@ Filer, der hedder `*.server.tsx` eller `*.server.ts`, er kun med i server-bygget
 
 ## 2. Mail (Resend)
 
-1. Tilføj og verificér domænet (fx `respin.dk`) med de SPF- og DKIM-records, Resend viser. Sæt også en DMARC-record (`v=DMARC1; p=quarantine`).
+1. Tilføj og verificér domænet (fx `videro.dk`) med de SPF- og DKIM-records, Resend viser. Sæt også en DMARC-record (`v=DMARC1; p=quarantine`).
 2. Opret en API-nøgle med **kun "Sending access"** til det domæne.
 
 Appen nægter at starte i produktion med `MAIL_TRANSPORT=console`, så ingen links ender i en log.
@@ -47,10 +47,10 @@ CSP'en tillader automatisk billeder fra lagerets adresse, som udledes af tokenet
 |---|---|---|
 | `DATABASE_URL` | Neon pooler-URL for `respin_web_app` | ja |
 | `DB_POOL_MAX` | `5` | |
-| `APP_URL` | `https://respin.dk`. Skal være https. Bruges i links i mails og udledes aldrig af Host-headeren. | |
+| `APP_URL` | `https://videro.dk`. Skal være https. Bruges i links i mails og udledes aldrig af Host-headeren. | |
 | `MAIL_TRANSPORT` | `resend` | |
 | `RESEND_API_KEY` | `re_…` | ja |
-| `MAIL_FROM` | `re:spin <noreply@respin.dk>`. Skal være på det verificerede domæne. | |
+| `MAIL_FROM` | `Videro <noreply@videro.dk>`. Skal være på det verificerede domæne. | |
 | `MFA_ENCRYPTION_KEY` | `openssl rand -base64 32`. Krypterer TOTP-hemmeligheder. Gem den også i en password manager; skift den aldrig uden migrering. | ja |
 | `PWNED_CHECK` | `on` | |
 | `TRUSTED_IP_HEADER` | `x-real-ip`. Vercel sætter den selv. Brug kun `cf-connecting-ip`, hvis Vercel *kun* kan nås gennem Cloudflare. | |
@@ -78,36 +78,36 @@ Rækkefølgen ved en ny version, der kræver skemaændringer: kør migrationen f
 ## 6. Tjek efter første deploy
 
 ```bash
-curl -sI https://respin.dk/ | grep -iE 'content-security|strict-transport|x-frame|x-content-type|referrer|permissions'
+curl -sI https://videro.dk/ | grep -iE 'content-security|strict-transport|x-frame|x-content-type|referrer|permissions'
 ```
 
 ```bash
-curl -s https://respin.dk/api/health/
+curl -s https://videro.dk/api/health/
 ```
 
 - Health skal svare `{"ok":true}`.
-- `https://respin.dk/konto/` skal sende dig videre til `/log-ind/?next=%2Fkonto%2F`.
+- `https://videro.dk/konto/` skal sende dig videre til `/log-ind/?next=%2Fkonto%2F`.
 - Opret en konto, bekræft mailen og log ind. Tilføj en passkey og slå to-trins-login til under *Login og sikkerhed*.
 - Gå [go-live-checklisten i 02-security.md](02-security.md#11-go-live-checkliste-alle-skal-være-afkrydset) igennem.
 
 ## 7. Admin-panelet (medarbejdere)
 
-Admin er en selvstændig app (`apps/admin`) på sit eget domæne, fx `admin.respin.dk`. Den må aldrig kunne nås uden om Cloudflare Access.
+Admin er en selvstændig app (`apps/admin`) på sit eget domæne, fx `admin.videro.dk`. Den må aldrig kunne nås uden om Cloudflare Access.
 
-1. **Domæne og Cloudflare Access:** læg domænet bag Cloudflare, og opret en Access-applikation for `admin.respin.dk` med jeres arbejdsmails og MFA. Notér *team domain* og *AUD*.
+1. **Domæne og Cloudflare Access:** læg domænet bag Cloudflare, og opret en Access-applikation for `admin.videro.dk` med jeres arbejdsmails og MFA. Notér *team domain* og *AUD*.
 2. **Vercel:** opret et nyt projekt fra samme repo med **Root Directory = `apps/admin`**. Miljøvariabler (kun *Production*):
 
 | Variabel | Værdi |
 |---|---|
 | `DATABASE_URL` | Neon pooler-URL for en login-bruger med rollen `respin_admin` (`CREATE USER respin_admin_app LOGIN PASSWORD '…' IN ROLE respin_admin;`) |
 | `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` | fra Cloudflare Access |
-| `ADMIN_ALLOWED_HOSTS` | `admin.respin.dk` |
+| `ADMIN_ALLOWED_HOSTS` | `admin.videro.dk` |
 | `ADMIN_IP_ALLOWLIST` | kontorets/VPN'ens IP-adresser (eller `ADMIN_IP_ALLOWLIST_DISABLED=true`, hvis I kun bruger Access) |
 
 3. **Medarbejdere:** opret dem i Neons SQL-editor. Rollen afgør, hvad de må: `support` (kundeservice), `moderator` (+ moderation og spærring), `finance` (+ refundering og godkendelser), `admin` (alt).
 
 ```sql
-INSERT INTO staff_users (email, role, display_name) VALUES ('signe@respin.dk', 'admin', 'Signe');
+INSERT INTO staff_users (email, role, display_name) VALUES ('signe@videro.dk', 'admin', 'Signe');
 ```
 
 Kunden ser kun medarbejderens fornavn (`display_name`), aldrig e-mailen. Spær en medarbejder med `UPDATE staff_users SET active = false WHERE email = '…'`. Adgangen ophører med det samme.

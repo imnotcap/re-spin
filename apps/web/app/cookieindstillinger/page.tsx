@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { LegalPage } from '../../components/legal/LegalPage';
 import { CookieSettings } from '../../components/consent/CookieSettings';
 
-export const metadata: Metadata = { title: 'Cookieindstillinger', description: 'Se og ændr, hvilke cookies re:spin må bruge.' };
+export const metadata: Metadata = { title: 'Cookieindstillinger', description: 'Se og ændr, hvilke cookies Videro må bruge.' };
 
 export default function CookieSettingsPage() {
   return (

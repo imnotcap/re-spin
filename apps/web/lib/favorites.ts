@@ -7,7 +7,7 @@
  */
 import { useCallback, useSyncExternalStore } from 'react';
 
-const KEY = 'respin:favoritter';
+const KEY = 'videro:favoritter';
 const EMPTY: readonly string[] = Object.freeze([]);
 const listeners = new Set<() => void>();
 let memory: string | null = null; // reserve, hvis localStorage ikke virker

@@ -35,9 +35,9 @@ describe('køb af fremhævning', () => {
   it('ejeren får et Stripe-link; prisen kommer fra pakken; intet er aktivt før betaling', async () => {
     const me = await seller(); const id = await listing(me, 'Nike Air Max');
     const { gateway, calls } = fakeStripe();
-    const r = await startPromotion(db, me, id, '7d', { gateway, appUrl: 'https://respin.dk/', allowTestActivation: false });
+    const r = await startPromotion(db, me, id, '7d', { gateway, appUrl: 'https://videro.dk/', allowTestActivation: false });
     expect(r).toEqual({ ok: true, checkoutUrl: 'https://checkout.stripe.test/1' });
-    expect(calls[0]).toMatchObject({ amountOre: 6_900, successUrl: 'https://respin.dk/konto/annoncer/?fremhaevet=1', idempotencyKey: expect.stringMatching(/^promotion:/) });
+    expect(calls[0]).toMatchObject({ amountOre: 6_900, successUrl: 'https://videro.dk/konto/annoncer/?fremhaevet=1', idempotencyKey: expect.stringMatching(/^promotion:/) });
     const [row] = await db.select().from(schema.listingPromotions).where(eq(schema.listingPromotions.listingId, id));
     expect(row).toMatchObject({ status: 'pending', priceOre: 6_900, stripeSessionId: 'cs_1', package: '7d' });
     expect((await activePromotions(db, [id])).size).toBe(0);
@@ -45,7 +45,7 @@ describe('køb af fremhævning', () => {
 
   it('andres annoncer, ukendte pakker og ikke-aktive annoncer afvises (IDOR)', async () => {
     const me = await seller(), other = await seller(); const id = await listing(me, 'Taske');
-    const deps = { gateway: fakeStripe().gateway, appUrl: 'https://respin.dk', allowTestActivation: false };
+    const deps = { gateway: fakeStripe().gateway, appUrl: 'https://videro.dk', allowTestActivation: false };
     expect(await startPromotion(db, other, id, '1d', deps)).toEqual({ ok: false, error: 'not_found' });
     expect(await startPromotion(db, me, id, '30d', deps)).toEqual({ ok: false, error: 'invalid_package' });
     expect(await startPromotion(db, me, "x' or 1=1", '1d', deps)).toEqual({ ok: false, error: 'not_found' });
@@ -59,7 +59,7 @@ describe('køb af fremhævning', () => {
     const me = await seller();
     const old = await listing(me, 'Gammel annonce'); await listing(me, 'Ny annonce');
     expect((await listFeed(db, store, { sellerId: me }))[0]!.title).toBe('Ny annonce');
-    expect(await startPromotion(db, me, old, '1d', { gateway: null, appUrl: 'https://respin.dk', allowTestActivation: true })).toEqual({ ok: true, activated: true });
+    expect(await startPromotion(db, me, old, '1d', { gateway: null, appUrl: 'https://videro.dk', allowTestActivation: true })).toEqual({ ok: true, activated: true });
     const feed = await listFeed(db, store, { sellerId: me });
     expect(feed.map((c) => [c.title, !!c.promoted])).toEqual([['Gammel annonce', true], ['Ny annonce', false]]);
     expect((await activePromotions(db, [old])).get(old)!.getTime()).toBeGreaterThan(Date.now());

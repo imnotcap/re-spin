@@ -11,7 +11,7 @@ let db: Db, close: () => Promise<void>;
 beforeAll(async () => { ({ db, close } = await createTestDb()); });
 afterAll(async () => { await close(); });
 
-const APP = 'https://respin.dk';
+const APP = 'https://videro.dk';
 const PW = 'grøn uldjakke på loppemarked';
 const MFA_KEY = randomBytes(32).toString('base64');
 let n = 0;
@@ -79,7 +79,7 @@ describe('to-trins-login (TOTP)', () => {
     expect(await s.auth.mfa.beginTotpSetup(u.cur)).toEqual({ ok: false, error: 'reauth_required' });
     const cur = await elevated(s, u);
     const st = await s.auth.mfa.beginTotpSetup(cur); if (!st.ok) throw new Error();
-    expect(st.uri).toMatch(/^otpauth:\/\/totp\/re%3Aspin%3A/);
+    expect(st.uri).toMatch(/^otpauth:\/\/totp\/Videro%3A/);
     const [row] = await db.select().from(schema.mfaTotp).where(eq(schema.mfaTotp.userId, u.id));
     expect(row!.secretEnc).not.toContain(st.secret);
     expect(await s.auth.mfa.confirmTotpSetup(cur, '000000')).toEqual({ ok: false, error: 'invalid_code' });
@@ -164,9 +164,9 @@ describe('to-trins-login (TOTP)', () => {
 describe('passkeys (WebAuthn)', () => {
   async function withPasskey(s: S) {
     const u = await user(s); const cur = await elevated(s, u);
-    const kit = new SoftAuthenticator(APP, 'respin.dk');
+    const kit = new SoftAuthenticator(APP, 'videro.dk');
     const opt = await s.auth.passkeys.registrationOptions(cur); if (!opt.ok) throw new Error(opt.error);
-    expect(opt.options.rp.id).toBe('respin.dk');
+    expect(opt.options.rp.id).toBe('videro.dk');
     expect(opt.options.authenticatorSelection).toMatchObject({ residentKey: 'required', userVerification: 'required' });
     expect(await s.auth.passkeys.verifyRegistration(cur, kit.register(opt.options) as never, 'iPhone')).toEqual({ ok: true });
     return { u, kit };
@@ -191,12 +191,12 @@ describe('passkeys (WebAuthn)', () => {
   });
   it('phishing: svar fra et falsk domæne (origin) eller til et andet RP ID afvises', async () => {
     const s = setup(); const { u, kit } = await withPasskey(s);
-    expect(await login(s, kit, u.id, { origin: 'https://respin.dk.evil.example' })).toEqual({ ok: false, error: 'invalid_passkey' });
+    expect(await login(s, kit, u.id, { origin: 'https://videro.dk.evil.example' })).toEqual({ ok: false, error: 'invalid_passkey' });
     expect(await login(s, kit, u.id, { rpId: 'evil.example' })).toEqual({ ok: false, error: 'invalid_passkey' });
   });
   it('signatur fra en anden nøgle (forfalsket) afvises', async () => {
     const s = setup(); const { u, kit } = await withPasskey(s);
-    expect(await login(s, kit, u.id, { signWith: new SoftAuthenticator(APP, 'respin.dk') })).toEqual({ ok: false, error: 'invalid_passkey' });
+    expect(await login(s, kit, u.id, { signWith: new SoftAuthenticator(APP, 'videro.dk') })).toEqual({ ok: false, error: 'invalid_passkey' });
   });
   it('uden brugerverifikation (UV) afvises', async () => {
     const s = setup(); const { u, kit } = await withPasskey(s);
@@ -242,7 +242,7 @@ describe('passkeys (WebAuthn)', () => {
     const s = setup(); const a = await user(s); const b = await user(s);
     const ca = await elevated(s, a); const cb = await elevated(s, b);
     const opt = await s.auth.passkeys.registrationOptions(ca); if (!opt.ok) throw new Error();
-    const kit = new SoftAuthenticator(APP, 'respin.dk');
+    const kit = new SoftAuthenticator(APP, 'videro.dk');
     expect(await s.auth.passkeys.verifyRegistration(cb, kit.register(opt.options) as never, 'x')).toEqual({ ok: false, error: 'invalid_passkey' });
     const opt2 = await s.auth.passkeys.registrationOptions(ca); if (!opt2.ok) throw new Error();
     expect(await s.auth.passkeys.verifyRegistration(ca, kit.register(opt2.options, { origin: 'https://evil.example' }) as never, 'x')).toEqual({ ok: false, error: 'invalid_passkey' });

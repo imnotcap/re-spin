@@ -8,7 +8,7 @@ export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name' | 'child
   size?: number;
 }
 
-/** re:spin-ikon. Dekorativt som standard; giv `aria-label` for at gøre det meningsfuldt. */
+/** Videro-ikon. Dekorativt som standard; giv `aria-label` for at gøre det meningsfuldt. */
 export function Icon({ name, size = 24, className, 'aria-label': ariaLabel, ...rest }: IconProps) {
   return (
     <svg

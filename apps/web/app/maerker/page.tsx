@@ -6,7 +6,7 @@ import { allBrands } from '../../lib/catalog';
 
 export const metadata: Metadata = {
   title: 'Mærker A–Å',
-  description: 'Alle mærker på re:spin fra A til Å – find brugt tøj, sko, tasker og bolig fra dit yndlingsmærke.',
+  description: 'Alle mærker på Videro fra A til Å – find brugt tøj, sko, tasker og bolig fra dit yndlingsmærke.',
   alternates: { canonical: '/maerker/' }
 };
 

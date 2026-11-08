@@ -1,4 +1,4 @@
-# apps/web – re:spin hjemmeside og login
+# apps/web – Videro hjemmeside og login
 
 Markedspladsens hjemmeside med fokus på brugernes varer, som hos Vinted, og en ren, professionel opbygning i stil med store danske webshops. Testversionen ligger på GitHub Pages: <https://imnotcap.github.io/re-spin/>
 

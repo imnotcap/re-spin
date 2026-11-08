@@ -60,5 +60,5 @@ export async function MemberProfile({ name }: { name: string }) {
 
 export async function memberMetadata(name: string): Promise<Metadata> {
   const m = await memberByUsername(getDb(), name).catch(() => null);
-  return m?.username ? { title: `${m.displayName} – profil`, description: m.bio || `${m.displayName} sælger brugt tøj og ting på re:spin.`, alternates: { canonical: profilePath(m.username) } } : { title: 'Profilen findes ikke' };
+  return m?.username ? { title: `${m.displayName} – profil`, description: m.bio || `${m.displayName} sælger brugt tøj og ting på Videro.`, alternates: { canonical: profilePath(m.username) } } : { title: 'Profilen findes ikke' };
 }

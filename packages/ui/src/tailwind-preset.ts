@@ -1,5 +1,5 @@
 /**
- * re:spin Tailwind-preset (Tailwind v3).  Tailwind v4: brug i stedet `@respin/ui/tailwind.css`.
+ * Videro Tailwind-preset (Tailwind v3).  Tailwind v4: brug i stedet `@respin/ui/tailwind.css`.
  *
  *   // tailwind.config.ts
  *   import { respinPreset } from '@respin/ui/tailwind-preset';

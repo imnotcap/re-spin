@@ -6,8 +6,8 @@ import { STEPS } from '../../lib/content';
 import { T } from '../../lib/i18n/client';
 
 export const metadata: Metadata = {
-  title: 'Sælg på re:spin',
-  description: 'Det er gratis at sætte tøj, sko og boligting til salg på re:spin. Du betaler kun 1 % (0,5 % som certificeret), når varen er solgt.'
+  title: 'Sælg på Videro',
+  description: 'Det er gratis at sætte tøj, sko og boligting til salg på Videro. Du betaler kun 1 % (0,5 % som certificeret), når varen er solgt.'
 };
 
 const EXAMPLE = fromKr(300);
@@ -28,7 +28,7 @@ export default function SellPage() {
         <div>
           <h1 className="text-[32px] font-bold leading-[38px] tracking-[-0.01em] sm:text-[40px] sm:leading-[46px]">Sælg dit tøj – gratis</h1>
           <p className="mt-3 max-w-xl text-body text-muted sm:text-[17px] sm:leading-[26px]">
-            Det koster ikke noget at sætte til salg. Når varen er solgt, går 1 % til re:spin – kun 0,5 %, hvis du er certificeret sælger.
+            Det koster ikke noget at sætte til salg. Når varen er solgt, går 1 % til Videro – kun 0,5 %, hvis du er certificeret sælger.
           </p>
           {process.env.NEXT_PUBLIC_AUTH_ENABLED === '1'
             ? <Button href="/saelg/ny/" size="lg" icon="plus" className="mt-6">Sæt en vare til salg</Button>
@@ -53,7 +53,7 @@ export default function SellPage() {
             <h2 id="eksempel" className="text-h3">Eksempel: du sælger for {formatOre(EXAMPLE)}</h2>
             <PriceSummary className="mt-4" rows={[
               ['Salgspris', formatOre(EXAMPLE)],
-              ['Gebyr til re:spin (1 %)', `− ${formatOre(sellerFee(EXAMPLE, false))}`]
+              ['Gebyr til Videro (1 %)', `− ${formatOre(sellerFee(EXAMPLE, false))}`]
             ]} total={['Du får udbetalt', formatOre(sellerPayout(EXAMPLE, false))]} />
             <p className="mt-3 text-small text-muted">Som certificeret sælger (0,5 %) får du {formatOre(sellerPayout(EXAMPLE, true))} – køber betaler selv køberbeskyttelse og fragt.</p>
             <Button href="/gebyrer/" variant="outline" full className="mt-5" iconRight="arrow">Beregn din udbetaling</Button>

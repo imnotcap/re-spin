@@ -1,7 +1,7 @@
 {
   "name": "@respin/ui",
   "version": "0.1.0",
-  "description": "re:spin UI-kit: React + TypeScript komponenter og design tokens, klar til Next.js (App Router)",
+  "description": "Videro UI-kit: React + TypeScript komponenter og design tokens, klar til Next.js (App Router)",
   "type": "module",
   "sideEffects": [
     "**/*.css"

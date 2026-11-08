@@ -1,4 +1,4 @@
-/** re:spin – hjælpefunktioner og forretningsregler. Ingen React: kan bruges i server components. */
+/** Videro – hjælpefunktioner og forretningsregler. Ingen React: kan bruges i server components. */
 import type { IconName } from './icons/paths';
 
 export { ICON_NAMES } from './icons/paths';
@@ -20,7 +20,7 @@ export const formatKrDecimals = formatKr;
 
 /** Køberbeskyttelse: 5 % + 3 kr. */
 export const BUYER_PROTECTION = { rate: 0.05, fixed: 3 } as const;
-/** Gebyr til re:spin ved salg: 1 % (0,5 % for certificerede sælgere) */
+/** Gebyr til Videro ved salg: 1 % (0,5 % for certificerede sælgere) */
 export const SELLER_FEE_RATE = { standard: 0.01, certified: 0.005 } as const;
 
 /*

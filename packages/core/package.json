@@ -2,7 +2,7 @@
   "name": "@respin/core",
   "version": "0.1.0",
   "private": true,
-  "description": "re:spin dom\u00e6ne: penge, gebyrer, ordre-tilstandsmaskine, bogholderi, validering. Ingen I/O.",
+  "description": "Videro dom\u00e6ne: penge, gebyrer, ordre-tilstandsmaskine, bogholderi, validering. Ingen I/O.",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

@@ -28,7 +28,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const unread = await unreadCountForUser(getDb(), current.user.id);
   return (
     <AuthPage width="page" title="Min konto" crumbs={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Min konto' }]}>
-      {sp.welcome && <Notice icon="check" role="status">Din e-mail er bekræftet. Velkommen til re:spin!</Notice>}
+      {sp.welcome && <Notice icon="check" role="status">Din e-mail er bekræftet. Velkommen til Videro!</Notice>}
       {sp.others && <Notice icon="check" role="status">Du er logget ud på alle andre enheder.</Notice>}
 
       <div className="flex items-center gap-4">

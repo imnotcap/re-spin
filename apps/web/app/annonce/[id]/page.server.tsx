@@ -46,7 +46,7 @@ export default async function ListingPage({ params, searchParams }: Props) {
         {sp.ny && l.isOwner && <Notice icon="check" role="status"><b>Din vare er til salg.</b> Den vises nu på forsiden og i {cat.label}.</Notice>}
         {sp.gemt && l.isOwner && <Notice icon="check" role="status">Ændringerne er gemt.</Notice>}
         {l.isOwner && l.moderation === 'pending' && (
-          <Notice icon="info" warn role="status"><b>Annoncen venter på gennemgang</b>, før andre kan se den. Det sker typisk, når teksten nævner betaling uden om re:spin, telefonnumre eller links.</Notice>
+          <Notice icon="info" warn role="status"><b>Annoncen venter på gennemgang</b>, før andre kan se den. Det sker typisk, når teksten nævner betaling uden om Videro, telefonnumre eller links.</Notice>
         )}
         {l.status === 'sold' && <Notice icon="check" role="status">Denne vare er solgt.</Notice>}
       </div>
@@ -98,7 +98,7 @@ export default async function ListingPage({ params, searchParams }: Props) {
             </section>
           )}
 
-          <SellerCard className="mt-7" name={l.seller.name} href={l.sellerUsername ? profilePath(l.sellerUsername) : undefined} certified={l.seller.certified} facts={[{ icon: 'user', text: 'Medlem af re:spin' }]} />
+          <SellerCard className="mt-7" name={l.seller.name} href={l.sellerUsername ? profilePath(l.sellerUsername) : undefined} certified={l.seller.certified} facts={[{ icon: 'user', text: 'Medlem af Videro' }]} />
         </div>
       </div>
     </div>

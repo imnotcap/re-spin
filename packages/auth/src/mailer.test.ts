@@ -7,7 +7,7 @@ const ok = () => vi.fn(async () => new Response('{"id":"x"}', { status: 200 }));
 describe('ResendMailer', () => {
   it('sender én mail korrekt (Bearer-nøgle, JSON, ingen omdirigeringer, timeout)', async () => {
     const f = ok();
-    const m = new ResendMailer({ apiKey: KEY, from: 're:spin <noreply@respin.dk>', fetch: f as unknown as typeof fetch });
+    const m = new ResendMailer({ apiKey: KEY, from: 'Videro <noreply@videro.dk>', fetch: f as unknown as typeof fetch });
     await m.send({ to: 'mette@example.dk', subject: 'Bekræft din e-mail', text: 'Hej\nlink' });
     expect(f).toHaveBeenCalledTimes(1);
     const [url, init] = f.mock.calls[0] as unknown as [string, RequestInit];
@@ -16,12 +16,12 @@ describe('ResendMailer', () => {
     expect((init.headers as Record<string, string>).Authorization).toBe(`Bearer ${KEY}`);
     expect(init.redirect).toBe('error');
     expect(init.signal).toBeInstanceOf(AbortSignal);
-    expect(JSON.parse(String(init.body))).toEqual({ from: 're:spin <noreply@respin.dk>', to: ['mette@example.dk'], subject: 'Bekræft din e-mail', text: 'Hej\nlink' });
+    expect(JSON.parse(String(init.body))).toEqual({ from: 'Videro <noreply@videro.dk>', to: ['mette@example.dk'], subject: 'Bekræft din e-mail', text: 'Hej\nlink' });
   });
 
   it('afviser header-injektion og flere modtagere – uden at kalde API’et', async () => {
     const f = ok();
-    const m = new ResendMailer({ apiKey: KEY, from: 'noreply@respin.dk', fetch: f as unknown as typeof fetch });
+    const m = new ResendMailer({ apiKey: KEY, from: 'noreply@videro.dk', fetch: f as unknown as typeof fetch });
     await expect(m.send({ to: 'a@b.dk', subject: 'Hej\r\nBcc: x@evil.dk', text: '' })).rejects.toThrow('Ugyldig');
     await expect(m.send({ to: 'a@b.dk, c@d.dk', subject: 'Hej', text: '' })).rejects.toThrow('Ugyldig');
     await expect(m.send({ to: 'a@b.dk\nBcc: x@evil.dk', subject: 'Hej', text: '' })).rejects.toThrow('Ugyldig');
@@ -31,7 +31,7 @@ describe('ResendMailer', () => {
 
   it('fejl fra API’et kastes uden nøgle eller svartekst', async () => {
     const f = vi.fn(async () => new Response(`{"message":"invalid key ${KEY}"}`, { status: 401 }));
-    const m = new ResendMailer({ apiKey: KEY, from: 'noreply@respin.dk', fetch: f as unknown as typeof fetch });
+    const m = new ResendMailer({ apiKey: KEY, from: 'noreply@videro.dk', fetch: f as unknown as typeof fetch });
     const err = await m.send({ to: 'a@b.dk', subject: 'Hej', text: '' }).catch((e: Error) => e);
     expect(err).toBeInstanceOf(Error);
     expect((err as Error).message).toBe('Mail kunne ikke sendes (HTTP 401)');
@@ -40,18 +40,18 @@ describe('ResendMailer', () => {
 
   it('netværksfejl og timeout giver korte, ufarlige fejl', async () => {
     const net = vi.fn(async () => { throw new TypeError(`fetch failed ${KEY}`); });
-    const m1 = new ResendMailer({ apiKey: KEY, from: 'noreply@respin.dk', fetch: net as unknown as typeof fetch });
+    const m1 = new ResendMailer({ apiKey: KEY, from: 'noreply@videro.dk', fetch: net as unknown as typeof fetch });
     await expect(m1.send({ to: 'a@b.dk', subject: 'Hej', text: '' })).rejects.toThrow(/^Mail kunne ikke sendes \(netværk\)$/);
     const slow = vi.fn(async () => { const e = new Error('slow'); e.name = 'TimeoutError'; throw e; });
-    const m2 = new ResendMailer({ apiKey: KEY, from: 'noreply@respin.dk', fetch: slow as unknown as typeof fetch });
+    const m2 = new ResendMailer({ apiKey: KEY, from: 'noreply@videro.dk', fetch: slow as unknown as typeof fetch });
     await expect(m2.send({ to: 'a@b.dk', subject: 'Hej', text: '' })).rejects.toThrow('(timeout)');
   });
 
   it('konfiguration valideres ved opstart', () => {
-    expect(() => new ResendMailer({ apiKey: 'sk_live_123', from: 'noreply@respin.dk' })).toThrow('RESEND_API_KEY');
-    expect(() => new ResendMailer({ apiKey: KEY, from: 'noreply@respin.dk\r\nBcc: x@evil.dk' })).toThrow('MAIL_FROM');
-    expect(() => new ResendMailer({ apiKey: KEY, from: 're:spin' })).toThrow('MAIL_FROM');
-    expect(() => new ResendMailer({ apiKey: KEY, from: 're:spin <noreply@respin.dk>' })).not.toThrow();
+    expect(() => new ResendMailer({ apiKey: 'sk_live_123', from: 'noreply@videro.dk' })).toThrow('RESEND_API_KEY');
+    expect(() => new ResendMailer({ apiKey: KEY, from: 'noreply@videro.dk\r\nBcc: x@evil.dk' })).toThrow('MAIL_FROM');
+    expect(() => new ResendMailer({ apiKey: KEY, from: 'Videro' })).toThrow('MAIL_FROM');
+    expect(() => new ResendMailer({ apiKey: KEY, from: 'Videro <noreply@videro.dk>' })).not.toThrow();
   });
 
   it('adressetjek: korrekte grænser og lineær tid på ondsindet input (ReDoS)', () => {

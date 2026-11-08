@@ -52,7 +52,7 @@ export function verifyTotp(secret: Buffer, code: string, timeMs: number, lastUse
   return { ok: false };
 }
 
-export function otpauthUri(secretBase32: string, account: string, issuer = 're:spin'): string {
+export function otpauthUri(secretBase32: string, account: string, issuer = 'Videro'): string {
   const label = encodeURIComponent(`${issuer}:${account}`);
   return `otpauth://totp/${label}?secret=${secretBase32}&issuer=${encodeURIComponent(issuer)}&algorithm=SHA1&digits=6&period=${TOTP_STEP_SECONDS}`;
 }

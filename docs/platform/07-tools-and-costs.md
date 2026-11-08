@@ -86,7 +86,7 @@ Eksempel: vare til **300 kr.**, lille pakke **39 kr.**, standard EEA-kort.
 | | Beløb |
 |---|---|
 | Køber betaler | 300 + 18 (5 % + 3 kr.) + 39 = **357 kr.** |
-| re:spins gebyrer | 18 (køber) + 3 (1 % sælger) = **21 kr.** (certificeret sælger: 19,50 kr.) |
+| Videros gebyrer | 18 (køber) + 3 (1 % sælger) = **21 kr.** (certificeret sælger: 19,50 kr.) |
 | Stripe kortgebyr ⚠️ | 1,5 % af 357 + 1,80 = **≈ 7,16 kr.** (premium-kort ≈ 8,58 kr.) |
 | Connect-gebyrer (overførsel/aktiv konto) | **ukendt for DK – spørg Stripe** |
 | Fragt | 39 kr. ind, labelpris ud (forskellen er gevinst eller tab) |
@@ -137,7 +137,7 @@ Konklusioner:
 | Apple Developer Program (fase 4) | $99/år |
 | Google Play-konto (fase 4) | $25 én gang |
 | MitID via Criipto | 1.200 kr. opstart |
-| Domæner (`respin.dk` + CDN-domæne) | lille årligt beløb – tjek registrar |
+| Domæner (`videro.dk` + CDN-domæne) | lille årligt beløb – tjek registrar |
 | Penetrationstest før lancering, jurist, revisor | **indhent tilbud** – budgettér dem som de største engangsposter |
 
 ### Et advarende eksempel på leverandørrisiko

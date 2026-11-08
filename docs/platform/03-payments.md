@@ -7,7 +7,7 @@ Alt her er implementeret i `packages/core` (regler), `packages/db` (invarianter)
 | Regel | Værdi | Kode |
 |---|---|---|
 | Køberbeskyttelse | 5 % + 3 kr. af varens pris | `buyerProtectionFee` |
-| Gebyr til re:spin ved salg | 1 % (0,5 % for certificerede sælgere) | `sellerFee` |
+| Gebyr til Videro ved salg | 1 % (0,5 % for certificerede sælgere) | `sellerFee` |
 | Fragt | Fast pris pr. pakkestørrelse, bestemt af serveren | `SHIPPING_PRICE_ORE` |
 | Beløb | Heltal i øre, aldrig kr. med decimaler; loft 1.000.000 kr. pr. beløb, 100.000 kr. pr. annonce | `money.ts`, DB-`CHECK` |
 | Afrunding | Half-up til hele øre | `percentOf` |

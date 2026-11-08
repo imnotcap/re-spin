@@ -3,7 +3,7 @@ import { add, ore, percentOf, sub, type Ore } from './money';
 /**
  * Gebyrer (kilde til sandhed – UI'et viser kun resultatet).
  *  - Køber: køberbeskyttelse 5 % + 3 kr.
- *  - Sælger: 1 % til re:spin, 0,5 % for certificerede sælgere
+ *  - Sælger: 1 % til Videro, 0,5 % for certificerede sælgere
  */
 export const BUYER_PROTECTION_BPS = 500;
 export const BUYER_PROTECTION_FIXED: Ore = ore(300);

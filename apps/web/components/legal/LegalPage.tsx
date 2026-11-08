@@ -22,7 +22,7 @@ export function LegalPage({ title, intro, updated, sections, draft = true, child
           <h1 className="text-[32px] font-bold leading-[38px] tracking-[-0.01em]">{title}</h1>
           <p className="mt-1 text-small text-muted">Senest opdateret {updated}</p>
           <div className="mt-4 text-body text-slate-700 sm:text-[17px] sm:leading-[27px]">{intro}</div>
-          {draft && <Notice icon="info" warn className="mt-5">Testversion: teksten er et udkast og skal gennemgås af en jurist, før re:spin åbner for rigtige handler.</Notice>}
+          {draft && <Notice icon="info" warn className="mt-5">Testversion: teksten er et udkast og skal gennemgås af en jurist, før Videro åbner for rigtige handler.</Notice>}
           {children}
           {sections.map((s) => (
             <section key={s.id} id={s.id} aria-labelledby={`${s.id}-t`} className="mt-10 scroll-mt-28">

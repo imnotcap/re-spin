@@ -79,7 +79,7 @@ Dedikeret søgemaskine, læse-replika, partitionering af store tabeller, udskiln
 | 1 | Virksomhedsform/CVR og ansvarlig for persondata | Opret selskab (fx ApS) før rigtige penge/brugere | Stripe-konto, vilkår |
 | 2 | Stripe-konto + godkendelse til Connect-markedsplads | Ansøg tidligt – godkendelse kan tage tid | Fase 2 |
 | 3 | Pengemodel (separate charges and transfers) kontra alternativer | Afklar med Stripe + jurist nu | Fase 2 |
-| 4 | Domænenavn (`respin.dk`?) og separat CDN-domæne | Registrér begge; slå registrar-lås og 2FA til | Subdomæner, Access |
+| 4 | Domænenavn (`videro.dk`?) og separat CDN-domæne | Registrér begge; slå registrar-lås og 2FA til | Subdomæner, Access |
 | 5 | Mailudbyder (transaktionel, EU, DKIM) | Vælg en med EU-datacenter og databehandleraftale | Login i produktion |
 | 6 | MitID-formidler (til certificering/KYC) | Udvælg efter pris/dækning; ikke nødvendigt før certificering | Certificering |
 | 7 | Hosting og budget (Vercel + managed Postgres i EU?) | Start enkelt; hold data i EU | Fase 1 |
