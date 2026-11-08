@@ -6,6 +6,7 @@ import { MemoryImageStore, newImageKey } from './image-store';
 import { createListing, listFeed, listForBrowse, myListings, ownListingIds, saveProcessedImage, siteStats, warningsFor } from './listings';
 import { BOT, deviceOf, eventInput, recordEvent, visitorHash } from './analytics-server';
 import { reportListing } from './report';
+import { badgesFor } from './badges';
 
 let db: Db, close: () => Promise<void>;
 const store = new MemoryImageStore();
@@ -108,5 +109,22 @@ describe('statistik uden cookies', () => {
     const [salt] = await db.select().from(schema.analyticsSalts);
     expect(e!.visitor).toBe(visitorHash(salt!.salt, '203.0.113.7', 'Mozilla/5.0 (iPhone)'));
     expect(visitorHash('andet-salt', '203.0.113.7', 'Mozilla/5.0 (iPhone)')).not.toBe(e!.visitor);
+  });
+});
+
+describe('badges', () => {
+  it('beregnes ud fra annoncer, salg, kategorier, sikkerhed og profil', async () => {
+    const me = await user();
+    const earned = async () => (await badgesFor(db, me)).filter((b) => b.earned).map((b) => b.id);
+    expect(await earned()).toEqual(['pioneer']); // oprettet før juli 2027
+    const a = await listing(me);
+    await listing(me, { category: 'hjem', subcategory: 'Gulvlamper' });
+    await listing(me, { category: 'underholdning', subcategory: 'Vinylplader' });
+    await db.update(schema.listings).set({ status: 'sold' }).where(eq(schema.listings.id, a));
+    await db.update(schema.users).set({ username: `bruger${n}`, bio: 'Sælger brugt.', profileBanner: 'skov' }).where(eq(schema.users.id, me));
+    await db.insert(schema.mfaTotp).values({ userId: me, secretEnc: 'x', enabledAt: new Date() } as typeof schema.mfaTotp.$inferInsert);
+    expect(await earned()).toEqual(['first_listing', 'first_sale', 'secure', 'profile', 'variety', 'pioneer']);
+    const s10 = (await badgesFor(db, me)).find((b) => b.id === 'seller_10')!;
+    expect(s10).toMatchObject({ earned: false, progress: 3, goal: 10 });
   });
 });

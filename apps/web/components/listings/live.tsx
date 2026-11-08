@@ -13,6 +13,8 @@ import { ProfileHeader, ProfileTabs, ReviewsPanel } from '../profile/ProfileView
 import { Breadcrumbs } from '@respin/ui';
 import { T } from '../../lib/i18n/client';
 import { pageMetadata } from '../../lib/seo';
+import { badgesFor } from '../../lib/badges';
+import { BadgeList, BadgeStrip } from '../badges/BadgeList';
 
 export interface LiveSectionProps { title: import('react').ReactNode; category?: string; limit?: number; id: string; className?: string }
 
@@ -35,12 +37,16 @@ export async function LiveSection({ title, category, limit = 12, id, className }
 export async function MemberProfile({ name }: { name: string }) {
   const m = await memberByUsername(getDb(), name).catch(() => null);
   if (!m || !m.username) return null;
-  const items = await listFeed(getDb(), getImageStore(), { sellerId: m.id, limit: 48 }).catch(() => []);
+  const [items, badges] = await Promise.all([
+    listFeed(getDb(), getImageStore(), { sellerId: m.id, limit: 48 }).catch(() => []),
+    badgesFor(getDb(), m.id).catch(() => [])
+  ]);
+  const earned = badges.filter((b) => b.earned).length;
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
       <Breadcrumbs items={[{ label: <T k="crumb.home" />, href: '/' }, { label: m.displayName }]} />
       <ProfileHeader
-        name={m.displayName} handle={m.username} banner={bannerById(m.banner)} sharePath={profilePath(m.username)}
+        name={m.displayName} handle={m.username} banner={bannerById(m.banner)} sharePath={profilePath(m.username)} certified={badges.some((b) => b.id === 'certified' && b.earned)}
         bio={m.bio ?? undefined}
         facts={[
           { icon: 'tag', label: <T k="profile.forSale" />, value: items.length },
@@ -49,10 +55,12 @@ export async function MemberProfile({ name }: { name: string }) {
           { icon: 'star', label: <T k="profile.reviews" />, value: 0 }
         ]}
       />
+      <div className="mt-4"><BadgeStrip badges={badges} /></div>
       <ProfileTabs tabs={[
         { id: 'til-salg', label: <T k="profile.forSale" />, count: items.length, panel: items.length
           ? <ProductGrid layout="responsive">{items.map((l) => <ItemCard key={l.id} item={listingToCard(l)} />)}</ProductGrid>
           : <p className="text-body text-muted"><T k="profile.noItems" /></p> },
+        { id: 'badges', label: <T k="profile.badges" />, count: earned, panel: <BadgeList badges={badges} /> },
         { id: 'anmeldelser', label: <T k="profile.reviews" />, count: 0, panel: <ReviewsPanel name={m.displayName} rating={0} count={0} distribution={[0, 0, 0, 0, 0]} reviews={[]} /> }
       ]} />
     </div>

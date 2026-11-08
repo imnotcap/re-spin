@@ -13,7 +13,8 @@
     "./limits": "./src/limits.ts",
     "./order": "./src/order.ts",
     "./promotions": "./src/promotions.ts",
-    "./taxonomy": "./src/taxonomy.ts"
+    "./taxonomy": "./src/taxonomy.ts",
+    "./badges": "./src/badges.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

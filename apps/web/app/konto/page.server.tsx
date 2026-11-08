@@ -13,6 +13,8 @@ import { BASE_PATH } from '../../lib/site';
 import { ProfileForm } from '../../components/profile/ProfileForm';
 import { unreadCountForUser } from '@respin/support';
 import { warningsFor } from '../../lib/listings';
+import { badgesFor } from '../../lib/badges';
+import { BadgeList } from '../../components/badges/BadgeList';
 
 export const metadata = { title: 'Min konto' };
 
@@ -28,6 +30,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const profile = await profileFor(getDb(), current.user.id);
   const unread = await unreadCountForUser(getDb(), current.user.id);
   const warnings = await warningsFor(getDb(), current.user.id).catch(() => []);
+  const badges = await badgesFor(getDb(), current.user.id).catch(() => []);
   return (
     <AuthPage width="page" title="Min konto" crumbs={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Min konto' }]}>
       {sp.welcome && <Notice icon="check" role="status">Din e-mail er bekræftet. Velkommen til Videro!</Notice>}
@@ -69,6 +72,16 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           <ProfileForm username={username} bio={profile?.bio ?? ''} banner={isBannerId(profile?.banner) ? profile.banner : DEFAULT_BANNER} />
         </div>
       </section>
+
+      {badges.length > 0 && (
+        <section aria-labelledby="badges" className="rounded-lg border border-line p-5">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="badges" className={h2}>Dine badges</h2>
+            <span className="text-small text-muted">{badges.filter((b) => b.earned).length} af {badges.length} låst op · de optjente vises på din profil</span>
+          </div>
+          <div className="mt-4"><BadgeList badges={badges} showLocked /></div>
+        </section>
+      )}
 
       <Link href="/konto/annoncer/" className="flex items-center gap-4 rounded-lg border border-line p-4 transition-colors hover:border-slate">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-100 text-forest"><Icon name="tag" size={20} /></span>
