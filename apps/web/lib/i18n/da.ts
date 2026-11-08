@@ -9,7 +9,6 @@ const da = {
   'top.shortcuts': 'Genveje',
   'nav.how': 'Sådan virker det',
   'nav.protection': 'Køberbeskyttelse',
-  'nav.fees': 'Gebyrer',
   'nav.faq': 'Spørgsmål og svar',
   'header.home': '{name} – forsiden',
   'header.searchLabel': 'Søg efter varer og mærker',

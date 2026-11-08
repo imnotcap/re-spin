@@ -216,8 +216,10 @@ export function CategoryTile({ icon, label, href, count, variant = 'icon', image
   if (variant === 'photo') {
     return (
       <AppLink href={href} className="rs-catphoto">
+        {/* Sløret foto som baggrund (lille billede er nok – det er sløret) og kategoriens ikon i en hvid cirkel ovenpå */}
         <span className="rs-catphoto__img">
-          {imageSrc ? <img src={imageSrc} srcSet={imageSrcSet} sizes={imageSrcSet ? imageSizes : undefined} alt="" loading="lazy" decoding="async" width={240} height={240} /> : <Icon name={icon} size={40} />}
+          {imageSrc && <img src={imageSrc} srcSet={imageSrcSet} sizes={imageSrcSet ? imageSizes : undefined} alt="" loading="lazy" decoding="async" width={240} height={240} />}
+          <span className="rs-catphoto__icon"><Icon name={icon} size={28} /></span>
         </span>
         <span className="rs-catphoto__label">{label}</span>
         {count !== undefined && <span className="rs-catphoto__count">{count.toLocaleString('da-DK')} {count === 1 ? 'vare' : 'varer'}</span>}

@@ -19,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...CATEGORIES.map((c) => u(`/kategori/${c.slug}/`, 0.9, 'daily')),
     ...live.listings.map((l) => u(`/annonce/${l.id}/`, 0.7, 'weekly', l.updatedAt)),
     ...live.profiles.map((name) => u(profilePath(name), 0.5)),
-    ...['/saelg/', '/saadan-virker-det/', '/sikkerhed/', '/gebyrer/'].map((p) => u(p, 0.6, 'monthly')),
+    ...['/saelg/', '/saadan-virker-det/', '/sikkerhed/'].map((p) => u(p, 0.6, 'monthly')),
     ...['/om/', '/privatliv/', '/cookiepolitik/', '/vilkaar/'].map((p) => u(p, 0.3, 'monthly')),
     u('/maerker/', 0.5, 'weekly')
   ];

@@ -58,7 +58,7 @@ export const users = pgTable('users', {
 
 export const sellerProfiles = pgTable('seller_profiles', {
   userId: uuid('user_id').primaryKey().references(() => users.id, { onDelete: 'restrict' }),
-  /** Certificeret sælger → 0,5 % gebyr. Sættes kun af systemet/staff, aldrig af brugeren. */
+  /** Certificeret sælger → billigere fremhævning. Sættes kun af systemet/staff, aldrig af brugeren. */
   certified: boolean('certified').notNull().default(false),
   certifiedAt: ts('certified_at'),
   stripeAccountId: text('stripe_account_id').unique(),
@@ -113,12 +113,17 @@ export const listingImages = pgTable('listing_images', {
   createdAt: createdAt()
 }, (t) => [check('listing_images_type', sql`${t.contentType} IN ('image/jpeg','image/png','image/webp')`), check('listing_images_size', sql`${t.bytes} BETWEEN 1 AND 15728640`)]);
 
-/** Købt fremhævning af en annonce. Aktiv, når den er betalt og nu ligger mellem starts_at og ends_at. */
+/**
+ * Købt fremhævning af en annonce (kind = 'listing') eller af sælgerens profil (kind = 'profile', listing_id er null).
+ * Aktiv, når den er betalt og nu ligger mellem starts_at og ends_at.
+ */
 export const promotionPackage = pgEnum('promotion_package', ['1d', '3d', '7d']);
+export const promotionKind = pgEnum('promotion_kind', ['listing', 'profile']);
 export const promotionStatus = pgEnum('promotion_status', ['pending', 'paid', 'cancelled']);
 export const listingPromotions = pgTable('listing_promotions', {
   id: id(),
-  listingId: uuid('listing_id').notNull().references(() => listings.id, { onDelete: 'cascade' }),
+  kind: promotionKind('kind').notNull().default('listing'),
+  listingId: uuid('listing_id').references(() => listings.id, { onDelete: 'cascade' }),
   sellerId: uuid('seller_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
   package: promotionPackage('package').notNull(),
   /** Pris fastfrosset ved køb */
@@ -132,7 +137,9 @@ export const listingPromotions = pgTable('listing_promotions', {
 }, (t) => [
   check('promotions_price_positive', sql`${t.priceOre} > 0`),
   check('promotions_paid_has_period', sql`${t.status} <> 'paid' OR (${t.startsAt} IS NOT NULL AND ${t.endsAt} > ${t.startsAt})`),
-  index('promotions_active_idx').on(t.listingId, t.endsAt)
+  check('promotions_kind_target', sql`(${t.kind} = 'listing') = (${t.listingId} IS NOT NULL)`),
+  index('promotions_active_idx').on(t.listingId, t.endsAt),
+  index('promotions_profile_idx').on(t.sellerId, t.endsAt).where(sql`${t.kind} = 'profile'`)
 ]);
 
 export const favorites = pgTable('favorites', {

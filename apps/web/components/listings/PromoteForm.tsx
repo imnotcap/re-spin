@@ -4,30 +4,43 @@ import { startTransition, useActionState, useEffect, type FormEvent } from 'reac
 import { useRouter } from 'next/navigation';
 import { Button, Notice, OptionCard } from '@respin/ui';
 import { formatOre, ore } from '@respin/core/money';
-import { PROMOTION_PACKAGES } from '../../lib/promotion-packages';
+import { promotionPackages, promotionPrice, type PromotionKind } from '@respin/core/promotions';
 import { promoteAction, type PromoteState } from '../../lib/promotion-actions';
 
-/** Vælg pakke → betal hos Stripe (eller aktivér med det samme i testtilstand) */
-export function PromoteForm({ listingId, testMode }: { listingId: string; testMode: boolean }) {
+const WHAT: Record<PromotionKind, string> = {
+  listing: 'Øverst i feed og kategori med mærket «Fremhævet»',
+  profile: 'Vist under «Fremhævede sælgere» på forsiden'
+};
+
+/**
+ * Vælg pakke → betal hos Stripe (eller aktivér med det samme i testtilstand). Priserne vises her, men serveren
+ * vælger altid selv prisen ud fra pakken og om sælgeren er certificeret.
+ */
+export function PromoteForm({ kind = 'listing', listingId, certified, testMode }: { kind?: PromotionKind; listingId?: string; certified: boolean; testMode: boolean }) {
   const [state, action, pending] = useActionState<PromoteState, FormData>(promoteAction, undefined);
   const router = useRouter();
+  const done = kind === 'profile' ? '/konto/?profil_fremhaevet=1' : '/konto/annoncer/?fremhaevet=1';
   useEffect(() => {
     if (state?.checkoutUrl && /^https:\/\/checkout\.stripe\.com\//.test(state.checkoutUrl)) window.location.assign(state.checkoutUrl);
-    else if (state?.activated) router.push('/konto/annoncer/?fremhaevet=1');
-  }, [state, router]);
+    else if (state?.activated) router.push(done);
+  }, [state, router, done]);
   const submit = (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); const fd = new FormData(e.currentTarget); startTransition(() => action(fd)); };
   const busy = pending || !!state?.checkoutUrl || !!state?.activated;
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
-      <input type="hidden" name="listingId" value={listingId} />
+      <input type="hidden" name="kind" value={kind} />
+      {listingId && <input type="hidden" name="listingId" value={listingId} />}
       {state?.error && <Notice icon="info" warn role="alert">{state.error}</Notice>}
+      {certified && <Notice icon="check">Du er certificeret sælger og får fremhævning til nedsat pris.</Notice>}
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-2 text-h3">Vælg periode</legend>
-        {PROMOTION_PACKAGES.map((p) => (
+        {promotionPackages(kind).map((p) => (
           <OptionCard key={p.id} name="package" value={p.id} defaultChecked={!!p.popular} required
             title={`${p.label}${p.popular ? ' · mest valgt' : ''}`}
-            description={`Øverst i feed og kategori med mærket «Fremhævet» i ${p.days === 1 ? '24 timer' : `${p.days} dage`}`}
-            right={formatOre(ore(p.priceOre))} />
+            description={`${WHAT[kind]} i ${p.days === 1 ? '24 timer' : `${p.days} dage`}`}
+            right={certified
+              ? <span className="text-right"><s className="block text-caption font-normal text-muted">{formatOre(ore(p.priceOre))}</s>{formatOre(ore(promotionPrice(p, true)))}</span>
+              : formatOre(ore(p.priceOre))} />
         ))}
       </fieldset>
       <p className="text-small text-muted">Perioden starter, når betalingen er gennemført. Kører der allerede en fremhævning, lægges den nye i forlængelse. Når perioden er startet, refunderes den ikke.</p>

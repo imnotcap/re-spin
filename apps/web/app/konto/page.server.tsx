@@ -16,6 +16,7 @@ import { warningsFor } from '../../lib/listings';
 import { badgesFor } from '../../lib/badges';
 import { BadgeList } from '../../components/badges/BadgeList';
 import { unreadConversations } from '../../lib/conversations';
+import { activeProfilePromotion } from '../../lib/promotions';
 
 export const metadata = { title: 'Min konto' };
 
@@ -23,7 +24,7 @@ const fmt = (d: Date) => d.toLocaleString('da-DK', { dateStyle: 'medium', timeSt
 const device = (ua: string | null) => (ua ? (/(iPhone|iPad|Android|Macintosh|Windows|Linux)/.exec(ua)?.[1] ?? 'Ukendt enhed') : 'Ukendt enhed');
 const h2 = 'text-[20px] font-bold leading-[26px]';
 
-export default async function AccountPage({ searchParams }: { searchParams: Promise<{ welcome?: string; others?: string }> }) {
+export default async function AccountPage({ searchParams }: { searchParams: Promise<{ welcome?: string; others?: string; profil_fremhaevet?: string }> }) {
   const current = await requireSession('/konto/');
   const sp = await searchParams;
   const list = await getAuth().listSessions(current.user.id);
@@ -33,10 +34,12 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const warnings = await warningsFor(getDb(), current.user.id).catch(() => []);
   const badges = await badgesFor(getDb(), current.user.id).catch(() => []);
   const unreadChats = await unreadConversations(getDb(), current.user.id).catch(() => 0);
+  const profilePromoted = await activeProfilePromotion(getDb(), current.user.id).catch(() => null);
   return (
     <AuthPage width="page" title="Min konto" crumbs={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Min konto' }]}>
       {sp.welcome && <Notice icon="check" role="status">Din e-mail er bekræftet. Velkommen til Videro!</Notice>}
       {sp.others && <Notice icon="check" role="status">Du er logget ud på alle andre enheder.</Notice>}
+      {sp.profil_fremhaevet && <Notice icon="check" role="status">Din profil er fremhævet. Den vises nu under «Fremhævede sælgere» på forsiden.</Notice>}
 
       {warnings.length > 0 && (
         <section aria-labelledby="advarsler" className={`rounded-lg border p-5 ${warnings.some((w) => w.isNew) ? 'border-red-300 bg-red-50' : 'border-line'}`}>
@@ -102,6 +105,15 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         <span className="min-w-0 flex-1">
           <span className="block font-semibold">Mine annoncer</span>
           <span className="block text-small text-muted">Sæt til salg, redigér, markér som solgt</span>
+        </span>
+        <Icon name="next" size={20} className="text-muted" />
+      </Link>
+
+      <Link href="/konto/fremhaev-profil/" className="flex items-center gap-4 rounded-lg border border-line p-4 transition-colors hover:border-slate">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-100 text-forest"><Icon name="sparkle" size={20} /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">Fremhæv din profil</span>
+          <span className="block text-small text-muted">{profilePromoted ? `Fremhævet til ${profilePromoted.toLocaleDateString('da-DK', { day: 'numeric', month: 'long', timeZone: 'Europe/Copenhagen' })}` : 'Bliv vist under «Fremhævede sælgere» på forsiden'}</span>
         </span>
         <Icon name="next" size={20} className="text-muted" />
       </Link>

@@ -6,7 +6,6 @@ const sv: Messages = {
   'top.shortcuts': 'Genvägar',
   'nav.how': 'Så fungerar det',
   'nav.protection': 'Köparskydd',
-  'nav.fees': 'Avgifter',
   'nav.faq': 'Frågor och svar',
   'header.home': '{name} – startsidan',
   'header.searchLabel': 'Sök efter varor och märken',

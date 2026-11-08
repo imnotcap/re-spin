@@ -22,7 +22,7 @@ export function SellBanner() {
           </ul>
           <div className="mt-7 flex flex-wrap gap-2">
             <Button href="/saelg/ny/" data-track="banner_sell"><T k="header.sell" /></Button>
-            <Button href="/gebyrer/" variant="outline"><T k="sellBanner.calc" /></Button>
+            <Button href="/saadan-virker-det/#gebyrer" variant="outline"><T k="sellBanner.calc" /></Button>
           </div>
         </div>
       </div>

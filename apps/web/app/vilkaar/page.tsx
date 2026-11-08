@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { pageMetadata } from '../../lib/seo';
 import Link from 'next/link';
 import { LegalPage } from '../../components/legal/LegalPage';
-import { PROMOTION_PACKAGES } from '../../lib/promotion-packages';
+import { PROFILE_PROMOTION_PACKAGES, PROMOTION_PACKAGES } from '@respin/core/promotions';
 import { formatOre, ore } from '@respin/core/money';
 
 export const metadata: Metadata = pageMetadata({ title: 'Vilkår og betingelser', description: 'Vilkårene for at købe og sælge på Videro: konto, annoncer, gebyrer, køberbeskyttelse og fremhævning.', path: '/vilkaar/' });
@@ -26,12 +26,14 @@ export default function TermsPage() {
           <li>Du giver Videro ret til at vise dine annoncer og billeder på platformen, så længe annoncen er aktiv.</li>
         </ul> },
         { id: 'gebyrer', title: '3. Gebyrer', body: <>
-          <p>Det er gratis at sætte til salg, og Videro tager 0 % i kommission: sælgeren får hele salgsprisen. Fremhævning af annoncer er valgfri og betales på forhånd. Køberen betaler køberbeskyttelse (5 % + 3 kr.) og fragt. Alle priser vises, før du køber. Se <Link href="/gebyrer/">gebyrer</Link>.</p>
+          <p>Det er gratis at sætte til salg, og Videro tager 0 % i kommission: sælgeren får hele salgsprisen. Fremhævning af annoncer er valgfri og betales på forhånd. Køberen betaler køberbeskyttelse (5 % + 3 kr.) og fragt. Alle priser vises, før du køber. Se <Link href="/saadan-virker-det/#gebyrer">gebyrer</Link>.</p>
         </> },
         { id: 'beskyttelse', title: '4. Køberbeskyttelse', body: <p>Pengene holdes, til køberen har modtaget varen. Er varen ikke som beskrevet, kan køberen inden for 48 timer efter levering melde det, og vi hjælper med at finde en løsning, herunder returnering og refusion. Læs mere under <Link href="/sikkerhed/">køberbeskyttelse</Link>.</p> },
-        { id: 'fremhaevning', title: '5. Fremhævning af annoncer', body: <>
-          <p>Du kan købe fremhævning af din egen annonce, så den vises øverst og med mærket «Fremhævet» i en periode:</p>
-          <ul>{PROMOTION_PACKAGES.map((p) => <li key={p.id}>{p.label}: {formatOre(ore(p.priceOre))}</li>)}</ul>
+        { id: 'fremhaevning', title: '5. Fremhævning af annoncer og profiler', body: <>
+          <p>Du kan købe fremhævning af din egen annonce, så den vises øverst og med mærket «Fremhævet» i en periode. Certificerede sælgere betaler den lave pris:</p>
+          <ul>{PROMOTION_PACKAGES.map((p) => <li key={p.id}>{p.label}: {formatOre(ore(p.priceOre))} (certificeret: {formatOre(ore(p.certifiedPriceOre))})</li>)}</ul>
+          <p>Du kan også fremhæve din profil, så du vises under «Fremhævede sælgere» på forsiden med dine nyeste varer. Det kræver mindst én vare til salg:</p>
+          <ul>{PROFILE_PROMOTION_PACKAGES.map((p) => <li key={p.id}>{p.label}: {formatOre(ore(p.priceOre))} (certificeret: {formatOre(ore(p.certifiedPriceOre))})</li>)}</ul>
           <p>Perioden starter, når betalingen er gennemført. Fremhævningen er en digital ydelse, der leveres med det samme; når den er startet, er der ikke fortrydelsesret, og den refunderes ikke, hvis du selv fjerner eller sælger annoncen. Afviser vi annoncen, refunderer vi den ubrugte del.</p>
         </> },
         { id: 'adfaerd', title: '6. God opførsel og misbrug', body: <p>Chikane, svindel, falske anmeldelser og forsøg på at omgå sikkerheden er forbudt. Vi kan fjerne indhold og lukke konti, der bryder vilkårene. Mistænker vi svindel, kan vi tilbageholde udbetalinger, mens sagen undersøges.</p> },

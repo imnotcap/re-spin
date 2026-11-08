@@ -6,7 +6,6 @@ const nb: Messages = {
   'top.shortcuts': 'Snarveier',
   'nav.how': 'Slik fungerer det',
   'nav.protection': 'Kjøperbeskyttelse',
-  'nav.fees': 'Gebyrer',
   'nav.faq': 'Spørsmål og svar',
   'header.home': '{name} – forsiden',
   'header.searchLabel': 'Søk etter varer og merker',

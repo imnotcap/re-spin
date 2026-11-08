@@ -54,7 +54,7 @@ export default function SellPage() {
               ['Kommission til Videro (0 %)', formatOre(sellerFee(EXAMPLE, false))]
             ]} total={['Du får udbetalt', formatOre(sellerPayout(EXAMPLE, false))]} />
             <p className="mt-3 text-small text-muted">Køber betaler selv køberbeskyttelse og fragt. Vil du sælge hurtigere, kan du fremhæve annoncen – det er valgfrit.</p>
-            <Button href="/gebyrer/" variant="outline" full className="mt-5" iconRight="arrow">Se alle gebyrer</Button>
+            <Button href="/saadan-virker-det/#gebyrer" variant="outline" full className="mt-5" iconRight="arrow">Se alle gebyrer</Button>
           </div>
         </aside>
       </div>

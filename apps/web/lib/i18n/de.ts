@@ -6,7 +6,6 @@ const de: Messages = {
   'top.shortcuts': 'Schnellzugriff',
   'nav.how': 'So funktioniert’s',
   'nav.protection': 'Käuferschutz',
-  'nav.fees': 'Gebühren',
   'nav.faq': 'Fragen und Antworten',
   'header.home': '{name} – Startseite',
   'header.searchLabel': 'Nach Artikeln und Marken suchen',

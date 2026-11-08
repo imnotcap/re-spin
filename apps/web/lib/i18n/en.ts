@@ -6,7 +6,6 @@ const en: Messages = {
   'top.shortcuts': 'Shortcuts',
   'nav.how': 'How it works',
   'nav.protection': 'Buyer protection',
-  'nav.fees': 'Fees',
   'nav.faq': 'Questions and answers',
   'header.home': '{name} – home',
   'header.searchLabel': 'Search for items and brands',

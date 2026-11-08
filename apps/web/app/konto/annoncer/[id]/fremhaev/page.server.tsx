@@ -5,7 +5,7 @@ import { PromoteForm } from '../../../../../components/listings/PromoteForm';
 import { requireSession } from '../../../../../lib/auth';
 import { getDb, getStripeGatewayOrNull } from '../../../../../lib/server';
 import { getOwnListingForEdit } from '../../../../../lib/listings';
-import { activePromotions } from '../../../../../lib/promotions';
+import { activePromotions, isCertified } from '../../../../../lib/promotions';
 
 export const metadata = { title: 'Fremhæv annonce', robots: { index: false } };
 
@@ -18,6 +18,7 @@ export default async function PromotePage({ params, searchParams }: { params: Pr
   if (!l) notFound();
   const sp = await searchParams;
   const until = (await activePromotions(getDb(), [l.id])).get(l.id);
+  const certified = await isCertified(getDb(), current.user.id);
   const canPromote = l.status === 'active' && l.moderationStatus === 'approved';
   const testMode = !getStripeGatewayOrNull() && (process.env.NODE_ENV !== 'production' || process.env.PROMOTIONS_TEST_MODE === '1');
   return (
@@ -26,7 +27,7 @@ export default async function PromotePage({ params, searchParams }: { params: Pr
       {sp.annulleret && <Notice icon="info" role="status">Betalingen blev afbrudt. Der er ikke trukket noget.</Notice>}
       {until && <Notice icon="check" role="status">Annoncen er fremhævet til {fmt(until)}.</Notice>}
       {canPromote
-        ? <PromoteForm listingId={l.id} testMode={testMode} />
+        ? <PromoteForm listingId={l.id} certified={certified} testMode={testMode} />
         : <Notice icon="info" warn>Kun aktive annoncer, der er godkendt, kan fremhæves.</Notice>}
     </AuthPage>
   );

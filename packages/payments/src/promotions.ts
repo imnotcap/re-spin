@@ -15,17 +15,19 @@ export class PromotionPaymentError extends Error {}
 
 export const isPromotionPayment = (obj: { metadata?: Stripe.Metadata | null } | null | undefined) => obj?.metadata?.kind === 'promotion';
 
-/** Gør en betalt fremhævning aktiv. Starter nu eller efter en fremhævning, der allerede kører på annoncen. */
+/** Gør en betalt fremhævning aktiv. Starter nu eller efter en fremhævning, der allerede kører (på annoncen / profilen). */
 export async function activatePromotion(db: Db, promotionId: string, now = new Date()): Promise<{ startsAt: Date; endsAt: Date } | null> {
   return db.transaction(async (tx) => {
     const [p] = await tx.select().from(listingPromotions).where(eq(listingPromotions.id, promotionId)).for('update');
     if (!p) throw new PromotionPaymentError(`Fremhævning ${promotionId} findes ikke`);
     if (p.status === 'paid') return null; // allerede aktiveret (Stripe sender "mindst én gang")
     if (p.status !== 'pending') throw new PromotionPaymentError(`Fremhævning ${promotionId} er ${p.status}`);
-    const pkg = promotionPackage(p.package);
+    const pkg = promotionPackage(p.package, p.kind);
     if (!pkg) throw new PromotionPaymentError(`Ukendt pakke ${p.package}`);
     const [latest] = await tx.select({ endsAt: listingPromotions.endsAt }).from(listingPromotions)
-      .where(and(eq(listingPromotions.listingId, p.listingId), eq(listingPromotions.status, 'paid'), gt(listingPromotions.endsAt, now)))
+      .where(and(
+        p.kind === 'profile' ? and(eq(listingPromotions.kind, 'profile'), eq(listingPromotions.sellerId, p.sellerId)) : eq(listingPromotions.listingId, p.listingId!),
+        eq(listingPromotions.status, 'paid'), gt(listingPromotions.endsAt, now)))
       .orderBy(desc(listingPromotions.endsAt)).limit(1);
     const period = promotionPeriod(pkg.days, now, latest?.endsAt);
     await tx.update(listingPromotions).set({ status: 'paid', ...period }).where(and(eq(listingPromotions.id, p.id), eq(listingPromotions.status, 'pending')));
