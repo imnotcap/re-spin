@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '../../lib/seo';
 import Link from 'next/link';
 import { LegalPage } from '../../components/legal/LegalPage';
 import { CookieSettings } from '../../components/consent/CookieSettings';
 
-export const metadata: Metadata = { title: 'Cookieindstillinger', description: 'Se og ændr, hvilke cookies Videro må bruge.' };
+export const metadata: Metadata = pageMetadata({ title: 'Cookieindstillinger', description: 'Se og ændr, hvilke cookies Videro må bruge.', path: '/cookieindstillinger/', noindex: true });
 
 export default function CookieSettingsPage() {
   return (

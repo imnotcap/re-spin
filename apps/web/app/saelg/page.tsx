@@ -1,14 +1,12 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '../../lib/seo';
 import { Breadcrumbs, Button, Icon, Notice, PriceSummary, StepList } from '@respin/ui';
 import { sellerFee, sellerPayout } from '@respin/core/fees';
 import { formatOre, fromKr } from '@respin/core/money';
 import { STEPS } from '../../lib/content';
 import { T } from '../../lib/i18n/client';
 
-export const metadata: Metadata = {
-  title: 'Sælg på Videro',
-  description: 'Det er gratis at sætte tøj, sko og boligting til salg på Videro. Du betaler kun 1 % (0,5 % som certificeret), når varen er solgt.'
-};
+export const metadata: Metadata = pageMetadata({ title: 'Sælg på Videro', description: 'Det er gratis at sætte tøj, sko og boligting til salg på Videro. Du betaler kun 1 % (0,5 % som certificeret), når varen er solgt.', path: '/saelg/' });
 
 const EXAMPLE = fromKr(300);
 

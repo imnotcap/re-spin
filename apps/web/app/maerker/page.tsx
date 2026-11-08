@@ -1,14 +1,11 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '../../lib/seo';
 import Link from 'next/link';
 import { Breadcrumbs } from '@respin/ui';
 import { T } from '../../lib/i18n/client';
 import { allBrands } from '../../lib/catalog';
 
-export const metadata: Metadata = {
-  title: 'Mærker A–Å',
-  description: 'Alle mærker på Videro fra A til Å – find brugt tøj, sko, tasker og bolig fra dit yndlingsmærke.',
-  alternates: { canonical: '/maerker/' }
-};
+export const metadata: Metadata = pageMetadata({ title: 'Mærker A–Å', description: 'Alle mærker på Videro fra A til Å – find brugt tøj, sko, tasker og bolig fra dit yndlingsmærke.', path: '/maerker/' });
 
 /** Mærker grupperet efter forbogstav (A–Z, Æ, Ø, Å; tal og tegn under #) */
 function byLetter() {

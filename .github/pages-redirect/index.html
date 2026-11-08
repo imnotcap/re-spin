@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Videro er flyttet til videro.dk</title>
+<link rel="canonical" href="https://videro.dk/">
+<meta http-equiv="refresh" content="0; url=https://videro.dk/">
+<script>
+  // Samme sti på videro.dk: /re-spin/vare/123/ → https://videro.dk/vare/123/
+  var p = location.pathname.replace(/^\/re-spin(?=\/|$)/, '') || '/';
+  location.replace('https://videro.dk' + p + location.search + location.hash);
+</script>
+<style>body{font-family:system-ui,sans-serif;margin:0;min-height:100vh;display:grid;place-items:center;background:#fdfbf7;color:#1c1c1c}a{color:#0e5a2f;font-weight:600}</style>
+</head>
+<body>
+<p>Videro er flyttet til <a href="https://videro.dk/">videro.dk</a>.</p>
+</body>
+</html>

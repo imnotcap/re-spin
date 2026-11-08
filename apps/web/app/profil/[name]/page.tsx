@@ -9,6 +9,7 @@ import { bannerById } from '../../../lib/banners';
 import { ratingDistribution, reviewsFor } from '../../../lib/reviews';
 import { profilePath } from '../../../lib/profile-url';
 import { T } from '../../../lib/i18n/client';
+import { pageMetadata } from '../../../lib/seo';
 
 /** Testversionens sælgere er forudrenderet; i server-bygget slås medlemmer op i databasen (MemberProfile) */
 export const generateStaticParams = () => SELLERS.map((s) => ({ name: s.name }));
@@ -20,7 +21,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { name } = await params;
   const s = sellerByName(name);
   if (!s) return memberMetadata(decodeURIComponent(name));
-  return { title: `${s.name} – profil`, description: `${s.name} fra ${s.city} sælger brugt tøj og ting på Videro. ${s.reviews} anmeldelser, ${s.rating.toLocaleString('da-DK')} i vurdering.`, alternates: { canonical: profilePath(s.name) } };
+  const banner = bannerById(s.banner);
+  return pageMetadata({
+    title: `${s.name} – profil`,
+    description: `${s.name} fra ${s.city} sælger brugt tøj og ting på Videro. ★ ${s.rating.toLocaleString('da-DK')} ud af 5 fra ${s.reviews} anmeldelser · ${s.sold} solgt. ${s.bio}`,
+    path: profilePath(s.name),
+    images: banner.photo ? [{ url: banner.photo.src.replace('-800.webp', '-1600.webp'), width: 1600, height: 400, alt: `${s.name}s profilbanner` }] : undefined
+  });
 }
 
 export default async function ProfilePage({ params }: Props) {

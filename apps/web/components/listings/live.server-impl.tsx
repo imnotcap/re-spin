@@ -13,6 +13,7 @@ import { profilePath } from '../../lib/profile-url';
 import { ProfileHeader, ProfileTabs, ReviewsPanel } from '../profile/ProfileView';
 import { Breadcrumbs } from '@respin/ui';
 import { T } from '../../lib/i18n/client';
+import { pageMetadata } from '../../lib/seo';
 export { LiveSearch } from './LiveSearch';
 
 /** Server-renderet (ingen layout-skift): vises kun, når der findes annoncer. En databasefejl skjuler blot sektionen. */
@@ -60,5 +61,12 @@ export async function MemberProfile({ name }: { name: string }) {
 
 export async function memberMetadata(name: string): Promise<Metadata> {
   const m = await memberByUsername(getDb(), name).catch(() => null);
-  return m?.username ? { title: `${m.displayName} – profil`, description: m.bio || `${m.displayName} sælger brugt tøj og ting på Videro.`, alternates: { canonical: profilePath(m.username) } } : { title: 'Profilen findes ikke' };
+  if (!m?.username) return { title: 'Profilen findes ikke', robots: { index: false } };
+  const banner = bannerById(m.banner);
+  return pageMetadata({
+    title: `${m.displayName} (@${m.username}) – profil`,
+    description: m.bio || `${m.displayName} sælger brugt tøj og ting på Videro. Se annoncerne, og køb med køberbeskyttelse.`,
+    path: profilePath(m.username),
+    images: banner.photo ? [{ url: banner.photo.src.replace('-800.webp', '-1600.webp'), width: 1600, height: 400, alt: `${m.displayName}s profilbanner` }] : undefined
+  });
 }

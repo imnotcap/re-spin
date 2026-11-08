@@ -14,6 +14,8 @@ import { CONDITION_HELP, getCategory, uploadedLabel } from '../../../lib/catalog
 import { PARCEL_LABEL } from '../../../lib/listing-labels';
 import { profilePath } from '../../../lib/profile-url';
 import { T } from '../../../lib/i18n/client';
+import { jsonLd, pageMetadata, priceMeta, productJsonLd } from '../../../lib/seo';
+import { SITE_URL } from '../../../lib/site';
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ ny?: string; gemt?: string; gennemgang?: string }> };
 
@@ -22,10 +24,22 @@ const load = cache(async (id: string) => {
   return getListing(getDb(), getImageStore(), id, viewer?.user.id);
 });
 
+/** Største udgave af et annoncebillede (1600 px) – bruges i link-forhåndsvisninger */
+const fullSize = (i: { src: string; srcSet: string }) => i.srcSet.split(',').map((x) => x.trim().split(/\s+/)[0]!).at(-1) ?? i.src;
+const facts = (l: { brand: string; size: string; condition: string }) => [l.size && `Str. ${l.size}`, l.condition, l.brand].filter(Boolean).join(' · ');
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const l = await load((await params).id);
-  if (!l) return { title: 'Annoncen findes ikke' };
-  return { title: [l.title, l.brand].filter(Boolean).join(' – '), description: `${[l.brand, l.size && `str. ${l.size}`, l.condition.toLowerCase()].filter(Boolean).join(', ')}. ${formatKr(l.price)}` };
+  if (!l) return { title: 'Annoncen findes ikke', robots: { index: false } };
+  const available = l.status === 'active';
+  return pageMetadata({
+    title: [l.title, l.brand].filter(Boolean).join(' – '),
+    description: `${formatKr(l.price)}${available ? '' : ' (solgt)'} · ${facts(l)}. ${l.description || `Brugt ${l.title.toLowerCase()} til salg på Videro med køberbeskyttelse.`}`,
+    path: `/annonce/${l.id}/`,
+    images: l.images.slice(0, 1).map((i) => ({ url: fullSize(i), width: i.width, height: i.height, alt: i.alt })),
+    noindex: !available || l.moderation !== 'approved',
+    other: priceMeta(l.price, available)
+  });
 }
 
 const daysAgo = (iso: string) => Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000));
@@ -40,6 +54,12 @@ export default async function ListingPage({ params, searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
+      {l.moderation === 'approved' && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(productJsonLd({
+          name: l.title, description: l.description, url: `${SITE_URL}/annonce/${l.id}/`, images: l.images.map(fullSize),
+          priceKr: l.price, available: l.status === 'active', brand: l.brand || null, seller: l.seller.name
+        })) }} />
+      )}
       <Breadcrumbs items={[{ label: <T k="crumb.home" />, href: '/' }, { label: cat.label, href: `/kategori/${cat.slug}/` }, ...(l.sub ? [{ label: l.sub, href: `/kategori/${cat.slug}/?type=${encodeURIComponent(l.sub)}` }] : []), { label: l.title }]} />
 
       <div className="mt-4 flex flex-col gap-3" aria-live="polite">

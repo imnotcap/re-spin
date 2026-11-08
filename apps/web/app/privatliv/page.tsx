@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '../../lib/seo';
 import Link from 'next/link';
 import { LegalPage } from '../../components/legal/LegalPage';
 
-export const metadata: Metadata = { title: 'Privatlivscenter', description: 'Sådan behandler Videro dine personoplysninger: hvad vi gemmer, hvorfor, hvor længe – og dine rettigheder.' };
+export const metadata: Metadata = pageMetadata({ title: 'Privatlivscenter', description: 'Sådan behandler Videro dine personoplysninger: hvad vi gemmer, hvorfor, hvor længe – og dine rettigheder.', path: '/privatliv/' });
 
 export default function PrivacyPage() {
   return (

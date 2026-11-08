@@ -1,15 +1,13 @@
-name: Hjemmeside (GitHub Pages)
+name: GitHub Pages (viderestilling til videro.dk)
 
-# Bygger apps/web som statisk eksport (uden login – Pages kan ikke køre server-kode) og udgiver den på GitHub Pages.
-# Kræver én gang: Settings → Pages → Source: "GitHub Actions".
+# Siden er flyttet til videro.dk (Vercel). Den gamle testversion på imnotcap.github.io/re-spin er erstattet af en
+# lille side, der sender alle adresser videre til samme sti på videro.dk, så gamle links stadig virker.
+# Vil I lukke helt: Settings → Pages → Unpublish site (og slet så dette workflow).
 on:
   push:
     branches: [main]
     paths:
-      - apps/web/**
-      - packages/ui/**
-      - packages/core/**
-      - package-lock.json
+      - .github/pages-redirect/**
       - .github/workflows/pages.yml
   workflow_dispatch:
 
@@ -25,30 +23,15 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - id: pages
-        uses: actions/configure-pages@v6
-      - run: npm run build:ui
-      - name: Byg hjemmesiden (statisk eksport)
-        run: npm run build:static -w web
-        env:
-          # "/re-spin" på imnotcap.github.io/re-spin – tom ved eget domæne
-          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
-          # "https://imnotcap.github.io/re-spin" – til sitemap.xml, robots.txt og kanoniske links
-          NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
-          NEXT_TELEMETRY_DISABLED: '1'
+      - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: apps/web/out
+          path: .github/pages-redirect
 
   deploy:
     needs: build

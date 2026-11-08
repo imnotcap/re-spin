@@ -6,6 +6,17 @@ import { SellBanner } from '../components/home/SellBanner';
 import { ItemCard } from '../components/ItemCard';
 import { CATEGORIES, countIn, fromCertified, mostPopular, newest, popularBrands, toCard } from '../lib/catalog';
 import { categoryImage } from '../lib/images';
+import { jsonLd } from '../lib/seo';
+import { SITE, SITE_URL } from '../lib/site';
+
+/** Google: navn, logo og søgefelt for Videro i søgeresultaterne */
+const SITE_LD = [
+  { '@context': 'https://schema.org', '@type': 'Organization', name: SITE.name, url: `${SITE_URL}/`, logo: `${SITE_URL}/apple-icon.png` },
+  {
+    '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, url: `${SITE_URL}/`, inLanguage: 'da-DK',
+    potentialAction: { '@type': 'SearchAction', target: { '@type': 'EntryPoint', urlTemplate: `${SITE_URL}/soeg/?q={search_term_string}` }, 'query-input': 'required name=search_term_string' }
+  }
+];
 
 const TRUST = [
   { icon: 'shield', title: <T k="trust.protection" />, href: '/sikkerhed/' },
@@ -36,6 +47,7 @@ export default function HomePage() {
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(SITE_LD) }} />
       <HomeHero />
 
       <div className={`${container} mt-2 border-b border-line sm:mt-4`}>
