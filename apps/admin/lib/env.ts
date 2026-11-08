@@ -14,6 +14,8 @@ const schema = z.object({
   ACCESS_TEAM_DOMAIN: z.string().optional(),
   ACCESS_AUD: z.string().optional(),
   DATABASE_URL: z.string().optional(),
+  /** Offentlig adresse til annoncebillederne (Vercel Blob), fx https://xxxx.public.blob.vercel-storage.com */
+  IMAGE_BASE_URL: z.string().url().optional(),
   DB_POOL_MAX: z.coerce.number().int().min(1).max(20).default(5),
   // KUN udvikling – afvises i produktion
   ADMIN_DEV_EMAIL: z.string().email().optional(),
@@ -24,6 +26,7 @@ const schema = z.object({
   need(!!e.ACCESS_TEAM_DOMAIN && !!e.ACCESS_AUD, 'ACCESS_TEAM_DOMAIN', 'ACCESS_TEAM_DOMAIN og ACCESS_AUD er påkrævet i produktion');
   need(!!e.DATABASE_URL, 'DATABASE_URL', 'påkrævet i produktion');
   need(!e.ADMIN_DEV_EMAIL, 'ADMIN_DEV_EMAIL', 'må ikke være sat i produktion');
+  need(!e.IMAGE_BASE_URL || e.IMAGE_BASE_URL.startsWith('https://'), 'IMAGE_BASE_URL', 'skal være https i produktion');
 });
 
 export type AdminEnv = z.infer<typeof schema>;

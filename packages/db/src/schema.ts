@@ -82,12 +82,17 @@ export const listings = pgTable('listings', {
   shippingSize: shippingSize('shipping_size').notNull(),
   status: listingStatus('status').notNull().default('draft'),
   moderationStatus: moderationStatus('moderation_status').notNull().default('pending'),
+  /** Begrundelse fra en medarbejder ved afvisning/fjernelse – vises for sælgeren */
+  moderationNote: text('moderation_note'),
+  moderatedBy: uuid('moderated_by'),
+  moderatedAt: ts('moderated_at'),
   createdAt: createdAt(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 }, (t) => [
   check('listings_price_range', sql`${t.priceOre} BETWEEN 100 AND 10000000`),
   check('listings_title_len', sql`char_length(${t.title}) BETWEEN 3 AND 80`),
   check('listings_subcategory_len', sql`${t.subcategory} IS NULL OR char_length(${t.subcategory}) BETWEEN 1 AND 60`),
+  check('listings_moderation_note_len', sql`${t.moderationNote} IS NULL OR char_length(${t.moderationNote}) BETWEEN 1 AND 500`),
   index('listings_feed_idx').on(t.status, t.createdAt),
   index('listings_seller_idx').on(t.sellerId)
 ]);
@@ -261,6 +266,60 @@ export const reports = pgTable('reports', {
   createdAt: createdAt(),
   handledAt: ts('handled_at')
 }, (t) => [index('reports_open_idx').on(t.status, t.createdAt)]);
+
+/* ------------------------------ Advarsler ------------------------------ */
+export const warningReason = pgEnum('warning_reason', ['prohibited_item', 'misleading', 'offensive', 'spam', 'off_platform', 'fraud', 'other']);
+
+/** Advarsler fra en medarbejder til en bruger. Brugeren ser dem på sin konto; tre advarsler er et signal til at spærre. */
+export const userWarnings = pgTable('user_warnings', {
+  id: id(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  staffId: uuid('staff_id').notNull(),
+  listingId: uuid('listing_id').references(() => listings.id, { onDelete: 'set null' }),
+  reason: warningReason('reason').notNull(),
+  message: text('message').notNull(),
+  createdAt: createdAt(),
+  seenAt: ts('seen_at')
+}, (t) => [
+  check('user_warnings_message_len', sql`char_length(${t.message}) BETWEEN 5 AND 1000`),
+  index('user_warnings_user_idx').on(t.userId, t.createdAt)
+]);
+
+/* ------------------------------ Statistik (uden cookies) ------------------------------ */
+/**
+ * Hændelser til statistik: sidevisninger, annoncevisninger, klik, søgninger og favoritter.
+ * Ingen cookies, ingen IP-adresser og ingen bruger-id'er. `visitor` er et hash af IP + browser + et tilfældigt
+ * salt, der skiftes hver dag og slettes – det kan kun bruges til at tælle unikke besøgende samme dag.
+ */
+export const analyticsEvents = pgTable('analytics_events', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+  type: text('type').notNull(),
+  path: text('path').notNull(),
+  listingId: uuid('listing_id'),
+  category: text('category'),
+  /** Søgeord eller klikmål (fx "sell_cta") */
+  value: text('value'),
+  /** Antal resultater ved søgning */
+  num: integer('num'),
+  referrerHost: text('referrer_host'),
+  device: text('device').notNull(),
+  visitor: text('visitor')
+}, (t) => [
+  check('analytics_type', sql`${t.type} IN ('pageview', 'listing_view', 'click', 'search', 'favorite', 'share')`),
+  check('analytics_device', sql`${t.device} IN ('mobile', 'tablet', 'desktop')`),
+  check('analytics_lengths', sql`char_length(${t.path}) <= 200 AND (${t.value} IS NULL OR char_length(${t.value}) <= 100) AND (${t.referrerHost} IS NULL OR char_length(${t.referrerHost}) <= 100) AND (${t.category} IS NULL OR char_length(${t.category}) <= 40) AND (${t.visitor} IS NULL OR ${t.visitor} ~ '^[0-9a-f]{16}$')`),
+  index('analytics_at_idx').on(t.at),
+  index('analytics_type_at_idx').on(t.type, t.at),
+  index('analytics_listing_idx').on(t.listingId, t.type)
+]);
+
+/** Dagens salt til visitor-hashet. Gamle salte slettes, så hashes ikke kan genskabes. */
+export const analyticsSalts = pgTable('analytics_salts', {
+  day: text('day').primaryKey(),
+  salt: text('salt').notNull(),
+  createdAt: createdAt()
+});
 
 /** Medarbejdere. Identitet (SSO/MFA) kommer fra Cloudflare Access; rollen kommer herfra. Ingen adgangskoder her. */
 export const staffUsers = pgTable('staff_users', {

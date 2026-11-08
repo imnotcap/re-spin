@@ -1,9 +1,29 @@
 import { describe, expect, it } from 'vitest';
-import { ITEMS, itemsIn, newest, toBrowse } from './catalog';
 import { DEFAULT_FILTERS, PRICE_BUCKETS, activeFilterCount, applyFilters, compareSizes, filtersToSearch, optionsFor, parseFilters } from './browse';
 import { CATEGORIES } from './categories';
 
-const all = newest().map(toBrowse);
+import type { BrowseItem } from './browse';
+
+/** Testdata: et lille udsnit, der dækker størrelser, priser, mærker og sektioner */
+let n = 0;
+const item = (category: BrowseItem['category'], sub: string, size: string, price: number, brand: string, condition: string, uploaded: number, popularity = 0): BrowseItem =>
+  ({ id: `t-${++n}`, title: `${sub} ${n}`, brand, size, condition, price, favorites: 0, icon: 'tag', category, sub, uploaded, popularity });
+const all: BrowseItem[] = [
+  item('kvinder', 'Frakker og jakker', 'M / 38', 450, 'Ganni', 'Meget god', 1, 12),
+  item('kvinder', 'Kjoler', 'S / 36', 320, 'Samsøe Samsøe', 'Ny med mærke', 2, 3),
+  item('kvinder', 'Bukser og leggings', 'W28 L30', 280, "Levi's", 'Meget god', 3),
+  item('kvinder', 'Sneakers', '39', 560, 'Vans', 'Ny med mærke', 4, 30),
+  item('kvinder', 'Håndtasker og skuldertasker', 'One size', 150, 'Vintage', 'God', 5),
+  item('maend', 'Trøjer og strik', 'L', 340, 'Wood Wood', 'Meget god', 1, 5),
+  item('maend', 'Frakker og jakker', 'XL', 720, 'Norse Projects', 'Meget god', 2),
+  item('maend', 'Sneakers', '41', 350, 'Puma', 'Meget god', 3, 50),
+  item('maend', 'Støvler', '42', 480, 'Red Wing', 'God', 6),
+  item('maend', 'Ure', '38 mm', 1310, 'Skagen', 'God', 9),
+  item('boern', 'Overtøj og flyverdragter', '6-9 mdr.', 199, 'Reima', 'Meget god', 1),
+  item('hjem', 'Gulvlamper', 'H 150 cm', 700, 'Muuto', 'God', 12)
+];
+const ITEMS = all;
+const itemsIn = (slug: string) => all.filter((i) => i.category === slug);
 const opt = optionsFor(all, CATEGORIES.flatMap((c) => c.subs));
 
 describe('filtre', () => {
@@ -32,18 +52,18 @@ describe('filtre', () => {
 
   it('valgmuligheder findes kun, hvis de giver resultater', () => {
     const maend = CATEGORIES.find((c) => c.slug === 'maend')!;
-    const xs = itemsIn('maend').map(toBrowse);
+    const xs = itemsIn('maend');
     const o = optionsFor(xs, maend.subs, maend.groups);
     for (const s of o.sizes) expect(applyFilters(xs, { ...DEFAULT_FILTERS, str: s }).length).toBeGreaterThan(0);
     for (const b of o.brands) expect(applyFilters(xs, { ...DEFAULT_FILTERS, maerke: b }).length).toBeGreaterThan(0);
     // Typer i kategoriens rækkefølge, kun dem med varer; sektioner kun dem med varer
     expect(o.types).toEqual(maend.subs.filter((s) => xs.some((i) => i.sub === s)));
-    expect(o.groups).toEqual(['Tøj', 'Sko', 'Tasker og rygsække', 'Accessories']);
+    expect(o.groups).toEqual(['Tøj', 'Sko', 'Accessories']);
   });
 
   it('sektion filtrerer på sektionens underkategorier', () => {
     const maend = CATEGORIES.find((c) => c.slug === 'maend')!;
-    const xs = itemsIn('maend').map(toBrowse);
+    const xs = itemsIn('maend');
     const sko = applyFilters(xs, { ...DEFAULT_FILTERS, gruppe: 'Sko' }, maend.groups);
     expect(sko.length).toBeGreaterThan(0);
     for (const i of sko) expect(maend.groups.find((g) => g.label === 'Sko')!.items).toContain(i.sub);
@@ -112,11 +132,9 @@ describe('størrelser fra menuen', () => {
 describe('søgning i kategoritræet', () => {
   it('typer fra listen finder underkategorien, også uden ordet i titlen', async () => {
     const { subsMatching } = await import('./categories');
-    const { searchItems } = await import('./catalog');
     expect(subsMatching('trenchcoat')).toContain('Frakker og jakker');
     expect(subsMatching('chelsea')).toEqual(expect.arrayContaining(['Støvler']));
     expect(subsMatching('ab')).toEqual([]);
-    // "Frakke med bindebælte" står under Frakker og jakker – findes via "uldfrakke"
-    expect(searchItems('uldfrakke').map((i) => i.id)).toContain('1001-ganni-uldjakke');
+    expect(subsMatching('uldfrakke')).toContain('Frakker og jakker');
   });
 });

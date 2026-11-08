@@ -6,6 +6,8 @@ import { Breadcrumbs, Button, DetailList, Notice, PriceDetails, ProductGallery, 
 import { SHIPPING_PRICE_ORE } from '@respin/core/fees';
 import { formatKr } from '@respin/ui/utils';
 import { ItemActions } from '../../../components/item/ItemActions';
+import { ReportListing } from '../../../components/item/ReportListing';
+import { TrackListingView } from '../../../components/Tracker';
 import { getCurrentSession } from '../../../lib/auth';
 import { getDb } from '../../../lib/server';
 import { getImageStore } from '../../../lib/image-store';
@@ -17,7 +19,7 @@ import { T } from '../../../lib/i18n/client';
 import { jsonLd, pageMetadata, priceMeta, productJsonLd } from '../../../lib/seo';
 import { SITE_URL } from '../../../lib/site';
 
-type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ ny?: string; gemt?: string; gennemgang?: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ ny?: string; gemt?: string; gennemgang?: string; anmeld?: string }> };
 
 const load = cache(async (id: string) => {
   const viewer = await getCurrentSession().catch(() => null);
@@ -119,6 +121,8 @@ export default async function ListingPage({ params, searchParams }: Props) {
           )}
 
           <SellerCard className="mt-7" name={l.seller.name} href={l.sellerUsername ? profilePath(l.sellerUsername) : undefined} certified={l.seller.certified} facts={[{ icon: 'user', text: 'Medlem af Videro' }]} />
+          {!l.isOwner && <ReportListing listingId={l.id} status={sp.anmeld} />}
+          <TrackListingView id={l.id} category={l.category} owner={l.isOwner} />
         </div>
       </div>
     </div>

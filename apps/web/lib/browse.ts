@@ -9,6 +9,8 @@ export interface BrowseItem extends CardItem {
   category: CategorySlug;
   sub: string;
   uploaded: number;
+  /** Visninger de seneste 30 dage – "Mest populære" */
+  popularity?: number;
 }
 
 export const PRICE_BUCKETS = [
@@ -133,7 +135,7 @@ export function applyFilters(items: readonly BrowseItem[], f: Filters, groups: r
     nyeste: tie,
     'pris-lav': (a, b) => a.price - b.price || tie(a, b),
     'pris-hoej': (a, b) => b.price - a.price || tie(a, b),
-    populaere: (a, b) => b.favorites - a.favorites || tie(a, b)
+    populaere: (a, b) => (b.popularity ?? b.favorites) - (a.popularity ?? a.favorites) || tie(a, b)
   };
   return out.sort(cmp[f.sort]);
 }

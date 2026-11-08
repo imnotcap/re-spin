@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Button, Chip, Dropdown, EmptyState, ProductGrid } from '@respin/ui';
 import { ItemCard } from '../ItemCard';
+import { track } from '../../lib/analytics';
 import { useI18n } from '../../lib/i18n/client';
 import { CATEGORIES, type CategoryGroup, type CategorySlug } from '../../lib/categories';
 import {
@@ -22,18 +23,17 @@ export interface BrowseProps {
   showCategories?: boolean;
   /** Vis sælger over kortene */
   showSeller?: boolean;
-  /**
-   * Adressens søgeparametre, som serveren har læst ("?type=…"). Så er første HTML allerede filtreret, og listen
-   * skal ikke vente på browseren. Udeladt (statisk eksport): læses fra adressen, når siden er indlæst.
-   */
-  query?: string;
+  /** Adressens søgeparametre, som serveren har læst ("?type=…"), så første HTML allerede er filtreret */
+  query: string;
+  /** Søgeordet (søgesiden): tælles i statistikken sammen med antal resultater */
+  searchQuery?: string;
 }
 
 /**
  * Liste med filtre og sortering. Filtrene står i URL'en (kan deles og overlever genindlæsning) og skrives med
  * history.replaceState – der hentes intet fra nettet. Ingen Suspense/useSearchParams: serveren sender listen én gang.
  */
-export function Browse({ items, category, showCategories = false, showSeller = false, query }: BrowseProps) {
+export function Browse({ items, category, showCategories = false, showSeller = false, query, searchQuery }: BrowseProps) {
   const { t, n: num } = useI18n();
   const cat = category ? CATEGORIES.find((c) => c.slug === category) : undefined;
   const groups = cat?.groups ?? NO_GROUPS;
@@ -42,8 +42,9 @@ export function Browse({ items, category, showCategories = false, showSeller = f
     return showCategories ? o : { ...o, categories: [] };
   }, [items, cat, groups, showCategories]);
 
-  const [search, setSearch] = useState(query ?? '');
-  useEffect(() => { if (query === undefined) setSearch(window.location.search); }, [query]);
+  const [search, setSearch] = useState(query);
+  // Statistik: søgeord og antal resultater (uden cookies) – også søgninger uden resultater, så vi ser, hvad der mangler
+  useEffect(() => { if (searchQuery) track('search', { value: searchQuery, num: items.length }); }, [searchQuery, items.length]);
   const filters = useMemo(() => parseFilters(new URLSearchParams(search), opt, cat?.subs ?? opt.types, groups.map((g) => g.label)), [search, opt, cat, groups]);
   const result = useMemo(() => applyFilters(items, filters, groups), [items, filters, groups]);
   const [shown, setShown] = useState(PAGE_SIZE);
@@ -63,6 +64,16 @@ export function Browse({ items, category, showCategories = false, showSeller = f
   const group = groups.find((g) => g.label === filters.gruppe) ?? (filters.type ? groups.find((g) => g.items.includes(filters.type!)) : undefined);
   const typeChoices = groups.length > 1 ? (group ? opt.types.filter((x) => group.items.includes(x)) : []) : opt.types;
   const types = filters.type && !typeChoices.includes(filters.type) ? [...typeChoices, filters.type] : typeChoices;
+
+  // Ingen annoncer overhovedet (ikke bare ingen, der passer til filtrene)
+  if (items.length === 0) {
+    return (
+      <EmptyState icon={searchQuery ? 'search' : 'tag'} className="py-12"
+        title={searchQuery ? t('browse.noResults', { q: searchQuery }) : t('browse.emptyTitle')}
+        description={searchQuery ? t('browse.noResultsDesc') : t('browse.emptyDesc')}
+        action={<Button href="/saelg/ny/" icon="plus">{t('browse.emptyCta')}</Button>} />
+    );
+  }
 
   return (
     <div>

@@ -8,14 +8,15 @@ export type Role = (typeof ROLES)[number];
 export const PERMISSIONS = [
   'user.view', 'user.suspend', 'listing.view', 'listing.moderate', 'report.handle',
   'order.view', 'order.refund', 'order.resolve_dispute', 'payout.view', 'ledger.view',
-  'fees.edit', 'staff.manage', 'audit.view', 'support.handle'
+  'fees.edit', 'staff.manage', 'audit.view', 'support.handle',
+  'user.warn', 'listing.delete', 'analytics.view'
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
 const MATRIX: Record<Role, readonly Permission[]> = {
   support:   ['user.view', 'listing.view', 'order.view', 'report.handle', 'support.handle'],
-  moderator: ['user.view', 'user.suspend', 'listing.view', 'listing.moderate', 'report.handle', 'order.view', 'support.handle'],
-  finance:   ['user.view', 'order.view', 'order.refund', 'order.resolve_dispute', 'payout.view', 'ledger.view', 'audit.view', 'support.handle'],
+  moderator: ['user.view', 'user.suspend', 'user.warn', 'listing.view', 'listing.moderate', 'report.handle', 'order.view', 'support.handle', 'analytics.view'],
+  finance:   ['user.view', 'order.view', 'order.refund', 'order.resolve_dispute', 'payout.view', 'ledger.view', 'audit.view', 'support.handle', 'analytics.view'],
   admin:     [...PERMISSIONS]
 };
 
@@ -46,7 +47,7 @@ export function canApprove(input: { requesterId: string; approverId: string; app
 export const ADMIN_ROUTE_PERMISSIONS: ReadonlyArray<readonly [prefix: string, permission: Permission]> = [
   ['/users', 'user.view'], ['/listings', 'listing.view'], ['/moderation', 'report.handle'], ['/orders', 'order.view'],
   ['/payouts', 'payout.view'], ['/ledger', 'ledger.view'], ['/settings/fees', 'fees.edit'], ['/staff', 'staff.manage'], ['/audit', 'audit.view'],
-  ['/support', 'support.handle'], ['/approvals', 'order.refund']
+  ['/support', 'support.handle'], ['/approvals', 'order.refund'], ['/analytics', 'analytics.view']
 ];
 
 /** '/' (dashboard) er åben for alle gyldige medarbejdere; alt andet skal matche en rute-regel. */

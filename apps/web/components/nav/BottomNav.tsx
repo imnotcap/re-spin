@@ -13,14 +13,14 @@ const AUTH = process.env.NEXT_PUBLIC_AUTH_ENABLED === '1';
 /** Sider med egen fast bjælke i bunden (købsbjælken på varesiden) – der vises bundmenuen ikke */
 const HIDE_ON = [/^\/vare\//, /^\/annonce\//];
 
-interface Tab { href: string; label: MessageKey; icon: IconName; active: (p: string) => boolean; sell?: boolean }
+interface Tab { href: string; label: MessageKey; icon: IconName; active: (p: string) => boolean; sell?: boolean; track: string }
 
 const TABS: Tab[] = [
-  { href: '/', label: 'bottom.home', icon: 'home', active: (p) => p === '/' },
-  { href: '/soeg/', label: 'bottom.search', icon: 'search', active: (p) => p.startsWith('/soeg/') || p.startsWith('/kategori/') },
-  { href: AUTH ? '/saelg/ny/' : '/saelg/', label: 'bottom.sell', icon: 'plus', active: (p) => p.startsWith('/saelg/'), sell: true },
-  { href: '/favoritter/', label: 'bottom.favorites', icon: 'heart', active: (p) => p.startsWith('/favoritter/') },
-  ...(AUTH ? [{ href: '/konto/', label: 'bottom.account' as MessageKey, icon: 'user' as IconName, active: (p: string) => p.startsWith('/konto/') || p === '/log-ind/' || p === '/opret-konto/' }] : [])
+  { href: '/', label: 'bottom.home', icon: 'home', track: 'nav_home', active: (p) => p === '/' },
+  { href: '/soeg/', label: 'bottom.search', icon: 'search', track: 'nav_search', active: (p) => p.startsWith('/soeg/') || p.startsWith('/kategori/') },
+  { href: AUTH ? '/saelg/ny/' : '/saelg/', label: 'bottom.sell', icon: 'plus', track: 'nav_sell', active: (p) => p.startsWith('/saelg/'), sell: true },
+  { href: '/favoritter/', label: 'bottom.favorites', icon: 'heart', track: 'nav_favorites', active: (p) => p.startsWith('/favoritter/') },
+  ...(AUTH ? [{ href: '/konto/', label: 'bottom.account' as MessageKey, icon: 'user' as IconName, track: 'nav_account', active: (p: string) => p.startsWith('/konto/') || p === '/log-ind/' || p === '/opret-konto/' }] : [])
 ];
 
 /**
@@ -53,7 +53,7 @@ export function BottomNav() {
           const active = tab.active(pathname);
           return (
             <li key={tab.href}>
-              <Link href={tab.href} aria-current={active ? 'page' : undefined}
+              <Link href={tab.href} aria-current={active ? 'page' : undefined} data-track={tab.track}
                 className={`relative flex h-full flex-col items-center justify-center gap-0.5 text-[11px] leading-4 ${active ? 'font-bold text-forest' : 'font-medium text-slate-700'}`}>
                 {tab.sell ? (
                   <span aria-hidden="true" className="inline-flex h-8 w-11 items-center justify-center rounded-pill bg-forest text-white"><Icon name="plus" size={20} /></span>

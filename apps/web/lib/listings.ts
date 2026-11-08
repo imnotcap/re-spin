@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, desc, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, isNull, or, sql, type SQL } from 'drizzle-orm';
 import { z } from 'zod';
 import { schema, type Db } from '@respin/db';
 import { CATEGORIES as CATEGORY_CODES, assessMessageRisk, createListingInput, type ListingCategory, type ListingCondition } from '@respin/core';
@@ -7,7 +7,7 @@ import { CONDITION_LABEL, subsOf } from './listing-labels';
 import { subsMatching } from './categories';
 import { thumbKey, type ImageStore } from './image-store';
 
-const { listings, listingImages, users, sellerProfiles, listingPromotions } = schema;
+const { listings, listingImages, users, sellerProfiles, listingPromotions, analyticsEvents } = schema;
 
 /** Er annoncen fremhævet lige nu (betalt, og nu ligger i perioden)? */
 const promotedNow = sql<boolean>`exists (select 1 from ${listingPromotions} lp where lp.listing_id = ${listings.id} and lp.status = 'paid' and lp.starts_at <= now() and lp.ends_at > now())`;
@@ -101,6 +101,8 @@ export interface ListingCardData {
   seller: { name: string; certified: boolean };
   /** Købt fremhævning, der kører lige nu */
   promoted?: boolean;
+  /** Visninger de seneste 30 dage (statistik uden cookies) – bruges til "Mest populære" */
+  views?: number;
 }
 
 const imageOf = (store: ImageStore, key: string, width: number | null, height: number | null): ListingImage => ({
@@ -137,15 +139,22 @@ export const feedQuery = z.object({
   q: z.string().max(100).optional(),
   /** Kun én sælgers annoncer (profilsiden) */
   sellerId: z.uuid().optional(),
+  /** Bestemte annoncer (favoritter) */
+  ids: z.array(z.uuid()).max(100).optional(),
   limit: z.coerce.number().int().min(1).max(48).default(24)
 });
 
-/** Offentligt feed: kun aktive, godkendte annoncer fra aktive brugere – nyeste først */
-export async function listFeed(db: Db, store: ImageStore, input: z.input<typeof feedQuery>): Promise<ListingCardData[]> {
-  const f = feedQuery.parse(input);
-  const where: SQL[] = [eq(listings.status, 'active'), eq(listings.moderationStatus, 'approved'), eq(users.status, 'active')];
+/** Synlig for alle: aktiv, godkendt og fra en aktiv bruger */
+const visible = () => [eq(listings.status, 'active'), eq(listings.moderationStatus, 'approved'), eq(users.status, 'active')];
+
+/** Visninger pr. annonce de seneste 30 dage */
+const views30 = sql<number>`(select count(*)::int from ${analyticsEvents} ae where ae.listing_id = ${listings.id} and ae.type = 'listing_view' and ae.at > now() - interval '30 days')`;
+
+async function queryCards(db: Db, store: ImageStore, f: Omit<z.output<typeof feedQuery>, 'limit'>, limit: number): Promise<ListingCardData[]> {
+  const where: SQL[] = visible();
   if (f.category) where.push(eq(listings.category, f.category));
   if (f.sellerId) where.push(eq(listings.sellerId, f.sellerId));
+  if (f.ids) { if (!f.ids.length) return []; where.push(inArray(listings.id, f.ids)); }
   for (const w of (f.q ?? '').normalize('NFC').toLocaleLowerCase('da-DK').split(/\s+/).filter(Boolean).slice(0, 6)) {
     const pat = `%${likeEscape(w)}%`;
     // Typer fra kategoritræet: "trenchcoat" finder også annoncer under "Frakker og jakker"
@@ -154,11 +163,91 @@ export async function listFeed(db: Db, store: ImageStore, input: z.input<typeof 
     where.push(sql`(${listings.title} ILIKE ${pat} OR coalesce(${listings.brand}, '') ILIKE ${pat} OR coalesce(${listings.subcategory}, '') ILIKE ${pat}${bySub})`);
   }
   // Fremhævede annoncer først, derefter nyeste
-  const rows = await db.select({ ...cardColumns, promoted: promotedNow }).from(listings).innerJoin(users, eq(users.id, listings.sellerId))
+  const rows = await db.select({ ...cardColumns, promoted: promotedNow, views: views30 }).from(listings).innerJoin(users, eq(users.id, listings.sellerId))
     .leftJoin(sellerProfiles, eq(sellerProfiles.userId, listings.sellerId))
-    .where(and(...where)).orderBy(desc(promotedNow), desc(listings.createdAt)).limit(f.limit);
+    .where(and(...where)).orderBy(desc(promotedNow), desc(listings.createdAt)).limit(limit);
   const images = await coverImages(db, store, rows.map((r) => r.id));
-  return rows.map((r) => ({ ...toCard(r, images), promoted: !!r.promoted })).filter((c) => c.image);
+  return rows.map((r) => ({ ...toCard(r, images), promoted: !!r.promoted, views: Number(r.views) || 0 })).filter((c) => c.image);
+}
+
+/** Offentligt feed: kun aktive, godkendte annoncer fra aktive brugere – nyeste først (højst 48) */
+export async function listFeed(db: Db, store: ImageStore, input: z.input<typeof feedQuery>): Promise<ListingCardData[]> {
+  const f = feedQuery.parse(input);
+  return queryCards(db, store, f, f.limit);
+}
+
+/** Til lister med filtre i browseren (kategori, søgning): op til 240 annoncer */
+export const BROWSE_LIMIT = 240;
+export async function listForBrowse(db: Db, store: ImageStore, input: { category?: ListingCategory; q?: string }): Promise<ListingCardData[]> {
+  const f = feedQuery.omit({ limit: true }).parse(input);
+  return queryCards(db, store, f, BROWSE_LIMIT);
+}
+
+/* ------------------------------ Tal til menu, forside og mærker ------------------------------ */
+
+export interface CategoryStats {
+  count: number; newWeek: number; likeNew: number; under200: number;
+  brands: { brand: string; count: number }[];
+  /** Den underkategori med flest annoncer og et billede fra den */
+  focus?: { sub: string; image: ListingImage };
+}
+export interface SiteStats { cats: Partial<Record<ListingCategory, CategoryStats>>; brands: { brand: string; count: number }[]; total: number }
+
+export async function siteStats(db: Db, store: ImageStore): Promise<SiteStats> {
+  const base = and(...visible());
+  const [perCat, brandRows, subRows] = await Promise.all([
+    db.select({
+      category: listings.category, n: sql<number>`count(*)::int`,
+      newWeek: sql<number>`count(*) filter (where ${listings.createdAt} > now() - interval '7 days')::int`,
+      likeNew: sql<number>`count(*) filter (where ${listings.condition} = 'new_with_tag')::int`,
+      under200: sql<number>`count(*) filter (where ${listings.priceOre} < 20000)::int`
+    }).from(listings).innerJoin(users, eq(users.id, listings.sellerId)).where(base).groupBy(listings.category),
+    db.select({ category: listings.category, brand: sql<string>`trim(${listings.brand})`, n: sql<number>`count(*)::int` })
+      .from(listings).innerJoin(users, eq(users.id, listings.sellerId))
+      .where(and(base, sql`coalesce(trim(${listings.brand}), '') <> ''`)).groupBy(listings.category, sql`trim(${listings.brand})`),
+    db.select({ category: listings.category, sub: listings.subcategory, n: sql<number>`count(*)::int`, newest: sql<string>`(array_agg(${listings.id} order by ${listings.createdAt} desc))[1]` })
+      .from(listings).innerJoin(users, eq(users.id, listings.sellerId))
+      .where(and(base, sql`${listings.subcategory} is not null`)).groupBy(listings.category, listings.subcategory)
+  ]);
+  const bySubTop = new Map<string, { sub: string; id: string; n: number }>();
+  for (const r of subRows) {
+    const cur = bySubTop.get(r.category);
+    if (r.sub && (!cur || r.n > cur.n)) bySubTop.set(r.category, { sub: r.sub, id: r.newest, n: r.n });
+  }
+  const images = await coverImages(db, store, [...bySubTop.values()].map((x) => x.id));
+  const brandTotals = new Map<string, number>();
+  for (const r of brandRows) brandTotals.set(r.brand, (brandTotals.get(r.brand) ?? 0) + r.n);
+  const cats: SiteStats['cats'] = {};
+  for (const r of perCat) {
+    const top = bySubTop.get(r.category);
+    const img = top ? images.get(top.id) : undefined;
+    cats[r.category] = {
+      count: r.n, newWeek: r.newWeek, likeNew: r.likeNew, under200: r.under200,
+      brands: brandRows.filter((b) => b.category === r.category).sort((a, b) => b.n - a.n || a.brand.localeCompare(b.brand, 'da')).slice(0, 8).map((b) => ({ brand: b.brand, count: b.n })),
+      focus: top && img ? { sub: top.sub, image: img } : undefined
+    };
+  }
+  return {
+    cats,
+    brands: [...brandTotals].map(([brand, count]) => ({ brand, count })).sort((a, b) => a.brand.localeCompare(b.brand, 'da')),
+    total: perCat.reduce((s, r) => s + r.n, 0)
+  };
+}
+
+/** Til sitemap: synlige annoncer og profiler */
+export async function sitemapEntries(db: Db) {
+  const [ls, ps] = await Promise.all([
+    db.select({ id: listings.id, updatedAt: listings.updatedAt }).from(listings).innerJoin(users, eq(users.id, listings.sellerId))
+      .where(and(...visible())).orderBy(desc(listings.updatedAt)).limit(5000),
+    db.select({ username: users.username }).from(users).where(and(eq(users.status, 'active'), sql`${users.username} is not null`)).limit(5000)
+  ]);
+  return { listings: ls, profiles: ps.map((p) => p.username!).filter(Boolean) };
+}
+
+/** Den indloggede brugers egne annonce-id'er (så man ikke kan sætte hjerte på sine egne) */
+export async function ownListingIds(db: Db, sellerId: string): Promise<string[]> {
+  const rows = await db.select({ id: listings.id }).from(listings).where(and(eq(listings.sellerId, sellerId), inArray(listings.status, ['draft', 'active', 'reserved', 'sold']))).limit(500);
+  return rows.map((r) => r.id);
 }
 
 export interface ListingDetail extends ListingCardData {
@@ -196,15 +285,38 @@ export async function getOwnListingForEdit(db: Db, sellerId: string, id: string)
   return r ?? null;
 }
 
-export interface MyListing extends ListingCardData { status: ListingDetail['status']; moderation: ListingDetail['moderation'] }
+export interface MyListing extends ListingCardData {
+  status: ListingDetail['status']; moderation: ListingDetail['moderation'];
+  /** Begrundelse fra Videro, hvis annoncen er afvist eller fjernet af en medarbejder */
+  moderationNote: string | null;
+}
 
+/** Sælgerens egne annoncer – også dem, Videro har fjernet (med begrundelse), men ikke dem, sælgeren selv har fjernet */
 export async function myListings(db: Db, store: ImageStore, sellerId: string): Promise<MyListing[]> {
-  const rows = await db.select({ ...cardColumns, moderation: listings.moderationStatus }).from(listings)
+  const rows = await db.select({ ...cardColumns, moderation: listings.moderationStatus, moderationNote: listings.moderationNote }).from(listings)
     .innerJoin(users, eq(users.id, listings.sellerId)).leftJoin(sellerProfiles, eq(sellerProfiles.userId, listings.sellerId))
-    .where(and(eq(listings.sellerId, sellerId), inArray(listings.status, ['draft', 'active', 'reserved', 'sold'])))
+    .where(and(eq(listings.sellerId, sellerId), or(inArray(listings.status, ['draft', 'active', 'reserved', 'sold']), and(eq(listings.status, 'removed'), isNotNull(listings.moderatedBy)))))
     .orderBy(desc(listings.createdAt)).limit(200);
   const images = await coverImages(db, store, rows.map((r) => r.id));
-  return rows.map((r) => ({ ...toCard(r, images), status: r.status, moderation: r.moderation }));
+  return rows.map((r) => ({ ...toCard(r, images), status: r.status, moderation: r.moderation, moderationNote: r.moderationNote }));
+}
+
+/* ------------------------------ Advarsler ------------------------------ */
+
+export const WARNING_REASON_LABEL = {
+  prohibited_item: 'Forbudt vare', misleading: 'Vildledende annonce', offensive: 'Stødende indhold', spam: 'Spam eller dubletter',
+  off_platform: 'Betaling eller kontakt uden om Videro', fraud: 'Mistanke om svindel', other: 'Brud på reglerne'
+} as const;
+
+/** Advarsler til brugeren (nyeste først). Ulæste markeres som set, når de vises. */
+export async function warningsFor(db: Db, userId: string) {
+  const { userWarnings } = schema;
+  const rows = await db.select({ id: userWarnings.id, reason: userWarnings.reason, message: userWarnings.message, createdAt: userWarnings.createdAt, seenAt: userWarnings.seenAt, listingTitle: listings.title })
+    .from(userWarnings).leftJoin(listings, eq(listings.id, userWarnings.listingId))
+    .where(eq(userWarnings.userId, userId)).orderBy(desc(userWarnings.createdAt)).limit(20);
+  const unseen = rows.filter((r) => !r.seenAt).map((r) => r.id);
+  if (unseen.length) await db.update(userWarnings).set({ seenAt: new Date() }).where(and(eq(userWarnings.userId, userId), inArray(userWarnings.id, unseen)));
+  return rows.map((r) => ({ ...r, isNew: !r.seenAt, reasonLabel: WARNING_REASON_LABEL[r.reason] }));
 }
 
 /* --------------------------------- Upload --------------------------------- */

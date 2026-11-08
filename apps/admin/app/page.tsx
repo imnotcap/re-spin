@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { Notice } from '@respin/ui';
 import { can } from '@respin/security';
 import { supportStats } from '@respin/support';
@@ -6,41 +5,9 @@ import { AdminFrame, Panel, kr } from '../components/AdminFrame';
 import { db, requireStaff } from '../lib/auth';
 import { pendingApprovalCount } from '../lib/orders';
 import { dailySeries, dashboardStats } from '../lib/people';
+import { Bars, Kpi } from '../components/Charts';
 
 export const metadata = { title: 'Oversigt' };
-
-function Kpi({ label, value, note, href, alert }: { label: string; value: string; note?: string; href?: string; alert?: boolean }) {
-  const body = (
-    <>
-      <p className="text-caption font-semibold uppercase tracking-[0.08em] text-muted">{label}</p>
-      <p className={`mt-1 text-[28px] font-bold leading-tight tabular-nums ${alert ? 'text-coral-600' : ''}`}>{value}</p>
-      {note && <p className="mt-0.5 text-small text-muted">{note}</p>}
-    </>
-  );
-  return href
-    ? <Link href={href} className="block rounded-lg border border-line bg-surface p-4 hover:border-slate">{body}</Link>
-    : <div className="rounded-lg border border-line bg-surface p-4">{body}</div>;
-}
-
-/** Søjler for de seneste 14 dage – med en tabel bagved for skærmlæsere */
-function Bars({ series, k, label }: { series: Array<{ day: string } & Record<'users' | 'listings' | 'cases', number>>; k: 'users' | 'listings' | 'cases'; label: string }) {
-  const max = Math.max(1, ...series.map((d) => d[k]));
-  const total = series.reduce((s, d) => s + d[k], 0);
-  return (
-    <figure>
-      <figcaption className="flex items-baseline justify-between text-small"><span className="font-semibold">{label}</span><span className="tabular-nums text-muted">{total} i alt</span></figcaption>
-      <div aria-hidden="true" className="mt-3 flex h-24 items-end gap-1">
-        {series.map((d) => (
-          <div key={d.day} className="group relative flex-1">
-            <div className="rounded-t-sm bg-forest/80 group-hover:bg-forest" style={{ height: `${Math.max(d[k] ? 6 : 2, (d[k] / max) * 96)}px` }} />
-          </div>
-        ))}
-      </div>
-      <div aria-hidden="true" className="mt-1 flex justify-between text-caption text-muted"><span>{series[0]?.day.slice(5)}</span><span>i dag</span></div>
-      <table className="sr-only"><caption>{label} pr. dag</caption><tbody>{series.map((d) => <tr key={d.day}><th scope="row">{d.day}</th><td>{d[k]}</td></tr>)}</tbody></table>
-    </figure>
-  );
-}
 
 export default async function Dashboard() {
   const staff = await requireStaff();
@@ -73,9 +40,9 @@ export default async function Dashboard() {
       <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <Panel title="Aktivitet – 14 dage">
           <div className="grid gap-6 sm:grid-cols-3">
-            <Bars series={series} k="users" label="Nye brugere" />
-            <Bars series={series} k="listings" label="Nye annoncer" />
-            <Bars series={series} k="cases" label="Nye sager" />
+            <Bars series={series.map((d) => ({ day: d.day, value: d.users }))} label="Nye brugere" />
+            <Bars series={series.map((d) => ({ day: d.day, value: d.listings }))} label="Nye annoncer" />
+            <Bars series={series.map((d) => ({ day: d.day, value: d.cases }))} label="Nye sager" />
           </div>
         </Panel>
         <Panel title="Kundeservice – 7 dage">

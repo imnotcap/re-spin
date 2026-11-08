@@ -6,6 +6,7 @@ import { SHIPPING_PRICE_ORE, computeOrderAmounts } from '@respin/core/fees';
 import { formatOre, fromKr } from '@respin/core/money';
 import { buyerTotal, formatKr } from '@respin/ui/utils';
 import { useFavorites } from '../../lib/favorites';
+import { track } from '../../lib/analytics';
 import { useI18n } from '../../lib/i18n/client';
 
 export interface ItemActionsProps {
@@ -36,13 +37,13 @@ export function ItemActions({ id, title, meta, price, parcel, favorites, sellerN
   return (
     <>
       <div className="grid gap-3">
-        <Button full size="lg" variant="buy" onClick={() => setOpen(true)} aria-haspopup="dialog">{t('buy.now')}</Button>
+        <Button full size="lg" variant="buy" onClick={() => setOpen(true)} aria-haspopup="dialog" data-track="buy_now" data-listing={id}>{t('buy.now')}</Button>
         <div className="grid grid-cols-2 gap-3">
-          <Button full variant="outline" onClick={notYet}>{t('buy.offer')}</Button>
-          <Button full variant="outline" icon="chat" onClick={notYet}>{t('buy.message')}</Button>
+          <Button full variant="outline" onClick={notYet} data-track="offer" data-listing={id}>{t('buy.offer')}</Button>
+          <Button full variant="outline" icon="chat" onClick={notYet} data-track="message" data-listing={id}>{t('buy.message')}</Button>
         </div>
         <div className="flex items-center gap-2 text-small text-muted">
-          <FavoriteButton glass={false} pressed={on} onPressedChange={(next) => { fav.set(id, next); toast(next ? t('fav.saved') : t('fav.removed'), { icon: 'heart' }); }} />
+          <FavoriteButton glass={false} pressed={on} onPressedChange={(next) => { fav.set(id, next); track('favorite', { listingId: id, num: next ? 1 : -1 }); toast(next ? t('fav.saved') : t('fav.removed'), { icon: 'heart' }); }} />
           <span>{t('buy.savedBy', { n: n(favorites + (on ? 1 : 0)) })}</span>
         </div>
       </div>

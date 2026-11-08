@@ -8,7 +8,7 @@ import { CATEGORIES, type Category, type CategorySlug } from '../../lib/categori
 import { formatKr } from '@respin/ui/utils';
 import { SHIPPING_PRICE_ORE } from '@respin/core/fees';
 import type { MenuCategory, MenuMeta } from '../../lib/catalog';
-import { categoryImage, itemImage } from '../../lib/images';
+import { categoryImage } from '../../lib/images';
 import { useI18n } from '../../lib/i18n/client';
 
 const typeHref = (slug: string, sub?: string) => `/kategori/${slug}/${sub ? `?type=${encodeURIComponent(sub)}` : ''}`;
@@ -57,7 +57,7 @@ function MegaPanel({ c, meta, brandTotal, onNavigate, id }: { c: Category; meta:
     meta.likeNew > 0 ? { href: catHref(c.slug, `?stand=${encodeURIComponent('Ny med mærke')}`), label: t('cond.Ny med mærke', undefined, 'Ny med mærke'), extra: <span className={count}>{n(meta.likeNew)}</span> } : null,
     meta.under200 > 0 ? { href: catHref(c.slug, '?pris=under-200'), label: t('price.under-200', undefined, 'Under 200 kr.'), extra: <span className={count}>{n(meta.under200)}</span> } : null
   ].filter((x) => x !== null);
-  const focusImg = meta.focus ? itemImage(meta.focus.itemId) : undefined;
+  const focusImg = meta.focus?.image;
   const cols = c.subs.length > 24 ? 3 : 2;
 
   return (
@@ -104,11 +104,11 @@ function MegaPanel({ c, meta, brandTotal, onNavigate, id }: { c: Category; meta:
                 const label = t(`group.${g.label}`, undefined, g.label);
                 return (
                   <section key={g.label} aria-label={label}>
-                    <Link href={groupHref(c.slug, g.label)} onClick={onNavigate} className={`${kicker} block border-b border-line pb-3 text-ink hover:text-forest`}>{label}</Link>
+                    <Link href={groupHref(c.slug, g.label)} onClick={onNavigate} data-track="mega_group" data-category={c.slug} className={`${kicker} block border-b border-line pb-3 text-ink hover:text-forest`}>{label}</Link>
                     <ul className="mt-2">
                       {g.items.map((x) => (
                         <li key={x}>
-                          <Link href={typeHref(c.slug, x)} onClick={onNavigate} className={`block text-slate-700 underline-offset-4 hover:text-forest hover:underline ${cols === 3 ? 'py-1 text-small' : 'py-1.5 text-body'}`}>
+                          <Link href={typeHref(c.slug, x)} onClick={onNavigate} data-track="mega_sub" data-category={c.slug} className={`block text-slate-700 underline-offset-4 hover:text-forest hover:underline ${cols === 3 ? 'py-1 text-small' : 'py-1.5 text-body'}`}>
                             {t(`sub.${x}`, undefined, x)}
                           </Link>
                         </li>
@@ -217,6 +217,7 @@ export function CategoryNav({ meta }: { meta: MenuMeta }) {
               onMouseEnter={() => { if (window.matchMedia('(min-width: 1024px) and (hover: hover)').matches) schedule(() => setOpen(c.slug), open ? 0 : OPEN_DELAY); }}>
               <Link
                 href={href}
+                data-track="mega_category" data-category={c.slug}
                 aria-current={active ? 'page' : undefined}
                 className={`relative flex h-11 items-center px-3 text-small font-semibold transition-colors hover:text-ink lg:h-[52px] lg:px-4 lg:text-body lg:font-medium ${active || expanded ? 'text-ink' : 'text-slate-700'} ${active || expanded ? 'after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-forest lg:after:inset-x-4' : ''}`}
               >

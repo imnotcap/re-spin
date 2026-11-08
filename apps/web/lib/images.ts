@@ -8,12 +8,6 @@ const img = (p: string) => `${BASE_PATH}/img/${p}`;
 
 const set = (paths: Array<[string, number]>) => paths.map(([p, w]) => `${img(p)} ${w}w`).join(', ');
 
-/** Produktfoto (4:5) i fire bredder – mobilens kort (ca. 180 px) henter 320, store skærme 480/960 */
-export const itemImage = (id: string) => ({
-  src: img(`vare/${id}-480.webp`),
-  srcSet: set([[`vare/${id}-240.webp`, 240], [`vare/${id}-320.webp`, 320], [`vare/${id}-480.webp`, 480], [`vare/${id}-960.webp`, 960]])
-});
-
 /** Kvadratisk kategorifoto (160/240/480) – fliserne er ca. 140 px brede */
 export const categoryImage = (slug: string) => ({
   src: img(`kategori/${slug}-240.webp`),

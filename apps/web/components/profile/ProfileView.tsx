@@ -2,9 +2,10 @@ import type { ReactNode } from 'react';
 import { Avatar, CertifiedBadge, Icon, type IconName } from '@respin/ui';
 import { T } from '../../lib/i18n/client';
 import type { Banner } from '../../lib/banners';
-import type { Review } from '../../lib/reviews';
 import { ShareButton } from './ShareButton';
 import { ProfileTabs, type ProfileTab } from './ProfileTabs';
+
+export interface Review { id: string; author: string; rating: 1 | 2 | 3 | 4 | 5; daysAgo: number; text: string; itemTitle?: string }
 
 export interface ProfileFact { icon: IconName; label: ReactNode; value: ReactNode }
 

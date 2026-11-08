@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Breadcrumbs } from '@respin/ui';
-import { LiveSection } from '@respin-live';
 import { T } from '../../../lib/i18n/client';
 import { Browse } from '../../../components/browse/Browse';
-import { CATEGORIES, getCategory, itemsIn, newest, toBrowse } from '../../../lib/catalog';
+import { CATEGORIES, getCategory } from '../../../lib/catalog';
+import { getDb } from '../../../lib/server';
+import { getImageStore } from '../../../lib/image-store';
+import { listForBrowse } from '../../../lib/listings';
+import { listingToBrowse } from '../../../lib/listing-card';
 import { pageMetadata } from '../../../lib/seo';
 import { BASE_PATH } from '../../../lib/site';
 import { serverQuery, type SearchParams } from '../../../lib/query';
@@ -29,8 +32,10 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const c = getCategory((await params).slug);
   const query = await serverQuery(searchParams);
   if (!c) notFound();
-  const ids = new Set(itemsIn(c.slug).map((i) => i.id));
-  const items = newest().filter((i) => ids.has(i.id)).map(toBrowse);
+  const items = (await listForBrowse(getDb(), getImageStore(), { category: c.slug }).catch((e) => {
+    console.error('kategori-fejl', e instanceof Error ? e.message : 'ukendt');
+    return [];
+  })).map((l) => listingToBrowse(l));
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
@@ -39,7 +44,6 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         <h1 className="text-h1 sm:text-[34px] sm:leading-[40px]"><T k={`cat.${c.slug}`} /></h1>
         <p className="mt-1 max-w-2xl text-body text-muted"><T k={`intro.${c.slug}`} /></p>
       </header>
-      <LiveSection id="medlemmer" title={<T k="cat.membersNew" vk={{ cat: `cat.${c.slug}` }} />} category={c.slug} className="mt-6" />
       <Browse key={query} items={items} category={c.slug} showSeller query={query} />
     </div>
   );

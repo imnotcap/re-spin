@@ -3,14 +3,15 @@ import { pageMetadata } from '../../lib/seo';
 import Link from 'next/link';
 import { Breadcrumbs } from '@respin/ui';
 import { T } from '../../lib/i18n/client';
-import { allBrands } from '../../lib/catalog';
+import { EmptyState } from '@respin/ui';
+import { getSiteStats } from '../../lib/site-stats';
 
 export const metadata: Metadata = pageMetadata({ title: 'Mærker A–Å', description: 'Alle mærker på Videro fra A til Å – find brugt tøj, sko, tasker og bolig fra dit yndlingsmærke.', path: '/maerker/' });
 
 /** Mærker grupperet efter forbogstav (A–Z, Æ, Ø, Å; tal og tegn under #) */
-function byLetter() {
+function byLetter(brands: { brand: string; count: number }[]) {
   const groups = new Map<string, { brand: string; count: number }[]>();
-  for (const b of allBrands()) {
+  for (const b of brands) {
     const first = b.brand.trim().charAt(0).toLocaleUpperCase('da-DK');
     const letter = /\p{L}/u.test(first) ? first : '#';
     groups.set(letter, [...(groups.get(letter) ?? []), b]);
@@ -20,8 +21,8 @@ function byLetter() {
 
 const anchor = (letter: string) => (letter === '#' ? 'andre' : `bogstav-${letter.toLowerCase()}`);
 
-export default function BrandsPage() {
-  const groups = byLetter();
+export default async function BrandsPage() {
+  const groups = byLetter((await getSiteStats()).brands);
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 pb-16 sm:px-6">
       <Breadcrumbs items={[{ label: <T k="crumb.home" />, href: '/' }, { label: <T k="nav.brandsAZ" /> }]} />
@@ -30,7 +31,8 @@ export default function BrandsPage() {
         <p className="mt-1 max-w-2xl text-body text-muted"><T k="brands.intro" /></p>
       </header>
 
-      <nav aria-label="Gå til bogstav" className="sticky top-0 z-10 -mx-4 border-b border-line bg-surface/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+      {groups.length === 0 && <EmptyState icon="tag" title={<T k="browse.emptyTitle" />} description={<T k="browse.emptyDesc" />} className="py-12" />}
+      {groups.length > 0 && <nav aria-label="Gå til bogstav" className="sticky top-0 z-10 -mx-4 border-b border-line bg-surface/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
         <ul className="flex flex-wrap gap-1.5">
           {groups.map(([letter]) => (
             <li key={letter}>
@@ -38,7 +40,7 @@ export default function BrandsPage() {
             </li>
           ))}
         </ul>
-      </nav>
+      </nav>}
 
       <div className="mt-8 grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
         {groups.map(([letter, brands]) => (

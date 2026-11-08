@@ -47,6 +47,13 @@ function subscribe(cb: () => void) {
   return () => { listeners.delete(cb); window.removeEventListener('storage', onStorage); };
 }
 
+/** Fjern flere på én gang (fx egne annoncer) */
+export function removeFavorites(ids: readonly string[]): void {
+  const cur = snapshot();
+  const next = cur.filter((x) => !ids.includes(x));
+  if (next.length !== cur.length) write(next);
+}
+
 export function useFavorites() {
   const ids = useSyncExternalStore(subscribe, snapshot, () => EMPTY);
   const has = useCallback((id: string) => ids.includes(id), [ids]);

@@ -7,6 +7,7 @@ import { Avatar, Button, Icon, LogoMark, Wordmark } from '@respin/ui';
 import { BASE_PATH, HELP_NAV, SITE } from '../lib/site';
 import type { MenuMeta } from '../lib/catalog';
 import { useFavorites } from '../lib/favorites';
+import { refreshMe, useMe } from '../lib/me';
 import { useI18n } from '../lib/i18n/client';
 import { LanguageMenu } from './LanguageMenu';
 import { MobileCategories } from './nav/CategoryMenu';
@@ -43,22 +44,10 @@ function SearchForm({ id, className = '' }: { id: string; className?: string }) 
 
 const AUTH = process.env.NEXT_PUBLIC_AUTH_ENABLED === '1';
 
-/** Hvem er logget ind (kun når siden kører med server). Hentes igen ved sideskift, fx efter log ind/ud. */
-function useMe(pathname: string) {
-  const [me, setMe] = useState<{ name: string } | null>(null);
-  useEffect(() => {
-    if (!AUTH) return;
-    let alive = true;
-    fetch('/api/me/', { cache: 'no-store', credentials: 'same-origin' })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: unknown) => {
-        const name = d && typeof d === 'object' && typeof (d as { name?: unknown }).name === 'string' ? (d as { name: string }).name : null;
-        if (alive) setMe(name ? { name } : null);
-      })
-      .catch(() => { if (alive) setMe(null); });
-    return () => { alive = false; };
-  }, [pathname]);
-  return me;
+/** Hvem er logget ind. Hentes igen ved sideskift, fx efter log ind/ud (delt med varekortene, se lib/me.ts). */
+function useMeOnNavigate(pathname: string) {
+  useEffect(() => { refreshMe(); }, [pathname]);
+  return useMe();
 }
 
 /** Konto-knap: samme størrelse logget ind og ud, så intet i headeren flytter sig. */
@@ -86,7 +75,7 @@ export function Header({ meta }: { meta: MenuMeta }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   const { count } = useFavorites();
-  const me = useMe(pathname);
+  const me = useMeOnNavigate(pathname);
 
   // Luk også menuen ved sideskift, der ikke kommer fra menuen (fx tilbage-knappen)
   useEffect(() => { setOpen(false); }, [pathname]);
@@ -127,7 +116,7 @@ export function Header({ meta }: { meta: MenuMeta }) {
             )}
           </Link>
           <AccountButton me={me} pathname={pathname} />
-          <Button href={AUTH ? '/saelg/ny/' : '/saelg/'} size="sm" icon="plus" className="hidden md:inline-flex">{t('header.sell')}</Button>
+          <Button href={AUTH ? '/saelg/ny/' : '/saelg/'} size="sm" icon="plus" className="hidden md:inline-flex" data-track="header_sell">{t('header.sell')}</Button>
           <button
             ref={buttonRef}
             type="button"

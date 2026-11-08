@@ -53,12 +53,13 @@ export default async function MyListingsPage({ searchParams }: { searchParams: P
                   <span className="mt-1 flex flex-wrap gap-1.5">
                     <Badge tone={l.status === 'active' ? 'forest' : 'neutral'}>{LISTING_STATUS_LABEL[l.status]}</Badge>
                     {l.moderation === 'pending' && <Badge tone="warn">Venter på gennemgang</Badge>}
-                    {l.moderation === 'rejected' && <Badge tone="coral">Afvist</Badge>}
+                    {l.moderation === 'rejected' && <Badge tone="coral">{l.status === 'removed' ? 'Fjernet af Videro' : 'Afvist'}</Badge>}
                     {promos.has(l.id) && <Badge tone="lime">Fremhævet til {dateFmt.format(promos.get(l.id)!)}</Badge>}
                   </span>
+                  {l.moderationNote && <span className="mt-1.5 block text-small text-red-700"><b>Begrundelse fra Videro:</b> {l.moderationNote}</span>}
                 </span>
               </Link>
-              {l.status !== 'reserved' && (
+              {l.status !== 'reserved' && l.status !== 'removed' && (
                 <div className="flex flex-wrap gap-2">
                   <Button href={`/konto/annoncer/${l.id}/rediger/`} size="sm" variant="outline">Redigér</Button>
                   {l.status === 'active' && l.moderation === 'approved' && <Button href={`/konto/annoncer/${l.id}/fremhaev/`} size="sm" variant="outline" icon="sparkle">{promos.has(l.id) ? 'Forlæng fremhævning' : 'Fremhæv'}</Button>}

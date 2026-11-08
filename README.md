@@ -67,7 +67,6 @@ npm run dev:web     # http://localhost:3000 (se docs/platform/README.md for milj
 Samme app bygges på to måder: med server (login og alle sikkerheds-headers) eller statisk til GitHub Pages (kun de offentlige sider).
 
 ```bash
-npm run dev:site   # uden login, ingen miljøvariabler: http://localhost:3030
 npm run dev:web    # med login (se docs/platform/README.md): http://localhost:3000
 ```
 
