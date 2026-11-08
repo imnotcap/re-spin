@@ -1,6 +1,6 @@
 import 'server-only';
 /**
- * Mails om nye beskeder og svar fra kundeservice. Køres af et tidsstyret job (Vercel Cron → /api/cron/notifikationer/).
+ * Mails om nye beskeder og svar fra kundeservice. Køres hvert 5. min. af GitHub Actions (.github/workflows/notifications.yml) og dagligt af Vercel Cron → /api/cron/notifikationer/.
  *
  *  - Beskeder: når en besked har været ulæst i 2 minutter (man er ofte på siden og læser den med det samme),
  *    og højst én mail pr. samtale pr. kvarter. Mistænkelige beskeder citeres ikke i mailen (phishing).
