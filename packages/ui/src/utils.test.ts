@@ -18,9 +18,9 @@ describe('kittets gebyrer = @respin/core', () => {
   it('kendte eksempler', () => {
     expect(buyerFee(450)).toBe(25.5);
     expect(buyerTotal(450, 39)).toBe(514.5);
-    expect(sellerFee(450)).toBe(4.5);
-    expect(sellerFee(1, true)).toBe(0.01); // 0,5 øre rundes op ("half up") som i core
-    expect(sellerPayout(300)).toBe(297);
+    expect(sellerFee(450)).toBe(0); // 0 % i kommission
+    expect(sellerFee(1, true)).toBe(0);
+    expect(sellerPayout(300)).toBe(300);
   });
 });
 

@@ -20,8 +20,8 @@ export const formatKrDecimals = formatKr;
 
 /** Køberbeskyttelse: 5 % + 3 kr. */
 export const BUYER_PROTECTION = { rate: 0.05, fixed: 3 } as const;
-/** Gebyr til Videro ved salg: 1 % (0,5 % for certificerede sælgere) */
-export const SELLER_FEE_RATE = { standard: 0.01, certified: 0.005 } as const;
+/** Gebyr til Videro ved salg: 0 % – sælger får hele prisen (Videro tjener på køberbeskyttelse og fremhævning) */
+export const SELLER_FEE_RATE = { standard: 0, certified: 0 } as const;
 
 /*
  * Gebyrerne regnes i hele øre med samme heltalsregning som @respin/core ("half up"), så kittet
@@ -32,8 +32,8 @@ const percentOfOre = (ore: number, basisPoints: number): number => Math.floor((o
 
 /** Køberbeskyttelse i kr. (5 % + 3 kr., præcis til øren): 450 → 25.5 */
 export const buyerFee = (price: number): number => (percentOfOre(toOre(price), 500) + 300) / 100;
-/** Sælgergebyr i kr.: 1 % (0,5 % for certificerede), præcis til øren */
-export const sellerFee = (price: number, certified = false): number => percentOfOre(toOre(price), certified ? 50 : 100) / 100;
+/** Sælgergebyr i kr.: 0 % (samme regel som @respin/core/fees) */
+export const sellerFee = (price: number, certified = false): number => percentOfOre(toOre(price), Math.round((certified ? SELLER_FEE_RATE.certified : SELLER_FEE_RATE.standard) * 10_000)) / 100;
 export const sellerPayout = (price: number, certified = false): number => (toOre(price) - toOre(sellerFee(price, certified))) / 100;
 /** Det køber betaler: pris + køberbeskyttelse + fragt */
 export const buyerTotal = (price: number, shipping = 0): number => (toOre(price) + toOre(buyerFee(price)) + toOre(shipping)) / 100;

@@ -5,12 +5,16 @@ import { Accordion, Breadcrumbs, Button, StepList } from '@respin/ui';
 import { FAQ, STEPS } from '../../lib/content';
 import { bannerImage } from '../../lib/images';
 import { T } from '../../lib/i18n/client';
+import { formatOre, ore } from '@respin/core/money';
+import { lowestPromotionPrice } from '@respin/core/promotions';
 
 export const metadata: Metadata = pageMetadata({ title: 'Sådan virker det', description: 'Sådan køber og sælger du på Videro: tre trin, gebyrer, køberbeskyttelse og svar på de mest stillede spørgsmål.', path: '/saadan-virker-det/' });
 
 const FEES = [
   ['At sætte en vare til salg', 'Sælger', 'Gratis'],
-  ['Gebyr, når varen er solgt', 'Sælger', '1 % (0,5 % for certificerede)'],
+  ['Kommission, når varen er solgt', 'Sælger', '0 % – du får hele prisen'],
+  ['Fremhæv annonce (valgfrit)', 'Sælger', `Fra ${formatOre(ore(lowestPromotionPrice('listing')))}`],
+  ['Fremhæv profil (valgfrit)', 'Sælger', `Fra ${formatOre(ore(lowestPromotionPrice('profile')))}`],
   ['Køberbeskyttelse', 'Køber', '5 % + 3 kr.'],
   ['Fragt', 'Køber', 'Fra 39 kr.']
 ] as const;
@@ -82,9 +86,7 @@ export default function HowPage() {
               ))}
             </tbody>
           </table>
-          <p className="mt-4 text-body">
-            <Link href="/gebyrer/" className="font-semibold text-forest underline underline-offset-4">Beregn præcist, hvad køber betaler, og hvad du får udbetalt</Link>
-          </p>
+          <p className="mt-4 text-small text-muted">Certificerede sælgere får fremhævning af både annoncer og profil til nedsat pris.</p>
         </div>
       </section>
 

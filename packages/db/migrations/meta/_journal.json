@@ -71,6 +71,20 @@
       "when": 1794153501765,
       "tag": "0009_moderation_analytics",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794169852596,
+      "tag": "0010_messages_offers",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794172948248,
+      "tag": "0011_profile_promotions",
+      "breakpoints": true
     }
   ]
 }

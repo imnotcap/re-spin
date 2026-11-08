@@ -3,7 +3,7 @@ import type { IconName } from '@respin/ui';
 export const STEPS = {
   seller: [
     { icon: 'camera', title: 'Tag billeder', text: 'Op til 8 billeder. Vi fjerner selv metadata som GPS-position, før billederne vises.' },
-    { icon: 'tag', title: 'Sæt en pris', text: 'Det er gratis at oprette annoncer. Du ser med det samme, hvad du får udbetalt.' },
+    { icon: 'tag', title: 'Sæt en pris', text: 'Det er gratis at oprette annoncer, og du får hele prisen – 0 % i kommission.' },
     { icon: 'package', title: 'Send og få pengene', text: 'Når varen er solgt, får du en fragtlabel. Pengene udbetales, når køber har modtaget varen.' }
   ],
   buyer: [
@@ -14,7 +14,7 @@ export const STEPS = {
 } as const satisfies Record<string, ReadonlyArray<{ icon: IconName; title: string; text: string }>>;
 
 export const FAQ: ReadonlyArray<{ q: string; a: string }> = [
-  { q: 'Hvad koster det at sælge?', a: 'Det er gratis at oprette annoncer. Når en vare sælges, går 1 % af salgsprisen til Videro – 0,5 % hvis du er certificeret sælger.' },
+  { q: 'Hvad koster det at sælge?', a: 'Ingenting. Det er gratis at oprette annoncer, og vi tager 0 % i kommission – du får hele salgsprisen. Køberen betaler for køberbeskyttelse og fragt. Vil du have mere opmærksomhed, kan du fremhæve annoncen mod betaling.' },
   { q: 'Hvad betaler køber?', a: 'Varens pris, fragt og køberbeskyttelse på 5 % + 3 kr. Køberbeskyttelsen dækker, hvis varen ikke kommer frem eller ikke er som beskrevet.' },
   { q: 'Hvornår får jeg mine penge som sælger?', a: 'Når køber har godkendt varen – eller automatisk 48 timer efter levering, hvis køber ikke melder et problem.' },
   { q: 'Hvorfor skal jeg ikke betale med MobilePay direkte til sælger?', a: 'Betaler du uden om appen, er du ikke dækket af køberbeskyttelsen. Det er den mest almindelige form for svindel på markedspladser.' },

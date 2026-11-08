@@ -5,7 +5,7 @@ import { createTestDb } from '@respin/db/testing';
 import type { StripeGateway } from '@respin/payments';
 import { MemoryImageStore, newImageKey } from './image-store';
 import { createListing, listFeed, saveProcessedImage } from './listings';
-import { activePromotions, startPromotion } from './promotions';
+import { activeProfilePromotion, activePromotions, promotedSellers, startProfilePromotion, startPromotion } from './promotions';
 
 let db: Db, close: () => Promise<void>;
 const store = new MemoryImageStore();
@@ -25,9 +25,9 @@ async function listing(sellerId: string, title: string) {
   if (!r.ok) throw new Error(r.error);
   return r.id;
 }
-const fakeStripe = () => {
+const fakeStripe = (prefix = 'cs') => {
   const calls: Parameters<StripeGateway['createCheckoutSession']>[0][] = [];
-  const gateway = { createCheckoutSession: async (p: (typeof calls)[number]) => { calls.push(p); return { id: `cs_${calls.length}`, url: `https://checkout.stripe.test/${calls.length}` }; } } as unknown as StripeGateway;
+  const gateway = { createCheckoutSession: async (p: (typeof calls)[number]) => { calls.push(p); return { id: `${prefix}_${calls.length}`, url: `https://checkout.stripe.test/${calls.length}` }; } } as unknown as StripeGateway;
   return { gateway, calls };
 };
 
@@ -66,5 +66,56 @@ describe('køb af fremhævning', () => {
     await db.update(schema.listingPromotions).set({ startsAt: new Date(Date.now() - 3 * 86_400_000), endsAt: new Date(Date.now() - 86_400_000) }).where(eq(schema.listingPromotions.listingId, old));
     expect((await listFeed(db, store, { sellerId: me }))[0]!.title).toBe('Ny annonce');
     expect((await activePromotions(db, [old])).size).toBe(0);
+  });
+});
+
+const certify = (userId: string) => db.insert(schema.sellerProfiles).values({ userId, certified: true, certifiedAt: new Date() });
+const test = { gateway: null, appUrl: 'https://videro.dk', allowTestActivation: true };
+
+describe('certificerede sælgere og profilfremhævning', () => {
+  it('certificerede sælgere betaler den lave pris – for både annonce og profil (prisen vælges af serveren)', async () => {
+    const me = await seller(); const id = await listing(me, 'Jakke'); await certify(me);
+    const { gateway, calls } = fakeStripe('cs_cert');
+    await startPromotion(db, me, id, '7d', { gateway, appUrl: 'https://videro.dk', allowTestActivation: false });
+    await startProfilePromotion(db, me, '7d', { gateway, appUrl: 'https://videro.dk', allowTestActivation: false });
+    expect(calls.map((c) => c.amountOre)).toEqual([4_900, 6_900]);
+    expect(calls[1]).toMatchObject({ successUrl: 'https://videro.dk/konto/?profil_fremhaevet=1', cancelUrl: 'https://videro.dk/konto/fremhaev-profil/?annulleret=1' });
+    const rows = await db.select().from(schema.listingPromotions).where(eq(schema.listingPromotions.sellerId, me));
+    expect(rows.map((r) => [r.kind, r.listingId === null, r.priceOre]).sort()).toEqual([['listing', false, 4_900], ['profile', true, 6_900]]);
+  });
+
+  it('profil kræver en vare til salg; aktiv profil vises på forsiden med billeder; nyt køb lægges i forlængelse', async () => {
+    const me = await seller();
+    expect(await startProfilePromotion(db, me, '3d', test)).toEqual({ ok: false, error: 'no_listings' });
+    expect(await startProfilePromotion(db, me, '30d', test)).toEqual({ ok: false, error: 'invalid_package' });
+    await listing(me, 'Kjole'); await listing(me, 'Sko');
+    expect(await activeProfilePromotion(db, me)).toBeNull();
+    expect(await startProfilePromotion(db, me, '1d', test)).toEqual({ ok: true, activated: true });
+    const first = await activeProfilePromotion(db, me);
+    expect(first!.getTime() - Date.now()).toBeGreaterThan(23 * 3_600_000);
+    const [row] = await db.select().from(schema.listingPromotions).where(eq(schema.listingPromotions.sellerId, me));
+    expect(row).toMatchObject({ kind: 'profile', priceOre: 2_900, status: 'paid' });
+    await startProfilePromotion(db, me, '3d', test);
+    expect((await activeProfilePromotion(db, me))!.getTime() - first!.getTime()).toBe(3 * 86_400_000);
+    const shown = (await promotedSellers(db, store, 50)).find((s) => s.id === me);
+    expect(shown).toMatchObject({ count: 2, certified: false });
+    expect(shown!.images).toHaveLength(2);
+    // Spærret konto → vises ikke
+    await db.update(schema.users).set({ status: 'suspended' }).where(eq(schema.users.id, me));
+    expect((await promotedSellers(db, store, 50)).some((s) => s.id === me)).toBe(false);
+  });
+
+  it('en profilfremhævning påvirker ikke annoncefremhævning og omvendt', async () => {
+    const me = await seller(); const id = await listing(me, 'Lampe');
+    await startProfilePromotion(db, me, '1d', test);
+    expect((await activePromotions(db, [id])).size).toBe(0);
+    await startPromotion(db, me, id, '1d', test);
+    expect((await activePromotions(db, [id])).size).toBe(1);
+  });
+
+  it('databasen afviser en profilfremhævning med annonce og en annoncefremhævning uden', async () => {
+    const me = await seller(); const id = await listing(me, 'Stol');
+    await expect(db.insert(schema.listingPromotions).values({ kind: 'profile', listingId: id, sellerId: me, package: '1d', priceOre: 100 })).rejects.toThrow();
+    await expect(db.insert(schema.listingPromotions).values({ kind: 'listing', listingId: null, sellerId: me, package: '1d', priceOre: 100 })).rejects.toThrow();
   });
 });

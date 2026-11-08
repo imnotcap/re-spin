@@ -22,7 +22,7 @@ export function Badge({ tone = 'neutral', icon, live, className, children, ...re
   );
 }
 
-/** "Certificeret"-mærket for certificerede sælgere (0,5 % gebyr). */
+/** "Certificeret"-mærket for certificerede sælgere (verificeret identitet og gode handler). */
 export function CertifiedBadge({ label = 'Certificeret', ...rest }: Omit<BadgeProps, 'tone' | 'icon'> & { label?: string }) {
   return <Badge tone="forest" icon="check" {...rest}>{label}</Badge>;
 }

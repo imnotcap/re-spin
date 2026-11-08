@@ -7,10 +7,11 @@ describe('gebyrer', () => {
     expect(buyerProtectionFee(fromKr(450))).toBe(fromKr(25.5)); // 22,50 + 3,00
     expect(buyerProtectionFee(fromKr(100))).toBe(fromKr(8));
   });
-  it('sælgergebyr er 1 %, certificeret 0,5 %', () => {
-    expect(sellerFee(fromKr(450), false)).toBe(ore(450));
-    expect(sellerFee(fromKr(450), true)).toBe(ore(225));
-    expect(sellerPayout(fromKr(450), true)).toBe(ore(44_775));
+  it('0 % i kommission: sælger får hele prisen – også uden certificering', () => {
+    expect(sellerFee(fromKr(450), false)).toBe(ore(0));
+    expect(sellerFee(fromKr(450), true)).toBe(ore(0));
+    expect(sellerPayout(fromKr(450), false)).toBe(fromKr(450));
+    expect(sellerPayout(fromKr(99_999), true)).toBe(fromKr(99_999));
   });
   it('ordrebeløb summerer korrekt', () => {
     const a = computeOrderAmounts({ price: fromKr(450), shipping: fromKr(39), sellerCertified: false });

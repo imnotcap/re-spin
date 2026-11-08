@@ -3,7 +3,7 @@ import { cache } from 'react';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { ConsoleMailer, PgRateLimiter, ResendMailer, createAuth, createPwnedChecker, sessionCookieName, sessionCookieOptions, type Auth, type IssuedSession, type RequestContext } from '@respin/auth';
+import { ConsoleMailer, PgRateLimiter, ResendMailer, createAuth, createPwnedChecker, sessionCookieName, sessionCookieOptions, type Auth, type IssuedSession, type Mailer, type RequestContext } from '@respin/auth';
 import { getClientIp, loadEnv, safeRedirectPath } from '@respin/security';
 import { getDb } from './server';
 
@@ -34,26 +34,29 @@ const envSchema = z.object({
 });
 
 type Env = z.infer<typeof envSchema>;
-const g = globalThis as unknown as { __respinAuth?: { auth: Auth; env: Env } };
+const g = globalThis as unknown as { __respinAuth?: { auth: Auth; env: Env; mailer: Mailer } };
 
 function boot() {
   if (!g.__respinAuth) {
     const env = loadEnv(envSchema);
     const db = getDb();
+    const mailer: Mailer = env.MAIL_TRANSPORT === 'resend' ? new ResendMailer({ apiKey: env.RESEND_API_KEY!, from: env.MAIL_FROM! }) : new ConsoleMailer();
     const auth = createAuth({
       db,
       appUrl: env.APP_URL,
-      mailer: env.MAIL_TRANSPORT === 'resend' ? new ResendMailer({ apiKey: env.RESEND_API_KEY!, from: env.MAIL_FROM! }) : new ConsoleMailer(),
+      mailer,
       limiter: (cfg) => new PgRateLimiter(db, cfg),
       pwned: env.PWNED_CHECK === 'on' ? createPwnedChecker() : undefined,
       mfaKey: env.MFA_ENCRYPTION_KEY,
       onError: (e) => console.error('auth-fejl', e instanceof Error ? e.message : 'ukendt')
     });
-    g.__respinAuth = { auth, env };
+    g.__respinAuth = { auth, env, mailer };
   }
   return g.__respinAuth;
 }
 export const getAuth = (): Auth => boot().auth;
+/** Afsender og kanonisk adresse til notifikationsmails (samme opsætning som login-mails) */
+export const getNotifier = () => { const b = boot(); return { mailer: b.mailer, appUrl: b.env.APP_URL }; };
 
 export async function requestContext(): Promise<RequestContext> {
   const h = await headers();

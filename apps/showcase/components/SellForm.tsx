@@ -38,7 +38,7 @@ export function SellForm({ certified = false }: { certified?: boolean }) {
             </div>
             <Field label="Din pris" suffix="kr." inputMode="numeric" placeholder="0" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, ''))} />
             <Notice icon="wallet">
-              {p ? (<><b>Du får {formatKrDecimals(sellerPayout(p, certified))}</b> efter {certified ? '0,5' : '1'} % til Videro.<br />Køber betaler {formatKr(p + buyerFee(p))} inkl. køberbeskyttelse.</>) : 'Sæt en pris, så viser vi hvad du får udbetalt.'}
+              {p ? (<><b>Du får hele beløbet: {formatKrDecimals(sellerPayout(p, certified))}</b> – 0 % i kommission.<br />Køber betaler {formatKr(p + buyerFee(p))} inkl. køberbeskyttelse.</>) : 'Sæt en pris, så viser vi hvad du får udbetalt.'}
             </Notice>
             <div className="rs-stack rs-gap-3">
               <OptionCard name="ship" value="s" title="Lille pakke" description="Op til 2 kg · fra 39 kr." icon="package" defaultChecked />

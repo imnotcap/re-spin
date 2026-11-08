@@ -40,7 +40,7 @@ export default function Gallery() {
       <Section title="Forretningsregler (fra @respin/ui/utils)">
         <div className="g-col">
           <PriceSummary rows={[['Vare', formatKr(450)], ['Køberbeskyttelse (5 % + 3 kr.)', formatKr(buyerFee(450))], ['Forsendelse', formatKr(39)]]} total={['I alt', formatKr(450 + buyerFee(450) + 39)]} />
-          <Notice icon="wallet">Sælger betaler 1 % ({formatKrDecimals(sellerFee(450))}). Certificeret: 0,5 % ({formatKrDecimals(sellerFee(450, true))}).</Notice>
+          <Notice icon="wallet">Sælger betaler 0 % i kommission ({formatKrDecimals(sellerFee(450))}) – Videro tjener på køberbeskyttelse og fremhævning.</Notice>
         </div>
       </Section>
 

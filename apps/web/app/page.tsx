@@ -2,9 +2,11 @@ import { T } from '../lib/i18n/client';
 import { CategoryTile, Chip, EmptyState, Button, ProductGrid, SectionHeader, TrustBar } from '@respin/ui';
 import { HomeHero } from '../components/home/HomeHero';
 import { SellBanner } from '../components/home/SellBanner';
+import { PromotedSellers } from '../components/home/PromotedSellers';
+import { promotedSellers, type PromotedSeller } from '../lib/promotions';
 import { ItemCard } from '../components/ItemCard';
 import { CATEGORIES } from '../lib/catalog';
-import { categoryImage } from '../lib/images';
+import { categoryBlurImage } from '../lib/images';
 import { jsonLd } from '../lib/seo';
 import { SITE, SITE_URL } from '../lib/site';
 import { getDb } from '../lib/server';
@@ -24,8 +26,8 @@ const SITE_LD = [
 
 const TRUST = [
   { icon: 'shield', title: <T k="trust.protection" />, href: '/sikkerhed/' },
-  { icon: 'tag', title: <T k="trust.free" />, href: '/gebyrer/' },
-  { icon: 'eye', title: <T k="trust.price" />, href: '/gebyrer/' },
+  { icon: 'tag', title: <T k="trust.free" />, href: '/saadan-virker-det/#gebyrer' },
+  { icon: 'eye', title: <T k="trust.price" />, href: '/saadan-virker-det/#gebyrer' },
   { icon: 'truck', title: <T k="trust.shipping" />, href: '/saadan-virker-det/' }
 ] as const;
 
@@ -33,9 +35,10 @@ const container = 'mx-auto max-w-7xl px-4 sm:px-6';
 const head = 'mb-4 px-0';
 
 export default async function HomePage() {
-  const [all, stats] = await Promise.all([
+  const [all, stats, sellers] = await Promise.all([
     listForBrowse(getDb(), getImageStore(), {}).catch((e) => { console.error('forside-fejl', e instanceof Error ? e.message : 'ukendt'); return [] as ListingCardData[]; }),
-    getSiteStats()
+    getSiteStats(),
+    promotedSellers(getDb(), getImageStore()).catch(() => [] as PromotedSeller[])
   ]);
   // Hver liste viser andre varer – samme vare går ikke igen længere nede
   const latest = all.slice(0, 12);
@@ -60,7 +63,7 @@ export default async function HomePage() {
         <ul className="grid grid-cols-3 gap-3 sm:gap-4 lg:grid-cols-6">
           {CATEGORIES.map((c) => (
             <li key={c.slug} data-track="home_category" data-category={c.slug}>
-              <CategoryTile variant="photo" icon={c.icon} label={<T k={`cat.${c.slug}`} />} count={stats.cats[c.slug]?.count ?? 0} href={`/kategori/${c.slug}/`} imageSrc={categoryImage(c.slug).src} imageSrcSet={categoryImage(c.slug).srcSet} />
+              <CategoryTile variant="photo" icon={c.icon} label={<T k={`cat.${c.slug}`} />} count={stats.cats[c.slug]?.count ?? 0} href={`/kategori/${c.slug}/`} imageSrc={categoryBlurImage(c.slug)} />
             </li>
           ))}
         </ul>
@@ -79,6 +82,8 @@ export default async function HomePage() {
           </ProductGrid>
         </section>
       )}
+
+      <PromotedSellers sellers={sellers} className={`${container} mt-16`} />
 
       <SellBanner />
 

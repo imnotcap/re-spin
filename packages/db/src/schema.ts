@@ -58,7 +58,7 @@ export const users = pgTable('users', {
 
 export const sellerProfiles = pgTable('seller_profiles', {
   userId: uuid('user_id').primaryKey().references(() => users.id, { onDelete: 'restrict' }),
-  /** Certificeret sælger → 0,5 % gebyr. Sættes kun af systemet/staff, aldrig af brugeren. */
+  /** Certificeret sælger → billigere fremhævning. Sættes kun af systemet/staff, aldrig af brugeren. */
   certified: boolean('certified').notNull().default(false),
   certifiedAt: ts('certified_at'),
   stripeAccountId: text('stripe_account_id').unique(),
@@ -113,12 +113,17 @@ export const listingImages = pgTable('listing_images', {
   createdAt: createdAt()
 }, (t) => [check('listing_images_type', sql`${t.contentType} IN ('image/jpeg','image/png','image/webp')`), check('listing_images_size', sql`${t.bytes} BETWEEN 1 AND 15728640`)]);
 
-/** Købt fremhævning af en annonce. Aktiv, når den er betalt og nu ligger mellem starts_at og ends_at. */
+/**
+ * Købt fremhævning af en annonce (kind = 'listing') eller af sælgerens profil (kind = 'profile', listing_id er null).
+ * Aktiv, når den er betalt og nu ligger mellem starts_at og ends_at.
+ */
 export const promotionPackage = pgEnum('promotion_package', ['1d', '3d', '7d']);
+export const promotionKind = pgEnum('promotion_kind', ['listing', 'profile']);
 export const promotionStatus = pgEnum('promotion_status', ['pending', 'paid', 'cancelled']);
 export const listingPromotions = pgTable('listing_promotions', {
   id: id(),
-  listingId: uuid('listing_id').notNull().references(() => listings.id, { onDelete: 'cascade' }),
+  kind: promotionKind('kind').notNull().default('listing'),
+  listingId: uuid('listing_id').references(() => listings.id, { onDelete: 'cascade' }),
   sellerId: uuid('seller_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
   package: promotionPackage('package').notNull(),
   /** Pris fastfrosset ved køb */
@@ -132,7 +137,9 @@ export const listingPromotions = pgTable('listing_promotions', {
 }, (t) => [
   check('promotions_price_positive', sql`${t.priceOre} > 0`),
   check('promotions_paid_has_period', sql`${t.status} <> 'paid' OR (${t.startsAt} IS NOT NULL AND ${t.endsAt} > ${t.startsAt})`),
-  index('promotions_active_idx').on(t.listingId, t.endsAt)
+  check('promotions_kind_target', sql`(${t.kind} = 'listing') = (${t.listingId} IS NOT NULL)`),
+  index('promotions_active_idx').on(t.listingId, t.endsAt),
+  index('promotions_profile_idx').on(t.sellerId, t.endsAt).where(sql`${t.kind} = 'profile'`)
 ]);
 
 export const favorites = pgTable('favorites', {
@@ -147,8 +154,21 @@ export const conversations = pgTable('conversations', {
   listingId: uuid('listing_id').notNull().references(() => listings.id, { onDelete: 'cascade' }),
   buyerId: uuid('buyer_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
   sellerId: uuid('seller_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
-  createdAt: createdAt()
-}, (t) => [check('conversations_distinct_parties', sql`${t.buyerId} <> ${t.sellerId}`), uniqueIndex('conversations_unique').on(t.listingId, t.buyerId)]);
+  createdAt: createdAt(),
+  /** Seneste besked (sortering i indbakken og "ulæst") */
+  lastMessageAt: timestamp('last_message_at', { withTimezone: true }).notNull().defaultNow(),
+  /** Hvornår hver part sidst har læst samtalen */
+  buyerReadAt: ts('buyer_read_at'),
+  sellerReadAt: ts('seller_read_at'),
+  /** Hvornår hver part sidst fik en mail om nye beskeder (højst én pr. kvarter pr. samtale) */
+  buyerNotifiedAt: ts('buyer_notified_at'),
+  sellerNotifiedAt: ts('seller_notified_at')
+}, (t) => [
+  check('conversations_distinct_parties', sql`${t.buyerId} <> ${t.sellerId}`),
+  uniqueIndex('conversations_unique').on(t.listingId, t.buyerId),
+  index('conversations_buyer_idx').on(t.buyerId, t.lastMessageAt),
+  index('conversations_seller_idx').on(t.sellerId, t.lastMessageAt)
+]);
 
 export const messages = pgTable('messages', {
   id: id(),
@@ -157,8 +177,15 @@ export const messages = pgTable('messages', {
   body: text('body').notNull(),
   /** Fra assessMessageRisk(): 'low' | 'medium' | 'high' */
   riskLevel: text('risk_level').notNull().default('low'),
+  /** text = almindelig besked; offer/offer_accepted/offer_declined/offer_withdrawn = hændelser om et bud */
+  kind: text('kind').notNull().default('text'),
+  offerId: uuid('offer_id'),
   createdAt: createdAt()
-}, (t) => [check('messages_body_len', sql`char_length(${t.body}) BETWEEN 1 AND 2000`), index('messages_conv_idx').on(t.conversationId, t.createdAt)]);
+}, (t) => [
+  check('messages_body_len', sql`char_length(${t.body}) BETWEEN 1 AND 2000`),
+  check('messages_kind', sql`${t.kind} IN ('text', 'offer', 'offer_accepted', 'offer_declined', 'offer_withdrawn')`),
+  index('messages_conv_idx').on(t.conversationId, t.createdAt)
+]);
 
 export const offers = pgTable('offers', {
   id: id(),
@@ -167,8 +194,13 @@ export const offers = pgTable('offers', {
   amountOre: integer('amount_ore').notNull(),
   status: offerStatus('status').notNull().default('pending'),
   expiresAt: ts('expires_at').notNull(),
-  createdAt: createdAt()
-}, (t) => [check('offers_amount_range', sql`${t.amountOre} BETWEEN 100 AND 10000000`)]);
+  createdAt: createdAt(),
+  respondedAt: ts('responded_at')
+}, (t) => [
+  check('offers_amount_range', sql`${t.amountOre} BETWEEN 100 AND 10000000`),
+  // Højst ét åbent bud ad gangen pr. køber og annonce
+  uniqueIndex('offers_one_pending').on(t.listingId, t.buyerId).where(sql`${t.status} = 'pending'`)
+]);
 
 /* ------------------------------- Ordrer ------------------------------- */
 const ACTIVE_ORDER = sql`status IN ('pending_payment','paid','shipped','delivered','disputed')`;
@@ -501,6 +533,8 @@ export const supportCases = pgTable('support_cases', {
   resolvedAt: ts('resolved_at'),
   /** Kunden har ulæste svar (vises som prik på Min konto) */
   customerUnread: boolean('customer_unread').notNull().default(false),
+  /** Hvornår kunden sidst fik en mail om et svar */
+  customerNotifiedAt: ts('customer_notified_at'),
   createdAt: createdAt(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 }, (t) => [

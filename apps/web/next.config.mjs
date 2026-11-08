@@ -17,6 +17,8 @@ export default {
   serverExternalPackages: ['postgres', 'stripe', '@node-rs/argon2', 'sharp'],
   // Profiler har adressen /@/<profilnavn>; siden bor i app/profil/[name]
   async rewrites() { return [{ source: '/@/:name', destination: '/profil/:name/' }]; },
+  // Gebyrsiden er nedlagt (0 % i kommission) – gamle links lander på gebyrafsnittet i "Sådan virker det"
+  async redirects() { return [{ source: '/gebyrer/', destination: '/saadan-virker-det/#gebyrer', permanent: true }]; },
   productionBrowserSourceMaps: false,
   env: {
     // Kendt i browseren: om login findes (headerens konto-knap). Ingen hemmeligheder her.

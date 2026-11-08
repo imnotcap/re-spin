@@ -132,7 +132,7 @@ const tabs = RESPIN_TABS.items.map((t) => (t.id === 'messages' ? { ...t, badge: 
 | Regel | Funktion |
 |---|---|
 | Køberbeskyttelse 5 % + 3 kr. | `buyerFee(price)`, `buyerTotal(price, shipping)` |
-| Gebyr til Videro: 1 % (0,5 % for certificerede) | `sellerFee(price, certified)`, `sellerPayout(price, certified)` |
+| Gebyr til Videro: 0 % (ingen kommission) | `sellerFee(price, certified)`, `sellerPayout(price, certified)` |
 | Formatering | `formatKr(450)` → `450 kr.` · `formatKr(475.5)` → `475,50 kr.` (øre kun når der er nogen; hårdt mellemrum før "kr.") |
 
 Gebyrerne regnes i hele øre med samme afrunding som `@respin/core` (kilde til sandhed). En test sammenligner kittet med core for alle priser fra 1 til 100.000 kr.
