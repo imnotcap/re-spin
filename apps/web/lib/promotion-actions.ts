@@ -22,6 +22,8 @@ const LIMIT = { capacity: 10, refillPerSecond: 10 / 3600 };
 export async function promoteAction(_: PromoteState, fd: FormData): Promise<PromoteState> {
   const str = (k: string) => { const v = fd.get(k); return typeof v === 'string' ? v : ''; };
   const profile = str('kind') === 'profile';
+  // Forbrugeraftaleloven § 18, stk. 2, nr. 1: udtrykkeligt samtykke til straks-levering og tab af fortrydelsesret
+  if (str('consent') !== 'yes') return { error: 'Bekræft, at fremhævningen må starte med det samme, og at fortrydelsesretten derved bortfalder.' };
   const current = await requireSession(profile ? '/konto/fremhaev-profil/' : '/konto/annoncer/');
   const db = getDb();
   if (!(await new PgRateLimiter(db, LIMIT).consume(`promote:${current.user.id}`)).allowed) return { error: 'Du har prøvet mange gange. Vent lidt, og prøv igen.' };

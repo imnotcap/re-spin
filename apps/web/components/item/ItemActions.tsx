@@ -9,6 +9,16 @@ import { useFavorites } from '../../lib/favorites';
 import { track } from '../../lib/analytics';
 import { useI18n } from '../../lib/i18n/client';
 import { makeOfferAction, type OfferState } from '../../lib/conversation-actions';
+import { buyAction } from '../../lib/order-actions';
+import { SITE } from '../../lib/site';
+import { useFormStatus } from 'react-dom';
+import { PickupPointPicker } from './PickupPointPicker';
+
+/** Knap i købsformularen: låses, mens vi sender videre til betalingssiden (ingen dobbeltklik) */
+function BuyButton({ label, busy, disabled }: { label: string; busy: string; disabled?: boolean }) {
+  const { pending } = useFormStatus();
+  return <Button full size="lg" variant="buy" type="submit" disabled={pending || disabled} data-track="checkout_start">{pending ? busy : label}</Button>;
+}
 
 const AUTH = process.env.NEXT_PUBLIC_AUTH_ENABLED === '1';
 /** Laveste bud: 40 % af prisen (samme regel som serveren), rundet op til hele kroner */
@@ -23,6 +33,8 @@ export interface ItemActionsProps {
   favorites: number;
   sellerName: string;
   sellerCertified: boolean;
+  /** Levering til pakkeshop via Shipmondo (køber vælger pakkeshop før betaling) */
+  pickup?: boolean;
 }
 
 
@@ -30,7 +42,8 @@ export interface ItemActionsProps {
  * Køb, bud, besked og favorit. Bud og beskeder går til samtalen med sælgeren (ikke logget ind → log ind først).
  * Køb er ikke åbnet endnu – men "Køb nu" viser præcis, hvad købet ville koste (samme beregning som checkout).
  */
-export function ItemActions({ id, title, meta, price, parcel, favorites, sellerName, sellerCertified }: ItemActionsProps) {
+export function ItemActions({ id, title, meta, price, parcel, favorites, sellerName, sellerCertified, pickup = false }: ItemActionsProps) {
+  const [pointChosen, setPointChosen] = useState(false);
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const fav = useFavorites();
@@ -40,6 +53,7 @@ export function ItemActions({ id, title, meta, price, parcel, favorites, sellerN
   const [offerOpen, setOfferOpen] = useState(false);
   const [offer, offerAction, sending] = useActionState<OfferState, FormData>(makeOfferAction, undefined);
   const offerForm = useId();
+  const buyFormId = useId();
 
   return (
     <>
@@ -75,7 +89,12 @@ export function ItemActions({ id, title, meta, price, parcel, favorites, sellerN
         open={open}
         onClose={() => setOpen(false)}
         title={t('buy.title')}
-        footer={<Button full size="lg" variant="buy" onClick={() => { setOpen(false); toast(t('buy.testDone'), { icon: 'info' }); }}>{t('buy.toPayment')}</Button>}
+        footer={
+          <form action={buyAction} id={buyFormId} className="w-full">
+            <input type="hidden" name="listingId" value={id} />
+            <BuyButton label={t('buy.toPayment')} busy={t('buy.redirecting')} disabled={pickup && !pointChosen} />
+          </form>
+        }
       >
         <div className="flex flex-col gap-4">
           <div>
@@ -93,7 +112,9 @@ export function ItemActions({ id, title, meta, price, parcel, favorites, sellerN
           <Notice icon="shield">
             {t('buy.held', { seller: sellerName, payout: formatOre(a.sellerPayout) })}
           </Notice>
-          <Notice icon="info" warn>{t('buy.testNotice')}</Notice>
+          {pickup && <PickupPointPicker formId={buyFormId} onChange={setPointChosen} />}
+          <Notice icon="info">{t('buy.private')}</Notice>
+          {SITE.isTest && <Notice icon="info" warn>{t('buy.testNotice')}</Notice>}
         </div>
       </BottomSheet>
 

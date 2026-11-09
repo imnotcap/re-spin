@@ -9,8 +9,8 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number];
 export type Actor = 'buyer' | 'seller' | 'system' | 'admin';
 
 export const ORDER_EVENTS = [
-  'payment_succeeded', 'payment_expired', 'buyer_cancel', 'seller_ship', 'seller_cancel', 'ship_timeout',
-  'carrier_delivered', 'buyer_approve', 'buyer_dispute', 'auto_complete', 'admin_resolve_seller', 'admin_resolve_buyer', 'admin_refund'
+  'payment_succeeded', 'payment_expired', 'buyer_cancel', 'seller_ship', 'carrier_picked_up', 'seller_cancel', 'ship_timeout',
+  'carrier_delivered', 'buyer_received', 'buyer_approve', 'buyer_dispute', 'auto_complete', 'admin_resolve_seller', 'admin_resolve_buyer', 'admin_refund'
 ] as const;
 export type OrderEvent = (typeof ORDER_EVENTS)[number];
 
@@ -24,9 +24,13 @@ const RULES: Record<OrderEvent, Rule> = {
   payment_expired:      { from: ['pending_payment'], to: 'expired',   actors: ['system'],                 effect: 'none' },
   buyer_cancel:         { from: ['pending_payment'], to: 'cancelled', actors: ['buyer'],                  effect: 'none' },
   seller_ship:          { from: ['paid'],            to: 'shipped',   actors: ['seller'],                 effect: 'none' },
+  /** Fragtfirmaet har scannet pakken (via Shipmondo) – sælgeren behøver ikke selv at markere den som sendt */
+  carrier_picked_up:    { from: ['paid'],            to: 'shipped',   actors: ['system'],                 effect: 'none' },
   seller_cancel:        { from: ['paid'],            to: 'refunded',  actors: ['seller'],                 effect: 'refund_buyer' },
   ship_timeout:         { from: ['paid'],            to: 'refunded',  actors: ['system'],                 effect: 'refund_buyer' },
   carrier_delivered:    { from: ['shipped'],         to: 'delivered', actors: ['system'],                 effect: 'none' },
+  /** Køber bekræfter at have modtaget pakken (indtil der er sporing fra fragtfirmaet) → 48 timer til at godkende/reklamere */
+  buyer_received:       { from: ['shipped'],         to: 'delivered', actors: ['buyer'],                  effect: 'none' },
   buyer_approve:        { from: ['delivered'],       to: 'completed', actors: ['buyer'],                  effect: 'release_to_seller' },
   auto_complete:        { from: ['delivered'],       to: 'completed', actors: ['system'],                 effect: 'release_to_seller' },
   buyer_dispute:        { from: ['delivered'],       to: 'disputed',  actors: ['buyer'],                  effect: 'none' },
@@ -35,6 +39,8 @@ const RULES: Record<OrderEvent, Rule> = {
   admin_refund:         { from: ['paid', 'shipped', 'delivered'], to: 'refunded', actors: ['admin'],     effect: 'refund_buyer' }
 };
 
+/** Uden sporing: pakken regnes for leveret så mange dage efter afsendelse, hvis køber ikke har meldt noget (så starter de 48 timer) */
+export const ASSUME_DELIVERED_DAYS = 10;
 /** Tid køber har til at godkende eller reklamere, før pengene frigives automatisk */
 export const AUTO_COMPLETE_AFTER_HOURS = 48;
 /** Tid sælger har til at sende, før køber automatisk får pengene tilbage */

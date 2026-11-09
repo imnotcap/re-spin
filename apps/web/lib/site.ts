@@ -7,6 +7,17 @@ export const SITE = {
   isTest: true
 } as const;
 
+/**
+ * Virksomheden bag Videro. SKAL udfyldes før lancering: e-handelsloven § 7 (navn, adresse, e-mail, CVR),
+ * DSA art. 11-12 (kontaktpunkt) og GDPR art. 13 (dataansvarlig). Felter med null vises som "offentliggøres før lancering".
+ */
+export const LEGAL_ENTITY: { name: string | null; cvr: string | null; address: string | null; email: string | null } = {
+  name: null,
+  cvr: null,
+  address: null,
+  email: null
+};
+
 /** Sidens offentlige adresse uden afsluttende skråstreg, fx "https://imnotcap.github.io/re-spin" – til sitemap, robots og kanoniske links */
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 

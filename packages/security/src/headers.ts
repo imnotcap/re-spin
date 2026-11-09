@@ -50,7 +50,8 @@ export function buildCsp(o: CspOptions): string {
     ['frame-src', sources(o.frameSrc).length ? sources(o.frameSrc) : ["'none'"]],
     ['object-src', ["'none'"]],
     ['base-uri', ["'self'"]],
-    ['form-action', ["'self'"]],
+    // Efter køb/udbetalingskonto sendes brugeren videre til Stripes hostede sider (Chrome håndhæver form-action på redirects)
+    ['form-action', ["'self'", 'https://checkout.stripe.com', 'https://connect.stripe.com']],
     ['frame-ancestors', ["'none'"]]
   ];
   const parts = d.map(([k, v]) => `${k} ${v.join(' ')}`);

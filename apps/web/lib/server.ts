@@ -17,8 +17,13 @@ export function getDb(): Db {
 
 export function getStripeGateway(): StripeGateway {
   if (!g.__respinGw) {
-    const env = loadEnv(z.object({ STRIPE_SECRET_KEY: z.string().regex(/^(sk|rk)_(test|live)_/), STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_') }));
-    g.__respinGw = stripeGateway(createStripe(env.STRIPE_SECRET_KEY), env.STRIPE_WEBHOOK_SECRET);
+    const env = loadEnv(z.object({
+      STRIPE_SECRET_KEY: z.string().regex(/^(sk|rk)_(test|live)_/),
+      STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_'),
+      // Valgfri: Connect-endpointets hemmelighed (events fra sælgernes konti, fx account.updated med ID-kontrol)
+      STRIPE_CONNECT_WEBHOOK_SECRET: z.string().startsWith('whsec_').optional()
+    }));
+    g.__respinGw = stripeGateway(createStripe(env.STRIPE_SECRET_KEY), env.STRIPE_WEBHOOK_SECRET, env.STRIPE_CONNECT_WEBHOOK_SECRET);
   }
   return g.__respinGw;
 }

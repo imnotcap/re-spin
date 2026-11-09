@@ -15,12 +15,12 @@ import { z } from 'zod';
 import { schema, type Db } from '@respin/db';
 import { assessMessageRisk, normalizeUserText } from '@respin/core';
 import { thumbKey, type ImageStore } from './image-store';
+import { OFFER_HOURS, OFFER_MIN_SHARE } from './offer-rules';
+export { OFFER_HOURS, OFFER_MIN_SHARE };
 
 const { conversations, messages, offers, listings, listingImages, users } = schema;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
-export const OFFER_MIN_SHARE = 0.4;
-export const OFFER_HOURS = 48;
 export const MESSAGE_MAX = 2000;
 
 export type MessageError = 'not_found' | 'own_listing' | 'not_for_sale' | 'invalid_body' | 'invalid_amount' | 'offer_exists' | 'invalid_state';

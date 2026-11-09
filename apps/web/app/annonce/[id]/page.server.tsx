@@ -10,6 +10,7 @@ import { ReportListing } from '../../../components/item/ReportListing';
 import { TrackListingView } from '../../../components/Tracker';
 import { getCurrentSession } from '../../../lib/auth';
 import { getDb } from '../../../lib/server';
+import { getShipmondoOrNull } from '../../../lib/shipping';
 import { getImageStore } from '../../../lib/image-store';
 import { getListing } from '../../../lib/listings';
 import { CONDITION_HELP, getCategory, uploadedLabel } from '../../../lib/catalog';
@@ -19,7 +20,17 @@ import { T } from '../../../lib/i18n/client';
 import { jsonLd, pageMetadata, priceMeta, productJsonLd } from '../../../lib/seo';
 import { SITE_URL } from '../../../lib/site';
 
-type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ ny?: string; gemt?: string; gennemgang?: string; anmeld?: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ ny?: string; gemt?: string; gennemgang?: string; anmeld?: string; betaling?: string }> };
+
+const PAYMENT_NOTICE: Record<string, string> = {
+  annulleret: 'Betalingen blev afbrudt. Du har ikke købt varen, og der er ikke trukket penge.',
+  listing_unavailable: 'Varen er lige blevet købt eller reserveret af en anden.',
+  seller_unavailable: 'Sælgeren kan ikke sælge lige nu.',
+  own_listing: 'Du kan ikke købe din egen vare.',
+  payments_unavailable: 'Betaling er ikke slået til endnu. Prøv igen senere.',
+  'for-mange': 'Du har prøvet at købe mange gange. Vent lidt, og prøv igen.',
+  pakkeshop: 'Vælg en pakkeshop, før du går til betaling.'
+};
 
 const load = cache(async (id: string) => {
   const viewer = await getCurrentSession().catch(() => null);
@@ -71,6 +82,8 @@ export default async function ListingPage({ params, searchParams }: Props) {
           <Notice icon="info" warn role="status"><b>Annoncen venter på gennemgang</b>, før andre kan se den. Det sker typisk, når teksten nævner betaling uden om Videro, telefonnumre eller links.</Notice>
         )}
         {l.status === 'sold' && <Notice icon="check" role="status">Denne vare er solgt.</Notice>}
+        {l.status === 'reserved' && !l.isOwner && <Notice icon="info" role="status">Varen er reserveret, mens en køber betaler. Er betalingen ikke gennemført inden 30 minutter, kommer den til salg igen.</Notice>}
+        {sp.betaling && PAYMENT_NOTICE[sp.betaling] && <Notice icon="info" warn role="alert">{PAYMENT_NOTICE[sp.betaling]}</Notice>}
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-12">
@@ -93,7 +106,7 @@ export default async function ListingPage({ params, searchParams }: Props) {
                 <Button href="/konto/annoncer/" variant="ghost">Mine annoncer</Button>
               </div>
             ) : l.status === 'active' ? (
-              <ItemActions id={l.id} title={l.title} meta={meta} price={l.price} parcel={l.parcel} favorites={0} sellerName={l.seller.name} sellerCertified={l.seller.certified} />
+              <ItemActions id={l.id} title={l.title} meta={meta} price={l.price} parcel={l.parcel} favorites={0} sellerName={l.seller.name} sellerCertified={l.seller.certified} pickup={!!getShipmondoOrNull()} />
             ) : null}
           </div>
 

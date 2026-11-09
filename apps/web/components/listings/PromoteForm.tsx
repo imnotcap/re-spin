@@ -2,7 +2,7 @@
 
 import { startTransition, useActionState, useEffect, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Notice, OptionCard } from '@respin/ui';
+import { Button, Checkbox, Notice, OptionCard } from '@respin/ui';
 import { formatOre, ore } from '@respin/core/money';
 import { promotionPackages, promotionPrice, type PromotionKind } from '@respin/core/promotions';
 import { promoteAction, type PromoteState } from '../../lib/promotion-actions';
@@ -43,7 +43,10 @@ export function PromoteForm({ kind = 'listing', listingId, certified, testMode }
               : formatOre(ore(p.priceOre))} />
         ))}
       </fieldset>
-      <p className="text-small text-muted">Perioden starter, når betalingen er gennemført. Kører der allerede en fremhævning, lægges den nye i forlængelse. Når perioden er startet, refunderes den ikke.</p>
+      <p className="text-small text-muted">Perioden starter, når betalingen er gennemført. Kører der allerede en fremhævning, lægges den nye i forlængelse. Priserne er inkl. moms.</p>
+      <Checkbox name="consent" value="yes" required>
+        Jeg ønsker, at fremhævningen starter med det samme, og er indforstået med, at jeg mister min fortrydelsesret, når ydelsen er leveret. Se <a href="/vilkaar/#fremhaevning" target="_blank" className="font-semibold underline underline-offset-2">vilkårene</a>.
+      </Checkbox>
       {testMode && <Notice icon="info" warn>Testtilstand: der trækkes ingen penge, og fremhævningen starter med det samme.</Notice>}
       <div><Button type="submit" size="lg" disabled={busy}>{busy ? 'Sender videre…' : testMode ? 'Fremhæv (test)' : 'Gå til betaling'}</Button></div>
     </form>

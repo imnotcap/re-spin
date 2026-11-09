@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
-import { Button, Field, Notice } from '@respin/ui';
+import { Button, Field, Notice, Checkbox } from '@respin/ui';
 import { changePasswordAction, forgotPasswordAction, resetPasswordAction, signInAction, signUpAction, verifyEmailAction, verifyMfaAction, type FormState } from '../lib/actions';
 import { PasskeyLoginButton } from './Security';
 
@@ -50,6 +50,9 @@ export function SignupForm() {
       <Field label="Navn" name="displayName" icon="user" autoComplete="nickname" required maxLength={40} defaultValue={state?.values?.displayName} />
       <Field label="E-mail" name="email" type="email" icon="mail" autoComplete="email" required defaultValue={state?.values?.email} />
       <Field label="Adgangskode" name="password" type="password" icon="lock" autoComplete="new-password" required minLength={12} hint="Mindst 12 tegn. En sætning er både nem at huske og svær at gætte." />
+      <Checkbox name="terms" value="yes" required>
+        Jeg er fyldt 18 år og accepterer <a href="/vilkaar/" target="_blank" className="font-semibold underline underline-offset-2">vilkårene</a>. Læs, hvordan vi behandler dine data, i <a href="/privatliv/" target="_blank" className="font-semibold underline underline-offset-2">Privatlivscenter</a>.
+      </Checkbox>
       <Button type="submit" size="lg" full disabled={pending}>{pending ? 'Opretter…' : 'Opret konto'}</Button>
     </form>
   );

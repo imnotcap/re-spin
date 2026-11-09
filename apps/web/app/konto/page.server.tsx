@@ -17,6 +17,8 @@ import { badgesFor } from '../../lib/badges';
 import { BadgeList } from '../../components/badges/BadgeList';
 import { unreadConversations } from '../../lib/conversations';
 import { activeProfilePromotion } from '../../lib/promotions';
+import { ordersNeedingAction } from '../../lib/orders';
+import { payoutStatus } from '../../lib/payouts';
 
 export const metadata = { title: 'Min konto' };
 
@@ -35,6 +37,8 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const badges = await badgesFor(getDb(), current.user.id).catch(() => []);
   const unreadChats = await unreadConversations(getDb(), current.user.id).catch(() => 0);
   const profilePromoted = await activeProfilePromotion(getDb(), current.user.id).catch(() => null);
+  const orderTodo = await ordersNeedingAction(getDb(), current.user.id).catch(() => 0);
+  const payout = await payoutStatus(getDb(), current.user.id).catch(() => null);
   return (
     <AuthPage width="page" title="Min konto" crumbs={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Min konto' }]}>
       {sp.welcome && <Notice icon="check" role="status">Din e-mail er bekræftet. Velkommen til Videro!</Notice>}
@@ -87,6 +91,27 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           <div className="mt-4"><BadgeList badges={badges} showLocked /></div>
         </section>
       )}
+
+      <Link href="/konto/ordrer/" className="flex items-center gap-4 rounded-lg border border-line p-4 transition-colors hover:border-slate">
+        <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-100 text-forest">
+          <Icon name="bag" size={20} />
+          {orderTodo > 0 && <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-surface bg-coral-600" aria-hidden="true" />}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">Køb og salg</span>
+          <span className="block text-small text-muted">{orderTodo > 0 ? (orderTodo === 1 ? '1 ordre venter på dig' : `${orderTodo} ordrer venter på dig`) : 'Følg dine køb, og send dine solgte varer'}</span>
+        </span>
+        <Icon name="next" size={20} className="text-muted" />
+      </Link>
+
+      <Link href="/konto/udbetalinger/" className="flex items-center gap-4 rounded-lg border border-line p-4 transition-colors hover:border-slate">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-100 text-forest"><Icon name="wallet" size={20} /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">Udbetalinger</span>
+          <span className="block text-small text-muted">{payout?.payoutsEnabled ? 'Udbetalingskonto godkendt' : payout?.hasAccount ? 'Udbetalingskonto mangler oplysninger' : 'Opret udbetalingskonto og bekræft din identitet'}</span>
+        </span>
+        <Icon name="next" size={20} className="text-muted" />
+      </Link>
 
       <Link href="/konto/beskeder/" className="flex items-center gap-4 rounded-lg border border-line p-4 transition-colors hover:border-slate">
         <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-100 text-forest">

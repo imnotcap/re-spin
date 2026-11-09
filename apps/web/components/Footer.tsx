@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Icon, Wordmark } from '@respin/ui';
 import { CATEGORIES } from '../lib/categories';
-import { HELP_NAV, LEGAL_NAV, SITE, SOCIAL } from '../lib/site';
+import { HELP_NAV, LEGAL_ENTITY, LEGAL_NAV, SITE, SOCIAL } from '../lib/site';
 import { T } from '../lib/i18n/client';
 
 const linkCls = 'text-cream/85 underline-offset-4 hover:text-cream hover:underline';
@@ -51,7 +51,7 @@ export function Footer() {
       </div>
       <div className="border-t border-cream/15">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-caption text-cream/70 sm:px-6 md:flex-row md:items-center md:justify-between">
-          <p>© 2026 {SITE.name}</p>
+          <p>© 2026 {LEGAL_ENTITY.name ?? SITE.name}{LEGAL_ENTITY.cvr && ` · CVR ${LEGAL_ENTITY.cvr}`}{LEGAL_ENTITY.address && ` · ${LEGAL_ENTITY.address}`}{LEGAL_ENTITY.email && <> · <a href={`mailto:${LEGAL_ENTITY.email}`} className="underline-offset-4 hover:underline">{LEGAL_ENTITY.email}</a></>}</p>
           <nav aria-label="Juridisk">
             <ul className="flex flex-wrap gap-x-5 gap-y-2">
               {LEGAL_NAV.map((n) => <li key={n.href}><Link className="underline-offset-4 hover:text-cream hover:underline" href={n.href}><T k={n.key} /></Link></li>)}

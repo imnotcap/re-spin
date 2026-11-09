@@ -64,6 +64,13 @@ export const sellerProfiles = pgTable('seller_profiles', {
   stripeAccountId: text('stripe_account_id').unique(),
   payoutsEnabled: boolean('payouts_enabled').notNull().default(false),
   kycStatus: kycStatus('kyc_status').notNull().default('none'),
+  /** Fra Stripe (account.updated): felter Stripe mangler for at kunne udbetale – vises for sælgeren. Aldrig selve oplysningerne. */
+  stripeRequirements: jsonb('stripe_requirements').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+  /** Stripes årsag til, at kontoen er begrænset (fx "requirements.past_due", "rejected.fraud") */
+  stripeDisabledReason: text('stripe_disabled_reason'),
+  stripeSyncedAt: ts('stripe_synced_at'),
+  /** Afsenderadresse på fragtlabels (sælgerens egen, kun brugt til forsendelser) */
+  senderAddress: jsonb('sender_address').$type<{ name: string; address1: string; zipcode: string; city: string; mobile: string }>(),
   createdAt: createdAt()
 }, (t) => [check('seller_certified_has_date', sql`${t.certified} = false OR ${t.certifiedAt} IS NOT NULL`)]);
 
@@ -222,6 +229,27 @@ export const orders = pgTable('orders', {
   stripePaymentIntentId: text('stripe_payment_intent_id').unique(),
   stripeTransferId: text('stripe_transfer_id').unique(),
   stripeChargeId: text('stripe_charge_id'),
+  /** Stripe Checkout-session (hostet betalingsside) – PaymentIntent kendes først, når køber betaler */
+  stripeCheckoutSessionId: text('stripe_checkout_session_id').unique(),
+  /** Leveringsadresse fra betalingssiden (kun til sælgeren til forsendelsen) */
+  shippingAddress: jsonb('shipping_address').$type<{ name: string; line1: string; line2?: string | null; postalCode: string; city: string; country: string; phone?: string | null }>(),
+  carrier: text('carrier'),
+  trackingNumber: text('tracking_number'),
+  shippedAt: ts('shipped_at'),
+  deliveredAt: ts('delivered_at'),
+  /** Mails om ordren er sendt (salg til sælger + kvittering til køber; afsendelse til køber) */
+  paidNotifiedAt: ts('paid_notified_at'),
+  /** Pakkeshop, køberen valgte ved købet (fra Shipmondo) */
+  servicePoint: jsonb('service_point').$type<{ id: string; carrier: string; name: string; address: string; zipcode: string; city: string }>(),
+  /** Forsendelse hos Shipmondo (label + sporing) */
+  shipmondoShipmentId: text('shipmondo_shipment_id').unique(),
+  labellessCode: text('labelless_code'),
+  labelAttempts: integer('label_attempts').notNull().default(0),
+  labelError: text('label_error'),
+  /** Seneste sporingsstatus fra fragtfirmaet (vises for køber og sælger) */
+  trackingStatus: text('tracking_status'),
+  trackingUpdatedAt: ts('tracking_updated_at'),
+  shippedNotifiedAt: ts('shipped_notified_at'),
   /** Optimistisk lås: opdateringer sker med WHERE version = $læst, så to samtidige overgange ikke begge vinder */
   version: integer('version').notNull().default(0),
   paymentExpiresAt: ts('payment_expires_at'),
