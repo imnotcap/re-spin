@@ -248,6 +248,7 @@ const da = {
   'buy.total': "I alt",
   'buy.held': "Vi holder pengene, til du har modtaget varen. {seller} får hele salgsprisen, {payout} – Videro tager 0 % i kommission.",
   'buy.testNotice': "Testversion: du kan ikke købe endnu.",
+  'buy.private': "Du køber af en privatperson. Derfor gælder forbrugerkøbsloven og fortrydelsesretten ikke – men Videros køberbeskyttelse gør.",
   'buy.parcel.small': "lille pakke",
   'buy.parcel.medium': "mellem pakke",
   'fav.intro': "Varer, du gemmer med hjertet, samles her. Favoritter gemmes kun i denne browser – du behøver ikke at logge ind.",

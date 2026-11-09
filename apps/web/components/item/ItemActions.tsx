@@ -93,6 +93,7 @@ export function ItemActions({ id, title, meta, price, parcel, favorites, sellerN
           <Notice icon="shield">
             {t('buy.held', { seller: sellerName, payout: formatOre(a.sellerPayout) })}
           </Notice>
+          <Notice icon="info">{t('buy.private')}</Notice>
           <Notice icon="info" warn>{t('buy.testNotice')}</Notice>
         </div>
       </BottomSheet>

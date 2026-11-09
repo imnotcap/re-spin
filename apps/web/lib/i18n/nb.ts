@@ -241,6 +241,7 @@ const nb: Messages = {
   'buy.total': "Totalt",
   'buy.held': "Vi holder pengene til du har mottatt varen. {seller} får hele salgsprisen, {payout} – Videro tar 0 % i provisjon.",
   'buy.testNotice': "Testversjon: du kan ikke kjøpe ennå.",
+  'buy.private': "Du kjøper av en privatperson. Derfor gjelder ikke forbrukerkjøpsloven og angreretten – men Videros kjøperbeskyttelse gjør det.",
   'buy.parcel.small': "lite pakke",
   'buy.parcel.medium': "middels pakke",
   'fav.intro': "Varer du lagrer med hjertet, samles her. Favoritter lagres bare i denne nettleseren – du trenger ikke å logge inn.",

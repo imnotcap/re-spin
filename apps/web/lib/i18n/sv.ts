@@ -241,6 +241,7 @@ const sv: Messages = {
   'buy.total': "Totalt",
   'buy.held': "Vi håller pengarna tills du har fått varan. {seller} får hela priset, {payout} – Videro tar 0 % i provision.",
   'buy.testNotice': "Testversion: du kan inte köpa än.",
+  'buy.private': "Du köper av en privatperson. Därför gäller inte konsumentköplagen och ångerrätten – men Videros köparskydd gör det.",
   'buy.parcel.small': "litet paket",
   'buy.parcel.medium': "mellanpaket",
   'fav.intro': "Varor du sparar med hjärtat samlas här. Favoriter sparas bara i den här webbläsaren – du behöver inte logga in.",

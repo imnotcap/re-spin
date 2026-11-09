@@ -241,6 +241,7 @@ const de: Messages = {
   'buy.total': "Gesamt",
   'buy.held': "Wir halten das Geld zurück, bis du den Artikel erhalten hast. {seller} erhält den vollen Preis, {payout} – Videro nimmt 0 % Provision.",
   'buy.testNotice': "Testversion: Du kannst noch nicht kaufen.",
+  'buy.private': "Du kaufst von einer Privatperson. Daher gelten das gesetzliche Verbraucherrecht und das Widerrufsrecht nicht – aber der Käuferschutz von Videro gilt.",
   'buy.parcel.small': "kleines Paket",
   'buy.parcel.medium': "mittleres Paket",
   'fav.intro': "Artikel, die du mit dem Herz speicherst, landen hier. Favoriten werden nur in diesem Browser gespeichert – keine Anmeldung nötig.",

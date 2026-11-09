@@ -14,6 +14,8 @@ export type FormState = { error?: string; done?: boolean; values?: { email?: str
 const str = (fd: FormData, key: string) => { const v = fd.get(key); return typeof v === 'string' ? v : ''; };
 
 export async function signUpAction(_: FormState, fd: FormData): Promise<FormState> {
+  // Accept af vilkår og alder (18+) skal være aktivt afkrydset – også hvis formularen sendes uden om siden
+  if (str(fd, 'terms') !== 'yes') return { error: 'Du skal være fyldt 18 år og acceptere vilkårene for at oprette en konto.', values: { email: str(fd, 'email').slice(0, 254), displayName: str(fd, 'displayName').slice(0, 40) } };
   const r = await getAuth().signUp({ email: str(fd, 'email'), password: str(fd, 'password'), displayName: str(fd, 'displayName') }, await requestContext());
   return r.ok ? { done: true } : { error: messageFor(r.error), values: { email: str(fd, 'email').slice(0, 254), displayName: str(fd, 'displayName').slice(0, 40) } };
 }

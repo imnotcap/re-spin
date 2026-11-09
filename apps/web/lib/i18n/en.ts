@@ -241,6 +241,7 @@ const en: Messages = {
   'buy.total': "Total",
   'buy.held': "We hold the money until you have received the item. {seller} receives the full price, {payout} – Videro takes 0% commission.",
   'buy.testNotice': "Test version: you can’t buy yet.",
+  'buy.private': "You are buying from a private person, so statutory consumer rights and the right of withdrawal do not apply – but Videro's buyer protection does.",
   'buy.parcel.small': "small parcel",
   'buy.parcel.medium': "medium parcel",
   'fav.intro': "Items you save with the heart are collected here. Favourites are only stored in this browser – no need to log in.",
