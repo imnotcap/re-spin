@@ -24,6 +24,12 @@ function fakeGateway() {
     createTransfer: async (p) => { calls.transfer.push(p); return { id: `tr_${p.orderId}` }; },
     createRefund: async (p) => { calls.refund.push(p); return { id: `re_${calls.refund.length}` }; },
     createCheckoutSession: async (p) => ({ id: `cs_${p.promotionId}`, url: `https://checkout.stripe.test/${p.promotionId}` }),
+    createConnectedAccount: async () => ({ id: 'acct_new' }),
+    createAccountLink: async () => ({ url: 'https://connect.stripe.test/onboarding' }),
+    createLoginLink: async () => ({ url: 'https://connect.stripe.test/express' }),
+    retrieveAccount: async () => ({ payoutsEnabled: true, detailsSubmitted: true, requirements: [], pastDue: [], disabledReason: null, kycStatus: 'verified' }),
+    createOrderCheckoutSession: async (p) => ({ id: `cs_${p.orderId}`, url: `https://checkout.stripe.test/${p.orderId}` }),
+    expireCheckoutSession: async () => undefined,
     verifyWebhook: (raw, sig) => verifier.verifyWebhook(raw, sig)
   };
   return { gw, calls };
@@ -201,14 +207,14 @@ describe('ordre-overgange og ejerskab', () => {
     expect([...b.values()].reduce((x, y) => x + y, 0)).toBe(0);
     expect((await order(co.orderId)).stripeTransferId).toBe(`tr_${co.orderId}`);
   });
-  it('sælger uden færdig Stripe-onboarding: pengene venter, prøves igen med backoff og udbetales når klar', async () => {
+  it('sælger uden færdig Stripe-onboarding: pengene venter (tæller ikke som fejl), prøves igen efter 6 timer og udbetales når klar', async () => {
     const { gw, calls, m, co } = await paidOrder({ payoutsReady: false });
     for (const [event, actor, actorId] of [['seller_ship', 'seller', m.seller.id], ['carrier_delivered', 'system', null], ['buyer_approve', 'buyer', m.buyer.id]] as const) await applyOrderEvent(db, { orderId: co.orderId, event, actor, actorId });
     const t0 = new Date();
     expect(await runOutbox(db, gw, { now: t0 })).toEqual({ done: 0, retried: 1, failed: 0 });
     expect(await runOutbox(db, gw, { now: t0 })).toEqual({ done: 0, retried: 0, failed: 0 }); // backoff: ikke due endnu
     await db.update(s.sellerProfiles).set({ stripeAccountId: 'acct_ready', payoutsEnabled: true }).where(eq(s.sellerProfiles.userId, m.seller.id));
-    expect(await runOutbox(db, gw, { now: new Date(t0.getTime() + 3 * 60_000) })).toEqual({ done: 1, retried: 0, failed: 0 });
+    expect(await runOutbox(db, gw, { now: new Date(t0.getTime() + 6 * 3_600_000 + 60_000) })).toEqual({ done: 1, retried: 0, failed: 0 });
     expect(calls.transfer).toHaveLength(1);
   });
   it('en transfer der fejler efter Stripe-kaldet kan genkøres uden dobbeltudbetaling (samme idempotensnøgle)', async () => {

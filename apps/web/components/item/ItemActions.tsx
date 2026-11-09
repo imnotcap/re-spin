@@ -9,6 +9,15 @@ import { useFavorites } from '../../lib/favorites';
 import { track } from '../../lib/analytics';
 import { useI18n } from '../../lib/i18n/client';
 import { makeOfferAction, type OfferState } from '../../lib/conversation-actions';
+import { buyAction } from '../../lib/order-actions';
+import { SITE } from '../../lib/site';
+import { useFormStatus } from 'react-dom';
+
+/** Knap i købsformularen: låses, mens vi sender videre til betalingssiden (ingen dobbeltklik) */
+function BuyButton({ label, busy }: { label: string; busy: string }) {
+  const { pending } = useFormStatus();
+  return <Button full size="lg" variant="buy" type="submit" disabled={pending} data-track="checkout_start">{pending ? busy : label}</Button>;
+}
 
 const AUTH = process.env.NEXT_PUBLIC_AUTH_ENABLED === '1';
 /** Laveste bud: 40 % af prisen (samme regel som serveren), rundet op til hele kroner */
@@ -75,7 +84,12 @@ export function ItemActions({ id, title, meta, price, parcel, favorites, sellerN
         open={open}
         onClose={() => setOpen(false)}
         title={t('buy.title')}
-        footer={<Button full size="lg" variant="buy" onClick={() => { setOpen(false); toast(t('buy.testDone'), { icon: 'info' }); }}>{t('buy.toPayment')}</Button>}
+        footer={
+          <form action={buyAction}>
+            <input type="hidden" name="listingId" value={id} />
+            <BuyButton label={t('buy.toPayment')} busy={t('buy.redirecting')} />
+          </form>
+        }
       >
         <div className="flex flex-col gap-4">
           <div>
@@ -94,7 +108,7 @@ export function ItemActions({ id, title, meta, price, parcel, favorites, sellerN
             {t('buy.held', { seller: sellerName, payout: formatOre(a.sellerPayout) })}
           </Notice>
           <Notice icon="info">{t('buy.private')}</Notice>
-          <Notice icon="info" warn>{t('buy.testNotice')}</Notice>
+          {SITE.isTest && <Notice icon="info" warn>{t('buy.testNotice')}</Notice>}
         </div>
       </BottomSheet>
 

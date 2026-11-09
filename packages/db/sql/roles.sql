@@ -13,7 +13,8 @@ GRANT USAGE ON SCHEMA public TO respin_web, respin_admin, respin_worker;
 GRANT SELECT, INSERT, UPDATE ON users, listings, listing_images, conversations, messages, offers TO respin_web;
 GRANT SELECT, INSERT ON seller_profiles TO respin_web;
 -- Web må ALDRIG selv sætte certificering (0,5 % gebyr) eller KYC-status – kun admin/system
-GRANT UPDATE (stripe_account_id, payouts_enabled, kyc_status) ON seller_profiles TO respin_web;
+GRANT UPDATE (stripe_account_id, payouts_enabled, kyc_status, stripe_requirements, stripe_disabled_reason, stripe_synced_at) ON seller_profiles TO respin_web;
+GRANT UPDATE (status, attempts, run_after, last_error, done_at) ON outbox TO respin_web;  -- outbox køres fra cron i web-appen
 GRANT SELECT, INSERT, DELETE ON favorites TO respin_web;
 GRANT SELECT, INSERT, UPDATE ON listing_promotions TO respin_web;      -- fremhævning (købes af sælgeren selv)
 GRANT SELECT, INSERT, UPDATE ON orders TO respin_web;
@@ -51,7 +52,7 @@ GRANT UPDATE (status, decided_by, decided_at, decision_note) ON admin_approvals 
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO respin_worker;
 GRANT UPDATE ON orders, outbox, stripe_events, listing_images, listings TO respin_worker;
 GRANT INSERT ON order_events, ledger_transactions, ledger_entries, audit_log, outbox TO respin_worker;
-GRANT UPDATE (stripe_account_id, payouts_enabled, kyc_status) ON seller_profiles TO respin_worker;
+GRANT UPDATE (stripe_account_id, payouts_enabled, kyc_status, stripe_requirements, stripe_disabled_reason, stripe_synced_at) ON seller_profiles TO respin_worker;
 
 -- ---------- auth ----------
 GRANT SELECT, INSERT, UPDATE ON user_passwords, sessions, auth_tokens TO respin_web;

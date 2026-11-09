@@ -25,6 +25,12 @@ export async function runOutbox(db: Db, gw: StripeGateway, opts: { now?: Date; l
       await db.update(outbox).set({ status: 'done', doneAt: now, attempts: job.attempts + 1, lastError: null }).where(eq(outbox.id, job.id));
       result.done++;
     } catch (e) {
+      // Sælgeren har ikke en godkendt udbetalingskonto endnu: pengene ligger sikkert hos Stripe. Vent (tæller ikke som fejl).
+      if (e instanceof Error && e.message === 'seller_not_payout_ready') {
+        await db.update(outbox).set({ runAfter: new Date(now.getTime() + 6 * 3_600_000), lastError: e.message }).where(eq(outbox.id, job.id));
+        result.retried++;
+        continue;
+      }
       const attempts = job.attempts + 1;
       const dead = attempts >= MAX_ATTEMPTS;
       await db.update(outbox).set({ attempts, status: dead ? 'failed' : 'pending', runAfter: new Date(now.getTime() + backoffMs(attempts)), lastError: (e instanceof Error ? e.message : String(e)).slice(0, 500) }).where(eq(outbox.id, job.id));
