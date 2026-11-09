@@ -80,6 +80,65 @@ og en klageadgang med menneskelig behandling.
 **Hvidvask:** Stripe står for KYC efter hvidvaskloven. Videro er ikke selvstændigt omfattet, så længe Videro ikke
 selv udfører betalingstjenester. **Bekræft** med advokaten.
 
+## 3a. KYC og hvidvask (kendskab til kunden)
+
+### Hvem har KYC-pligten?
+
+**Bekræft:** Videro er efter denne gennemgang **ikke** selv omfattet af hvidvaskloven og skal derfor ikke selv lave
+fuld KYC (kundekendskabsprocedurer). Det gælder, så længe Videro ikke selv udfører betalingstjenester.
+
+| Aktør | Omfattet af hvidvaskreglerne? | Hvad den gør |
+|---|---|---|
+| **Stripe** (Stripe Payments Europe, Irland) | Ja, licenseret betalingsinstitut | KYC på sælgere: navn, fødselsdato, adresse, bankkonto og ved behov legitimation og selfie. Desuden sanktionsscreening, overvågning af transaktioner, underretning til myndigheder og frysning af midler |
+| **Videro** | Nej, så længe Videro ikke rører pengene | Ingen lovpligtig KYC efter hvidvaskloven. Videro har dog DAC7-due diligence (afsnit 4) og en pligt efter Stripe-aftalen til at hjælpe sælgerne gennem Stripes verifikation |
+| **Vinted** | Ja, via egen licenseret enhed (Vinted Pay UAB, Litauen) | Fuld KYC; derfor beder Vinted om legitimation, når sælgere passerer beløbsgrænser |
+
+### Hvorfor Videro ikke selv må holde pengene
+
+- Undtagelsen for "handelsagenter" i betalingstjenestedirektivet (PSD2 art. 3, litra b) gælder **ikke** for en
+  platform, der handler på vegne af både køber og sælger (EBA Q&A 2020_5355).
+- Det kommende PSD3/PSR skærper det: e-handelsplatforme, der handler for både private købere og sælgere, er ikke
+  handelsagenter.
+- Hvis Videro selv opbevarede købers penge eller lavede en "Videro-saldo" som Vinted, ville det kræve tilladelse
+  fra Finanstilsynet som betalings- eller e-pengeinstitut. Det ville også betyde fuld KYC, hvidvaskpolitik,
+  hvidvaskansvarlig og underretningspligt.
+- **Regel for udviklingen:** pengene skal altid ligge hos Stripe. Byg aldrig en Videro-saldo, en tegnebog eller
+  udbetaling via egen bankkonto.
+
+### Hvad Stripe kræver af sælgerne
+
+- Stripe Connect kræver verifikation af tilsluttede konti. Kan Stripe ikke verificere automatisk, beder Stripe om
+  legitimation og eventuelt en selfie (Stripe Identity) eller dokumentation for adresse.
+- Mangler oplysningerne, sætter Stripe betalinger og udbetalinger på pause.
+- Stripe har varslet opdaterede verifikationskrav for Europa i 2026. **Bekræft** de præcise felter for danske
+  privatpersoner på Stripes side "Required verification information".
+- **Anbefaling:** brug Stripes hostede onboarding (Express eller Stripe-hosted), så legitimation sendes direkte til
+  Stripe og aldrig gemmes hos Videro. Det minimerer GDPR-risikoen. Status: koden skal følge
+  `requirements.currently_due` på kontoen og vise sælgeren, hvad der mangler.
+- **Købere** skal ikke igennem KYC. Kortbetaling sker med stærk kundeautentifikation (3-D Secure/MitID) hos
+  kortudstederen.
+
+### EU's nye hvidvaskforordning (AMLR, 2024/1624)
+
+- AMLR gælder fra **10. juli 2027** og samler reglerne i én EU-forordning under den nye myndighed AMLA.
+- **Bekræft:** onlinemarkedspladser for brugte varer er efter gennemgangen ikke selv på listen over forpligtede
+  enheder. Betalingsinstitutter som Stripe er. Reglerne om handlende med visse højværdivarer (fx ædelmetaller og
+  smykker) og om kontantbetalinger rammer ikke Videro, fordi Videro ikke tager imod kontanter.
+- Tjek igen, hvis I senere tillader dyre luksusvarer eller kontant afhentning.
+
+### Hvad Videro selv bør gøre (god praksis og krav i Stripe-aftalen)
+
+- **Forbud mod at flytte penge:** forbyd fiktive handler og pengeoverførsler uden en reel vare. Det er nu tilføjet
+  i vilkårenes afsnit 7.
+- **Mistanke:** del mistanke om svindel eller hvidvask med Stripe, og anmeld til politiet ved mistanke om
+  strafbare forhold. Videro har ikke underretningspligt til Hvidvasksekretariatet, men må anmelde til politiet.
+- **Overvågning:** hold øje med mønstre som mange dyre køb mellem de samme to konti, køb af egne varer via
+  ekstra konti og annoncer med urealistiske priser. Admin-panelet har allerede moderation, advarsler og
+  udelukkelser.
+- **DAC7 bruger delvist de samme oplysninger som KYC:** navn, adresse, fødselsdato og bankkonto. **Bekræft**, om
+  oplysninger, Stripe allerede har verificeret, må genbruges til DAC7-due diligence. Reglerne tillader at bruge en
+  tredjepartsudbyder, men ansvaret forbliver Videros.
+
 ## 4. Skat
 
 ### DAC7 (BEK nr. 1253 af 06/09/2022)
@@ -204,4 +263,9 @@ frosne penge.
 - [Lovguiden / Forbruger Europa: Handler du på Vinted?](https://lovguiden.dk/det-offentlige/forbruger-europa/2025-07-07-handler-du-paa-vinted-det-skal-du-vaere-opmaerksom-paa)
 - [Markedsføringsloven § 6 a](https://danskelove.dk/markedsf%C3%B8ringsloven/6a) og [lov nr. 2192 af 30/11/2021](https://www.lovguiden.dk/loven/lov-nr-2192-af-30-11-2021)
 - [DSA art. 19 (undtagelse for mikro- og små virksomheder)](https://www.springlex.eu/en/packages/dsa/dsa-regulation/article-19/)
+- [EBA Q&A 2020_5355 (handelsagent for både køber og sælger)](https://eba.europa.eu/single-rule-book-qa/qna/view/publicId/2020_5355)
+- [Stripe: hvad platforme kan forvente af PSD3](https://stripe.com/en-be/guides/what-platforms-and-marketplaces-can-expect-from-psd3)
+- [Stripe: Required verification information](https://docs.stripe.com/connect/required-verification-information) og [2026-krav for Europa](https://support.stripe.com/questions/2026-updated-verification-requirements-for-europe-faqs-for-platforms)
+- [Hvidvaskloven § 1](https://danskelove.dk/hvidvaskloven/1)
+- [AMLR-oversigt (Chambers)](https://chambers.com/articles/overview-of-the-eu-aml-cft-legislative-package)
 - [BDO: hvornår privat salg bliver skatte- og momspligtigt](https://www.bdo.dk/da-dk/faglig-info/depechen/depechen-artikler-2021/mobilepay-betalinger-udloeste-en-regning-for-baade-skat-og-moms)
