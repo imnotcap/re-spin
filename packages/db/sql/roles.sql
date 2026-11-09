@@ -13,7 +13,7 @@ GRANT USAGE ON SCHEMA public TO respin_web, respin_admin, respin_worker;
 GRANT SELECT, INSERT, UPDATE ON users, listings, listing_images, conversations, messages, offers TO respin_web;
 GRANT SELECT, INSERT ON seller_profiles TO respin_web;
 -- Web må ALDRIG selv sætte certificering (0,5 % gebyr) eller KYC-status – kun admin/system
-GRANT UPDATE (stripe_account_id, payouts_enabled, kyc_status, stripe_requirements, stripe_disabled_reason, stripe_synced_at) ON seller_profiles TO respin_web;
+GRANT UPDATE (stripe_account_id, payouts_enabled, kyc_status, stripe_requirements, stripe_disabled_reason, stripe_synced_at, sender_address) ON seller_profiles TO respin_web;
 GRANT UPDATE (status, attempts, run_after, last_error, done_at) ON outbox TO respin_web;  -- outbox køres fra cron i web-appen
 GRANT SELECT, INSERT, DELETE ON favorites TO respin_web;
 GRANT SELECT, INSERT, UPDATE ON listing_promotions TO respin_web;      -- fremhævning (købes af sælgeren selv)

@@ -9,7 +9,9 @@ import { getDb } from '../../../../lib/server';
 import { getImageStore } from '../../../../lib/image-store';
 import { STATUS_LABEL, getOrder } from '../../../../lib/orders';
 import { payoutStatus } from '../../../../lib/payouts';
-import { orderAction } from '../../../../lib/order-actions';
+import { orderAction, senderAddressAction } from '../../../../lib/order-actions';
+import { getShipmondoOrNull, senderAddressOf } from '../../../../lib/shipping';
+import { trackingUrl } from '../../../../lib/shipmondo';
 import { profilePath } from '../../../../lib/profile-url';
 
 export const metadata = { title: 'Ordre', robots: { index: false } };
@@ -22,7 +24,8 @@ const OK: Record<string, string> = {
   buyer_cancel: 'Købet er annulleret.',
   buyer_received: 'Tak! Du har nu 48 timer til at godkende varen eller melde et problem.',
   buyer_approve: 'Tak for din godkendelse. Sælgeren får nu pengene.',
-  buyer_dispute: 'Vi har modtaget dit problem og holder pengene tilbage. Kundeservice kontakter dig.'
+  buyer_dispute: 'Vi har modtaget dit problem og holder pengene tilbage. Kundeservice kontakter dig.',
+  afsender: 'Din afsenderadresse er gemt. Fragtlabelen er klar herunder.'
 };
 
 function steps(status: string): TimelineStep[] {
@@ -41,6 +44,9 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
   const sp = await searchParams;
   const seller = o.role === 'seller';
   const payout = seller ? await payoutStatus(db, current.user.id) : null;
+  const shipmondo = !!getShipmondoOrNull() && !!o.servicePoint;
+  const sender = seller && shipmondo ? await senderAddressOf(db, current.user.id) : null;
+  const track = trackingUrl(o.carrier, o.trackingNumber);
   const can = (e: string) => (o.actions as readonly string[]).includes(e);
   const a = o.shippingAddress;
   const live = ['paid', 'shipped', 'delivered', 'disputed'].includes(o.status);
@@ -50,7 +56,8 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
       {sp.betalt && o.status === 'pending_payment' && <Notice icon="info" role="status">Vi venter på bekræftelse fra betalingen. Siden opdateres af sig selv.</Notice>}
       {sp.betalt && o.status === 'paid' && <Notice icon="check" role="status"><b>Tak for dit køb!</b> Sælgeren sender varen senest {fmt(o.shipByAt)}. Du får en mail, når den er sendt.</Notice>}
       {sp.ok && OK[sp.ok] && <Notice icon="check" role="status">{OK[sp.ok]}</Notice>}
-      {sp.fejl && <Notice icon="info" warn role="alert">{sp.fejl === 'begrundelse' ? 'Beskriv problemet med mindst 10 tegn.' : 'Handlingen kunne ikke udføres – ordren er måske allerede ændret.'}</Notice>}
+      {sp.fejl?.startsWith('afsender') && <Notice icon="info" warn role="alert">Tjek afsenderadressen: navn, adresse, postnummer (4 cifre), by og et dansk mobilnummer.</Notice>}
+      {sp.fejl && !sp.fejl.startsWith('afsender') && <Notice icon="info" warn role="alert">{sp.fejl === 'begrundelse' ? 'Beskriv problemet med mindst 10 tegn.' : 'Handlingen kunne ikke udføres – ordren er måske allerede ændret.'}</Notice>}
 
       <div className="flex items-center gap-3 rounded-lg border border-line p-3">
         {o.image ? <img src={o.image} alt="" width={56} height={56} className="h-14 w-14 rounded-md object-cover" /> : <span className="h-14 w-14 rounded-md bg-stone-100" />}
@@ -64,8 +71,55 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
       {(live || o.status === 'completed') && <Timeline steps={steps(o.status)} />}
       {o.status === 'refunded' && <Notice icon="info">Ordren er refunderet. Køberen får hele beløbet tilbage på kortet inden for 5-10 bankdage.</Notice>}
 
+      {/* Sælger med Shipmondo: label + pakkeshop – status opdateres automatisk, når pakken scannes */}
+      {seller && shipmondo && o.status === 'paid' && (
+        <section aria-labelledby="label" className="rounded-lg border-2 border-forest p-5">
+          <h2 id="label" className="text-[20px] font-bold">Send varen senest {fmt(o.shipByAt)}</h2>
+          {!sender ? (
+            <>
+              <p className="mt-1 text-small text-slate-700">Skriv din afsenderadresse én gang – så laver vi en forudbetalt fragtlabel. Fragten er allerede betalt af køberen.</p>
+              <form action={senderAddressAction} className="mt-4 grid gap-3 sm:grid-cols-2">
+                <input type="hidden" name="orderId" value={o.id} />
+                <Field label="Navn" name="name" required autoComplete="name" maxLength={60} />
+                <Field label="Mobilnummer" name="mobile" required inputMode="tel" autoComplete="tel" maxLength={14} hint="Fragtfirmaet sender en sms, hvis noget går galt" />
+                <Field label="Adresse" name="address1" required autoComplete="street-address" maxLength={80} className="sm:col-span-2" />
+                <Field label="Postnummer" name="zipcode" required inputMode="numeric" autoComplete="postal-code" maxLength={4} />
+                <Field label="By" name="city" required autoComplete="address-level2" maxLength={40} />
+                <div className="sm:col-span-2"><Button type="submit" icon="package">Lav fragtlabel</Button></div>
+              </form>
+            </>
+          ) : o.hasLabel ? (
+            <>
+              <ol className="mt-3 list-decimal space-y-1 pl-5 text-small text-slate-700">
+                <li>Pak varen godt ind.</li>
+                <li>{o.labellessCode ? <>Skriv koden <b className="font-mono text-ink">{o.labellessCode}</b> på pakken – eller print labelen og sæt den på.</> : 'Print labelen, og sæt den på pakken.'}</li>
+                <li>Aflever pakken i en {o.servicePoint?.carrier?.toUpperCase() ?? ''} pakkeshop. Vi registrerer automatisk, når den er scannet.</li>
+              </ol>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button href={`/konto/ordrer/${o.id}/fragtlabel/`} icon="package" target="_blank">Hent fragtlabel (PDF)</Button>
+                {track && <Button href={track} variant="outline" target="_blank" rel="noopener noreferrer">Følg pakken</Button>}
+              </div>
+              <p className="mt-3 text-caption text-muted">Leveres til køberens pakkeshop: {o.servicePoint?.name}, {o.servicePoint?.address}, {o.servicePoint?.zipcode} {o.servicePoint?.city}</p>
+            </>
+          ) : o.labelFailed ? (
+            <Notice icon="info" warn className="mt-3">Labelen kunne ikke oprettes hos fragtfirmaet. <Link href="/konto/support/ny/" className={linkCls}>Kontakt kundeservice</Link>, så hjælper vi – eller send selv varen og markér den som sendt herunder.</Notice>
+          ) : <p className="mt-2 text-small text-slate-700">Fragtlabelen bliver lavet nu. Genindlæs siden om et øjeblik.</p>}
+          {payout && !payout.payoutsEnabled && (
+            <Notice icon="info" warn className="mt-4">Du har ikke en godkendt udbetalingskonto endnu. Pengene venter sikkert hos Stripe – <Link href="/konto/udbetalinger/" className={linkCls}>opret den nu</Link>.</Notice>
+          )}
+        </section>
+      )}
+      {seller && shipmondo && o.status === 'paid' && o.labelFailed && can('seller_ship') && (
+        <form action={orderAction} className="grid gap-3 rounded-lg border border-line p-4 sm:grid-cols-[180px_1fr_auto] sm:items-end">
+          <input type="hidden" name="orderId" value={o.id} /><input type="hidden" name="event" value="seller_ship" />
+          <Select label="Fragtfirma" name="carrier" options={CARRIERS} defaultValue="PostNord" />
+          <Field label="Sporingsnummer" name="tracking" optional maxLength={60} autoComplete="off" />
+          <Button type="submit" variant="outline" icon="truck">Markér som sendt</Button>
+        </form>
+      )}
+
       {/* Sælger: afsend varen */}
-      {seller && can('seller_ship') && (
+      {seller && !shipmondo && can('seller_ship') && (
         <section aria-labelledby="send" className="rounded-lg border-2 border-forest p-5">
           <h2 id="send" className="text-[20px] font-bold">Send varen senest {fmt(o.shipByAt)}</h2>
           {a ? (
@@ -90,7 +144,9 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
       {!seller && can('buyer_received') && (
         <section aria-labelledby="modtaget" className="rounded-lg border-2 border-forest p-5">
           <h2 id="modtaget" className="text-[20px] font-bold">Har du modtaget varen?</h2>
-          <p className="mt-1 text-small text-slate-700">Sendt {fmt(o.events.find((e) => e.to === 'shipped')?.at ?? null)}{o.trackingNumber ? ` · ${o.carrier ?? 'Sporing'}: ${o.trackingNumber}` : ''}. Tryk, når pakken er kommet – så har du 48 timer til at tjekke varen.</p>
+          <p className="mt-1 text-small text-slate-700">Sendt {fmt(o.events.find((e) => e.to === 'shipped')?.at ?? null)}{o.trackingNumber ? ` · ${o.carrier ?? 'Sporing'}: ${o.trackingNumber}` : ''}. {o.servicePoint ? 'Vi registrerer automatisk, når pakken er klar i din pakkeshop – du kan også trykke selv.' : 'Tryk, når pakken er kommet – så har du 48 timer til at tjekke varen.'}</p>
+          {o.trackingStatus && <p className="mt-2 rounded-md bg-sunken p-2 text-small"><b>Seneste status:</b> {o.trackingStatus}{o.trackingUpdatedAt ? ` (${fmt(o.trackingUpdatedAt)})` : ''}</p>}
+          {track && <a href={track} target="_blank" rel="noopener noreferrer" className={`${linkCls} mt-2 inline-block text-small`}>Følg pakken hos fragtfirmaet</a>}
           <form action={orderAction} className="mt-3"><input type="hidden" name="orderId" value={o.id} /><input type="hidden" name="event" value="buyer_received" /><Button type="submit" icon="package">Jeg har modtaget varen</Button></form>
         </section>
       )}
@@ -116,7 +172,8 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
         {seller
           ? <PriceSummary rows={[['Salgspris', formatOre(ore(o.amounts.price))], ['Kommission til Videro', formatOre(ore(0))]]} total={[o.paidOut ? 'Udbetalt' : 'Du får', formatOre(ore(o.amounts.payout))]} />
           : <PriceSummary rows={[['Vare', formatOre(ore(o.amounts.price))], ['Køberbeskyttelse', formatOre(ore(o.amounts.buyerFee))], ['Fragt', formatOre(ore(o.amounts.shipping))]]} total={['I alt', formatOre(ore(o.amounts.total))]} />}
-        {!seller && a && <p className="mt-3 text-small text-muted">Leveres til: {a.name}, {a.line1}, {a.postalCode} {a.city}</p>}
+        {!seller && o.servicePoint && <p className="mt-3 text-small text-muted">Leveres til pakkeshop: {o.servicePoint.name}, {o.servicePoint.address}, {o.servicePoint.zipcode} {o.servicePoint.city}</p>}
+        {!seller && !o.servicePoint && a && <p className="mt-3 text-small text-muted">Leveres til: {a.name}, {a.line1}, {a.postalCode} {a.city}</p>}
       </section>
 
       {/* Annullering: sælger kan fortryde et betalt salg (køber får pengene tilbage) */}

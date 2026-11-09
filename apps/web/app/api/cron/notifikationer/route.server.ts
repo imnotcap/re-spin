@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { runOrderTimers, runOutbox } from '@respin/payments';
 import { getDb, getStripeGatewayOrNull } from '../../../../lib/server';
 import { runOrderMails } from '../../../../lib/order-mails';
+import { getShipmondoOrNull, runShippingLabels } from '../../../../lib/shipping';
 import { getNotifier } from '../../../../lib/auth';
 import { runNotifications } from '../../../../lib/notifications';
 
@@ -21,7 +22,7 @@ function authorized(req: Request): boolean {
 /**
  * Køres hvert 5. minut:
  *  1. ordrernes frister (udløbet betaling, afsendelsesfrist, antaget levering, automatisk godkendelse)
- *  2. outbox: overførsler til sælgere og refunderinger hos Stripe (idempotente)
+ *  2. outbox: overførsler til sælgere og refunderinger hos Stripe (idempotente) + fragtlabels hos Shipmondo
  *  3. mails om ordrer, nye beskeder og svar fra kundeservice
  */
 export async function GET(req: Request) {
@@ -32,9 +33,11 @@ export async function GET(req: Request) {
     const timers = await runOrderTimers(db);
     const gw = getStripeGatewayOrNull();
     const outbox = gw ? await runOutbox(db, gw) : null;
+    const shipmondo = getShipmondoOrNull();
+    const labels = shipmondo ? await runShippingLabels(db, shipmondo) : null;
     const orderMails = await runOrderMails(db, mailer, appUrl);
     const messages = await runNotifications(db, mailer, appUrl);
-    return NextResponse.json({ timers, outbox, orderMails, ...messages }, { headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json({ timers, outbox, labels, orderMails, ...messages }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (e) {
     console.error('cron-fejl', e instanceof Error ? e.message : 'ukendt');
     return NextResponse.json({ error: 'fejl' }, { status: 500, headers: { 'Cache-Control': 'no-store' } });

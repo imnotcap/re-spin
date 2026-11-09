@@ -80,3 +80,58 @@ Siden henter også status direkte fra Stripe, når sælgeren kommer tilbage fra 
 - **Fragtlabels og sporing:** der er ingen integration med PostNord, GLS eller DAO endnu. Sælgeren angiver selv
   sporingsnummer, køberen bekræfter modtagelse, og ellers regnes pakken for leveret efter 10 dage.
 - **DAC7:** indsamling af skatteoplysninger og indberetningsfil er ikke bygget. Se `docs/legal/juridisk-gennemgang.md`.
+
+---
+
+# Opsætning af fragt (Shipmondo)
+
+Med Shipmondo foregår forsendelsen sådan:
+
+1. Køberen vælger en pakkeshop ved købet.
+2. Når ordren er betalt, laver Videro en forudbetalt fragtlabel. Standarden er GLS ShopDelivery, `GLSDK_SD`.
+3. Sælgeren henter labelen som PDF, eller skriver en kode på pakken, og afleverer den i en pakkeshop.
+4. Fragtfirmaets scanninger kommer som webhook og flytter ordren af sig selv:
+   - **Scannet:** ordren skifter til "Sendt".
+   - **Leveret eller klar i pakkeshop:** ordren skifter til "Modtaget", og køberens 48 timer starter.
+
+Uden Shipmondo-nøgler bruges det manuelle flow: sælgeren skriver selv sporingsnummeret ind.
+
+## 1. Konto
+- Opret en konto på shipmondo.com med jeres CVR, og indbetal fragtsaldo. Videro betaler for labels, og køberen
+  betaler 39/49 kr. i fragt.
+- Webhooks kræver abonnementet **Shipmondo Pro**.
+- Under **Indstillinger → API** finder I API-bruger og API-nøgle.
+
+## 2. Miljøvariabler i Vercel (re-spin, Production)
+
+| Variabel | Værdi |
+|---|---|
+| `SHIPMONDO_API_USER` | API-bruger fra Shipmondo |
+| `SHIPMONDO_API_KEY` | API-nøgle (Sensitive) |
+| `SHIPMONDO_WEBHOOK_KEY` | En tilfældig nøgle på mindst 16 tegn, som I også skriver i Shipmondo ved oprettelsen af webhooken (Sensitive) |
+| `SHIPMONDO_TEST_MODE` | `1`, mens I tester. Labels laves så i testtilstand og koster ikke noget |
+| `SHIPMONDO_CARRIER` | Valgfri, standard `gls`. Fx `pdk` (PostNord) eller `dao` |
+| `SHIPMONDO_PRODUCT_CODE` | Valgfri, standard `GLSDK_SD`. Skal passe til fragtfirmaets pakkeshopprodukt; se Shipmondos produktliste |
+| `SHIPMONDO_SERVICE_CODES` | Valgfri, standard `EMAIL_NT,SMS_NT` (besked til modtageren) |
+
+## 3. Webhook i Shipmondo (Indstillinger → Webhooks)
+- **Endpoint:** `https://videro.dk/api/webhooks/shipmondo/`
+- **Ressource:** *Shipment Monitor*. Opret én webhook med handlingen **latest** og én med **delivered**.
+- **Nøgle:** samme værdi som `SHIPMONDO_WEBHOOK_KEY`.
+
+Shipmondo sender `{ "data": "<JWT>" }`, som er signeret med nøglen (HS256). Videro afviser alt, der ikke er
+signeret korrekt.
+
+## 4. Database
+Migration **0013** (`packages/db/migrations/0013_shipmondo.sql`) tilføjer pakkeshop, forsendelse, sporing og
+afsenderadresse.
+
+## 5. Test
+1. Sæt `SHIPMONDO_TEST_MODE=1`.
+2. Køb en vare, og vælg en pakkeshop ud fra et postnummer.
+3. Som sælger: udfyld afsenderadressen og hent labelen.
+4. Tjek i Shipmondo, at forsendelsen findes.
+
+**Bekræft:** "delivered"-hændelsen kan i Shipmondo testes med *Send test*. Feltnavnene i sporingsbeskederne er
+ikke fuldt dokumenteret offentligt, så Videro genkender "leveret" ud fra både handlingen og statusteksten. Tjek
+den første rigtige forsendelse i Shipmondos webhook-log.

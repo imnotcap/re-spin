@@ -51,6 +51,7 @@ export default function TermsPage() {
             <li><b>Pris:</b> Du ser altid den samlede pris, før du betaler: varens pris + køberbeskyttelse (5 % af prisen + 3 kr., inkl. moms) + fragt. Prisen inkl. køberbeskyttelse vises allerede på varekortet og annoncen.</li>
             <li><b>Betaling</b> håndteres af vores betalingsudbyder Stripe. Kortoplysninger når aldrig Videros servere. Pengene holdes hos Stripe – ikke på en konto hos Videro – til handlen er gennemført.</li>
             <li><b>Køberbeskyttelse</b> er en ydelse fra Videro (ikke en forsikring): Kommer varen ikke frem, eller er den væsentligt anderledes end beskrevet, kan du melde det inden for 48 timer efter levering. Så holder vi pengene tilbage, hjælper med returnering og refunderer købsprisen, fragten og køberbeskyttelsen, når sagen er afgjort i din favør. Melder du ikke noget inden for 48 timer, regnes varen for godkendt.</li>
+            <li><b>Forsendelse:</b> Køberen vælger en pakkeshop ved købet, og fragten er betalt sammen med varen. Sælgeren får en forudbetalt fragtlabel (eller en kode, der skrives på pakken) og skal aflevere pakken i en pakkeshop senest 5 dage efter købet – ellers får køberen automatisk pengene tilbage. Fragtfirmaets scanninger registreres automatisk: når pakken er klar i pakkeshoppen, starter køberens 48 timer.</li>
             <li>Køberbeskyttelsen gælder kun køb, der er betalt på Videro.</li>
           </ul>
           <p>Læs mere under <Link href="/sikkerhed/">køberbeskyttelse</Link>.</p>

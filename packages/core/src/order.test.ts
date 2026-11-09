@@ -11,6 +11,8 @@ describe('ordre-tilstandsmaskine', () => {
     expect(transition('shipped', 'carrier_delivered', 'system')).toMatchObject({ ok: true, to: 'delivered' });
     expect(transition('shipped', 'buyer_received', 'buyer')).toMatchObject({ ok: true, to: 'delivered', effect: 'none' });
     expect(transition('shipped', 'buyer_received', 'seller').ok).toBe(false);
+    expect(transition('paid', 'carrier_picked_up', 'system')).toMatchObject({ ok: true, to: 'shipped' });
+    expect(transition('paid', 'carrier_picked_up', 'seller').ok).toBe(false);
     expect(transition('delivered', 'buyer_approve', 'buyer')).toMatchObject({ ok: true, to: 'completed', effect: 'release_to_seller' });
   });
   it('kan ikke springe trin over', () => {

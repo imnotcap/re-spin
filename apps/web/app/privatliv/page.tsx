@@ -24,6 +24,7 @@ export default function PrivacyPage() {
             <li><b>Annoncer:</b> titel, beskrivelse, pris, kategori og billeder. Billederne omkodes, inden de gemmes, så skjulte oplysninger som GPS-position og kameradata fjernes.</li>
             <li><b>Beskeder og bud:</b> indholdet af dine beskeder, bud og svar, tidspunkter og om beskeden er læst. Beskeder scannes automatisk for tegn på svindel (fx betaling uden om Videro), og resultatet (lav/høj risiko) gemmes.</li>
             <li><b>Notifikationer:</b> hvornår vi har sendt dig en mail om nye beskeder eller svar fra kundeservice.</li>
+            <li><b>Forsendelse:</b> køberens valgte pakkeshop og leveringsadresse, sælgerens afsenderadresse og telefonnummer, sporingsnummer og sporingsstatus.</li>
             <li><b>Køb, betaling og udbetaling:</b> ordrer, beløb, status og levering. Kortoplysninger håndteres alene af Stripe og når aldrig vores servere. For at få udbetalt skal sælgere bekræfte deres identitet hos Stripe.</li>
             <li><b>Skatteoplysninger (DAC7):</b> for sælgere, der når 30 salg eller 2.000 euro om året: navn, adresse, fødselsdato, CPR-nummer, bankkonto, antal salg og beløb.</li>
             <li><b>Fremhævning:</b> hvilken annonce eller profil, hvilken pakke og betalingsstatus.</li>
@@ -54,6 +55,7 @@ export default function PrivacyPage() {
             <li><b>Neon Inc.</b> – database (servere i Frankfurt).</li>
             <li><b>Cloudflare Inc.</b> – beskyttelse mod angreb og hurtig levering af siden.</li>
             <li><b>Resend Inc.</b> – udsendelse af e-mails (bekræftelse, nulstilling af adgangskode og notifikationer).</li>
+            <li><b>Shipmondo ApS</b> (Danmark) – fragtlabels og sporing. Får køberens navn, adresse, telefon, e-mail og valgte pakkeshop samt sælgerens afsenderadresse og telefon, og giver dem videre til fragtfirmaet (fx GLS), der leverer pakken.</li>
           </ul>
           <p><b>Stripe</b> (Stripe Payments Europe Ltd., Irland) håndterer betaling og udbetaling og er selvstændig dataansvarlig for identitetskontrol og forebyggelse af svindel og hvidvask – se <a href="https://stripe.com/dk/privacy" rel="noopener noreferrer">Stripes privatlivspolitik</a>.</p>
           <p>Når du handler, ser den anden part dit profilnavn og dine beskeder – og sælgeren får køberens navn og leveringsadresse til forsendelsen. Oplysninger om sælgere over DAC7-grænsen videregives til <b>Skattestyrelsen</b>. Vi videregiver også oplysninger til politiet og andre myndigheder, når loven kræver det.</p>

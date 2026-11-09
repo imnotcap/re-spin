@@ -37,7 +37,9 @@ export type CheckoutResult =
 type Reserved = { ok: true; order: typeof orders.$inferSelect; title: string } | { ok: false; reason: 'listing_unavailable' | 'own_listing' | 'seller_unavailable' };
 
 /** Reservér varen og opret en ubetalt ordre med fastfrosne beløb (én transaktion; kun én aktiv ordre pr. annonce) */
-async function reserveOrder(db: Db, input: { buyerId: string; listingId: string; now?: Date }): Promise<Reserved> {
+export type ServicePoint = NonNullable<(typeof orders.$inferInsert)['servicePoint']>;
+
+async function reserveOrder(db: Db, input: { buyerId: string; listingId: string; servicePoint?: ServicePoint | null; now?: Date }): Promise<Reserved> {
   const now = input.now ?? new Date();
   let title = '';
   type Created = { order: typeof orders.$inferSelect } | { fail: 'listing_unavailable' | 'own_listing' | 'seller_unavailable' };
@@ -55,7 +57,7 @@ async function reserveOrder(db: Db, input: { buyerId: string; listingId: string;
         listingId: l.id, buyerId: input.buyerId, sellerId: l.sellerId,
         priceOre: amounts.price, buyerFeeOre: amounts.buyerFee, sellerFeeOre: amounts.sellerFee, shippingOre: amounts.shipping,
         buyerTotalOre: amounts.buyerTotal, sellerPayoutOre: amounts.sellerPayout, sellerCertifiedAtOrder: seller.certified === true,
-        paymentExpiresAt: addMs(now, PAYMENT_WINDOW_MINUTES * 60_000)
+        paymentExpiresAt: addMs(now, PAYMENT_WINDOW_MINUTES * 60_000), servicePoint: input.servicePoint ?? null
       }).returning();
       await tx.update(listings).set({ status: 'reserved', updatedAt: now }).where(eq(listings.id, l.id));
       return { order: order! };
@@ -96,6 +98,8 @@ export type OrderCheckoutResult =
  */
 export async function startOrderCheckout(db: Db, gw: StripeGateway | null, input: {
   buyerId: string; buyerEmail: string; listingId: string; appUrl: string; simulate?: boolean; now?: Date;
+  /** Pakkeshop valgt af køberen (allerede valideret mod Shipmondo af kalderen) */
+  servicePoint?: ServicePoint | null;
 }): Promise<OrderCheckoutResult> {
   const now = input.now ?? new Date();
   if (!gw && !input.simulate) return { ok: false, reason: 'payments_unavailable' };
@@ -105,7 +109,7 @@ export async function startOrderCheckout(db: Db, gw: StripeGateway | null, input
     if (stale.session && gw) await gw.expireCheckoutSession(stale.session);
     await applyOrderEvent(db, { orderId: stale.id, event: 'buyer_cancel', actor: 'buyer', actorId: input.buyerId, now });
   }
-  const r = await reserveOrder(db, { buyerId: input.buyerId, listingId: input.listingId, now });
+  const r = await reserveOrder(db, { buyerId: input.buyerId, listingId: input.listingId, servicePoint: input.servicePoint, now });
   if (!r.ok) return r;
   const { order, title } = r;
   if (!gw) {
@@ -166,7 +170,11 @@ export async function applyOrderEvent(db: Db, input: ApplyEventInput): Promise<A
 
     const patch: Partial<typeof orders.$inferInsert> = { status: t.to, version: order.version + 1, updatedAt: now };
     if (t.to === 'paid') { patch.shipByAt = addMs(now, SHIP_DEADLINE_DAYS * 24 * HOUR); patch.stripePaymentIntentId = input.payment?.paymentIntentId ?? order.stripePaymentIntentId; patch.stripeChargeId = input.payment?.chargeId ?? null; }
-    if (t.to === 'shipped') { patch.shippedAt = now; patch.carrier = input.shipment?.carrier?.slice(0, 40) || null; patch.trackingNumber = input.shipment?.trackingNumber?.slice(0, 60) || null; }
+    if (t.to === 'shipped') {
+      patch.shippedAt = now;
+      // Kun når sælgeren selv angiver dem – ellers bevares fragtfirma og sporingsnummer fra fragtlabelen
+      if (input.shipment) { patch.carrier = input.shipment.carrier?.slice(0, 40) || order.carrier; patch.trackingNumber = input.shipment.trackingNumber?.slice(0, 60) || order.trackingNumber; }
+    }
     if (t.to === 'delivered') { patch.deliveredAt = now; patch.autoCompleteAt = addMs(now, AUTO_COMPLETE_AFTER_HOURS * HOUR); }
     const updated = await tx.update(orders).set(patch).where(and(eq(orders.id, order.id), eq(orders.version, order.version))).returning({ id: orders.id });
     if (updated.length !== 1) throw new ConcurrencyError(`Samtidig ændring af ordre ${order.id}`);

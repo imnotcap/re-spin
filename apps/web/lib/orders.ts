@@ -74,6 +74,8 @@ export async function getOrder(db: Db, store: ImageStore, userId: string, id: st
     // Adressen ser kun sælgeren (til forsendelsen) og køberen selv
     shippingAddress: order.shippingAddress,
     carrier: order.carrier, trackingNumber: order.trackingNumber,
+    servicePoint: order.servicePoint, hasLabel: !!order.shipmondoShipmentId, labellessCode: order.labellessCode,
+    labelFailed: order.labelAttempts >= 5, trackingStatus: order.trackingStatus, trackingUpdatedAt: order.trackingUpdatedAt,
     shipByAt: order.shipByAt, autoCompleteAt: order.autoCompleteAt, paymentExpiresAt: order.paymentExpiresAt,
     paidOut: !!order.stripeTransferId, createdAt: order.createdAt,
     events, actions

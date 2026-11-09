@@ -10,6 +10,7 @@ import { ReportListing } from '../../../components/item/ReportListing';
 import { TrackListingView } from '../../../components/Tracker';
 import { getCurrentSession } from '../../../lib/auth';
 import { getDb } from '../../../lib/server';
+import { getShipmondoOrNull } from '../../../lib/shipping';
 import { getImageStore } from '../../../lib/image-store';
 import { getListing } from '../../../lib/listings';
 import { CONDITION_HELP, getCategory, uploadedLabel } from '../../../lib/catalog';
@@ -27,7 +28,8 @@ const PAYMENT_NOTICE: Record<string, string> = {
   seller_unavailable: 'Sælgeren kan ikke sælge lige nu.',
   own_listing: 'Du kan ikke købe din egen vare.',
   payments_unavailable: 'Betaling er ikke slået til endnu. Prøv igen senere.',
-  'for-mange': 'Du har prøvet at købe mange gange. Vent lidt, og prøv igen.'
+  'for-mange': 'Du har prøvet at købe mange gange. Vent lidt, og prøv igen.',
+  pakkeshop: 'Vælg en pakkeshop, før du går til betaling.'
 };
 
 const load = cache(async (id: string) => {
@@ -104,7 +106,7 @@ export default async function ListingPage({ params, searchParams }: Props) {
                 <Button href="/konto/annoncer/" variant="ghost">Mine annoncer</Button>
               </div>
             ) : l.status === 'active' ? (
-              <ItemActions id={l.id} title={l.title} meta={meta} price={l.price} parcel={l.parcel} favorites={0} sellerName={l.seller.name} sellerCertified={l.seller.certified} />
+              <ItemActions id={l.id} title={l.title} meta={meta} price={l.price} parcel={l.parcel} favorites={0} sellerName={l.seller.name} sellerCertified={l.seller.certified} pickup={!!getShipmondoOrNull()} />
             ) : null}
           </div>
 

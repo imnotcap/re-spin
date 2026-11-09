@@ -9,7 +9,7 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number];
 export type Actor = 'buyer' | 'seller' | 'system' | 'admin';
 
 export const ORDER_EVENTS = [
-  'payment_succeeded', 'payment_expired', 'buyer_cancel', 'seller_ship', 'seller_cancel', 'ship_timeout',
+  'payment_succeeded', 'payment_expired', 'buyer_cancel', 'seller_ship', 'carrier_picked_up', 'seller_cancel', 'ship_timeout',
   'carrier_delivered', 'buyer_received', 'buyer_approve', 'buyer_dispute', 'auto_complete', 'admin_resolve_seller', 'admin_resolve_buyer', 'admin_refund'
 ] as const;
 export type OrderEvent = (typeof ORDER_EVENTS)[number];
@@ -24,6 +24,8 @@ const RULES: Record<OrderEvent, Rule> = {
   payment_expired:      { from: ['pending_payment'], to: 'expired',   actors: ['system'],                 effect: 'none' },
   buyer_cancel:         { from: ['pending_payment'], to: 'cancelled', actors: ['buyer'],                  effect: 'none' },
   seller_ship:          { from: ['paid'],            to: 'shipped',   actors: ['seller'],                 effect: 'none' },
+  /** Fragtfirmaet har scannet pakken (via Shipmondo) – sælgeren behøver ikke selv at markere den som sendt */
+  carrier_picked_up:    { from: ['paid'],            to: 'shipped',   actors: ['system'],                 effect: 'none' },
   seller_cancel:        { from: ['paid'],            to: 'refunded',  actors: ['seller'],                 effect: 'refund_buyer' },
   ship_timeout:         { from: ['paid'],            to: 'refunded',  actors: ['system'],                 effect: 'refund_buyer' },
   carrier_delivered:    { from: ['shipped'],         to: 'delivered', actors: ['system'],                 effect: 'none' },
