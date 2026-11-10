@@ -549,6 +549,16 @@ a.rs-trust__item:hover { box-shadow: var(--rs-shadow-2), 0 0 0 1px var(--rs-ston
 }
 .rs-catphoto:focus-visible { outline: 3px solid var(--rs-forest); outline-offset: 3px; border-radius: var(--rs-r-md); }
 
+/* Kategori som tegning: SVG uden boks, navnet centreret under */
+.rs-catillu { display: flex; flex-direction: column; align-items: center; gap: var(--rs-s-2); min-width: 0; text-align: center; }
+.rs-catillu__img { display: block; width: 100%; max-width: 128px; height: auto; aspect-ratio: 1; transition: transform var(--rs-t-slow) var(--rs-ease); }
+.rs-catillu__label { font-size: 15px; font-weight: 600; }
+@media (hover: hover) {
+  .rs-catillu:hover .rs-catillu__img { transform: scale(1.06); }
+  .rs-catillu:hover .rs-catillu__label { text-decoration: underline; text-underline-offset: 3px; }
+}
+.rs-catillu:focus-visible { outline: 3px solid var(--rs-forest); outline-offset: 3px; border-radius: var(--rs-r-md); }
+
 /* Nummererede trin */
 .rs-steps { margin: 0; padding: 0; list-style: none; }
 .rs-steps__item { display: grid; grid-template-columns: 48px 1fr; gap: var(--rs-s-4); padding: var(--rs-s-5) 0; border-top: 1px solid var(--rs-border); }

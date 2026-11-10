@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="kvinder-title kvinder-desc">
+  <title id="kvinder-title">Kvinder</title>
+  <desc id="kvinder-desc">Grønt stregikon af en kortærmet kjole med rund hals og to enkle læg.</desc>
+  <circle cx="80" cy="48" r="34" fill="#d9eadf"/>
+  <g fill="none" stroke="#0e5a2f" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M50 25 C51 35 77 35 78 25 L93 32 L105 49 L91 58 L83 46 L78 65 L94 102 Q64 109 34 102 L50 65 L45 46 L37 58 L23 49 L35 32 Z"/>
+    <path d="M50 65 Q64 68 78 65 M55 77 L50 96 M73 77 L78 96"/>
+  </g>
+</svg>

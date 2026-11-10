@@ -14,8 +14,8 @@ export const categoryImage = (slug: string) => ({
   srcSet: set([[`kategori/${slug}-160.webp`, 160], [`kategori/${slug}-240.webp`, 240], [`kategori/${slug}.webp`, 480]])
 });
 
-/** Lille kategorifoto til sløret baggrund (forsidens kategorikort) – mere opløsning er spild, når det sløres */
-export const categoryBlurImage = (slug: string) => img(`kategori/${slug}-160.webp`);
+/** Kategoriens tegning (SVG) til forsidens kategorier */
+export const categoryIllustration = (slug: string) => img(`kategori/illustreret/${slug}.svg`);
 
 /** Bannerfoto i flere bredder (mobil 480–800, desktop op til 1600) */
 export const bannerImage = (name: 'hero' | 'saelg' | 'butik') => {

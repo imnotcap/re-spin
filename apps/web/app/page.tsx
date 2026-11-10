@@ -6,7 +6,7 @@ import { PromotedSellers } from '../components/home/PromotedSellers';
 import { promotedSellers, type PromotedSeller } from '../lib/promotions';
 import { ItemCard } from '../components/ItemCard';
 import { CATEGORIES } from '../lib/catalog';
-import { categoryBlurImage } from '../lib/images';
+import { categoryIllustration } from '../lib/images';
 import { jsonLd } from '../lib/seo';
 import { SITE, SITE_URL } from '../lib/site';
 import { getDb } from '../lib/server';
@@ -63,7 +63,7 @@ export default async function HomePage() {
         <ul className="grid grid-cols-3 gap-3 sm:gap-4 lg:grid-cols-6">
           {CATEGORIES.map((c) => (
             <li key={c.slug} data-track="home_category" data-category={c.slug}>
-              <CategoryTile variant="photo" icon={c.icon} label={<T k={`cat.${c.slug}`} />} count={stats.cats[c.slug]?.count ?? 0} href={`/kategori/${c.slug}/`} imageSrc={categoryBlurImage(c.slug)} />
+              <CategoryTile variant="illustration" icon={c.icon} label={<T k={`cat.${c.slug}`} />} href={`/kategori/${c.slug}/`} imageSrc={categoryIllustration(c.slug)} />
             </li>
           ))}
         </ul>

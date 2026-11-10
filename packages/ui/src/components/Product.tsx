@@ -203,9 +203,9 @@ export interface CategoryTileProps {
   href: string;
   /** Antal varer – vises under navnet i `card`-varianten */
   count?: number;
-  /** icon = lille rund genvej (app). card = kort med ikon. photo = foto med navn under (hjemmeside). */
-  variant?: 'icon' | 'card' | 'photo';
-  /** Foto til `photo`-varianten (kvadratisk) */
+  /** icon = lille rund genvej (app). card = kort med ikon. photo = foto med navn under. illustration = tegning med navn centreret under (hjemmeside). */
+  variant?: 'icon' | 'card' | 'photo' | 'illustration';
+  /** Foto til `photo`-varianten / tegning (SVG) til `illustration`-varianten (kvadratisk) */
   imageSrc?: string;
   /** Flere bredder af fotoet, så små fliser ikke henter store billeder */
   imageSrcSet?: string;
@@ -213,6 +213,15 @@ export interface CategoryTileProps {
 }
 
 export function CategoryTile({ icon, label, href, count, variant = 'icon', imageSrc, imageSrcSet, imageSizes = '(min-width: 1024px) 140px, (min-width: 640px) 18vw, 128px' }: CategoryTileProps) {
+  if (variant === 'illustration') {
+    return (
+      <AppLink href={href} className="rs-catillu">
+        {/* Tegningen er pynt – navnet under er linkets tekst */}
+        {imageSrc && <img className="rs-catillu__img" src={imageSrc} alt="" loading="lazy" decoding="async" width={128} height={128} />}
+        <span className="rs-catillu__label">{label}</span>
+      </AppLink>
+    );
+  }
   if (variant === 'photo') {
     return (
       <AppLink href={href} className="rs-catphoto">

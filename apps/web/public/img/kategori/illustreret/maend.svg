@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="maend-title maend-desc">
+  <title id="maend-title">Mænd</title>
+  <desc id="maend-desc">Grønt stregikon af en T-shirt med rund hals og en lille brystlomme.</desc>
+  <circle cx="80" cy="48" r="34" fill="#d9eadf"/>
+  <g fill="none" stroke="#0e5a2f" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M49 26 C51 36 77 36 79 26 L94 32 L106 52 L91 61 L84 49 V103 H44 V49 L37 61 L22 52 L34 32 Z"/>
+    <path d="M67 52 H78 V64 Q72.5 71 67 64 Z"/>
+  </g>
+</svg>
