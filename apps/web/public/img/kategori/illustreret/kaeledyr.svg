@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="kaeledyr-title kaeledyr-desc">
+  <title id="kaeledyr-title">Kæledyr</title>
+  <desc id="kaeledyr-desc">Grønt stregikon af en pote med fire afrundede tåpuder og en stor trædepude.</desc>
+  <circle cx="80" cy="48" r="34" fill="#d9eadf"/>
+  <g fill="none" stroke="#0e5a2f" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="52" cy="37" rx="10" ry="14" transform="rotate(-15 52 37)"/>
+    <ellipse cx="76" cy="37" rx="10" ry="14" transform="rotate(15 76 37)"/>
+    <ellipse cx="28" cy="55" rx="9" ry="12" transform="rotate(-30 28 55)"/>
+    <ellipse cx="100" cy="55" rx="9" ry="12" transform="rotate(30 100 55)"/>
+    <path d="M48 66 C53 60 57 56 64 56 C71 56 75 60 80 66 L93 84 C101 96 94 106 83 104 L70 100 Q64 98 58 100 L45 104 C34 107 27 96 35 84 Z"/>
+  </g>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="underholdning-title underholdning-desc">
+  <title id="underholdning-title">Underholdning</title>
+  <desc id="underholdning-desc">Grønt stregikon af en spilcontroller med styrekryds og fire runde knapper.</desc>
+  <circle cx="80" cy="48" r="34" fill="#d9eadf"/>
+  <g fill="none" stroke="#0e5a2f" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M45 35 C36 30 26 35 23 46 L16 78 C13 91 20 103 29 100 C34 99 39 94 44 86 L49 78 H79 L84 86 C89 94 94 99 99 100 C108 103 115 91 112 78 L105 46 C102 35 92 30 83 35 Q64 42 45 35 Z"/>
+    <path d="M37 50 H43 V57 H50 V63 H43 V70 H37 V63 H30 V57 H37 Z"/>
+    <circle cx="89" cy="47" r="3"/>
+    <circle cx="99" cy="57" r="3"/>
+    <circle cx="89" cy="67" r="3"/>
+    <circle cx="79" cy="57" r="3"/>
+    <path d="M59 61 H62 M67 61 H70"/>
+  </g>
+</svg>

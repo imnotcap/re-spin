@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="boern-title boern-desc">
+  <title id="boern-title">Børn</title>
+  <desc id="boern-desc">Grønt stregikon af et venligt bamsehoved med runde ører og et lille smil.</desc>
+  <circle cx="80" cy="48" r="34" fill="#d9eadf"/>
+  <g fill="none" stroke="#0e5a2f" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M35 46 C24 48 18 41 20 31 C22 20 34 17 42 25 L47 33 C58 28 70 28 81 33 L86 25 C94 17 106 20 108 31 C110 41 104 48 93 46 C99 53 102 62 102 72 C102 94 86 108 64 108 C42 108 26 94 26 72 C26 62 29 53 35 46 Z"/>
+    <path d="M30 36 C28 30 34 27 38 32 M98 36 C100 30 94 27 90 32"/>
+    <ellipse cx="64" cy="81" rx="17" ry="14"/>
+    <circle cx="49" cy="62" r="2.5" fill="#0e5a2f" stroke="none"/>
+    <circle cx="79" cy="62" r="2.5" fill="#0e5a2f" stroke="none"/>
+    <path d="M59.5 77.5 Q64 74.5 68.5 77.5 Q68 81 64 83 Q60 81 59.5 77.5 Z" fill="#0e5a2f" stroke="none"/>
+    <path d="M64 83 V87 M55 86 Q59 92 64 87 Q69 92 73 86"/>
+  </g>
+</svg>
