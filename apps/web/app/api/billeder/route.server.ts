@@ -6,6 +6,7 @@ import { getDb } from '../../../lib/server';
 import { getImageStore, newImageKey } from '../../../lib/image-store';
 import { MAX_UPLOAD_BYTES, UPLOAD_MESSAGES, processImage, type ProcessError } from '../../../lib/image-pipeline';
 import { MAX_PENDING_IMAGES, pendingImageCount, saveProcessedImage } from '../../../lib/listings';
+import { readCapped } from '../../../lib/read-capped';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -15,22 +16,6 @@ const fail = (status: number, error: keyof typeof UPLOAD_MESSAGES) => NextRespon
 
 /** Højst 60 billeder i timen pr. bruger */
 const UPLOAD_LIMIT = { capacity: 60, refillPerSecond: 60 / 3600 };
-
-/** Læs body med et loft – stopper ved loftet i stedet for at læse alt ind først */
-async function readCapped(body: ReadableStream<Uint8Array> | null, max: number): Promise<Uint8Array | 'too_large'> {
-  if (!body) return new Uint8Array(0);
-  const reader = body.getReader(); const parts: Uint8Array[] = []; let size = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    size += value.length;
-    if (size > max) { await reader.cancel(); return 'too_large'; }
-    parts.push(value);
-  }
-  const out = new Uint8Array(size); let o = 0;
-  for (const p of parts) { out.set(p, o); o += p.length; }
-  return out;
-}
 
 /**
  * Upload af ét annoncefoto (rå bytes i body, Content-Type = billedtypen). Kræver login og samme oprindelse.

@@ -386,6 +386,15 @@ a.rs-searchbar { cursor: pointer; }
 .rs-seller__facts { margin: var(--rs-s-3) 0 0; padding: var(--rs-s-3) 0 0; border-top: 1px solid var(--rs-border); list-style: none; display: grid; gap: 6px; font-size: 13px; color: var(--rs-slate-700); }
 .rs-seller__facts li { display: flex; align-items: center; gap: var(--rs-s-2); }
 .rs-seller__facts svg { color: var(--rs-text-muted); flex: none; }
+.rs-seller__extra { margin-top: var(--rs-s-3); }
+/* Med profilbanner: banneret fylder toppen, og profilbilledet ligger halvt ind over det */
+.rs-seller--banner { padding: 0; overflow: hidden; }
+.rs-seller__banner { height: 76px; background: var(--rs-stone-100); }
+.rs-seller__banner > * { display: block; width: 100%; height: 100%; object-fit: cover; }
+.rs-seller--banner .rs-seller__body { padding: 0 var(--rs-s-4) var(--rs-s-4); }
+.rs-seller--banner .rs-seller__head { align-items: flex-end; }
+.rs-seller--banner .rs-avatar--lg { margin-top: -26px; box-shadow: 0 0 0 3px var(--rs-surface); }
+.rs-seller--banner .rs-seller__name { margin-top: var(--rs-s-2); }
 
 .rs-pricedetails__price { margin: 0; font-size: 30px; line-height: 36px; }
 .rs-pricedetails__more { margin-top: 2px; }

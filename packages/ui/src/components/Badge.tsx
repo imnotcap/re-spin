@@ -56,7 +56,7 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
 export function Avatar({ name, size = 'md', online, src, className, ...rest }: AvatarProps) {
   return (
     <span className={cx('rs-avatar', size !== 'md' && `rs-avatar--${size}`, className)} aria-hidden="true" {...rest}>
-      {src ? <img src={src} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (name.trim()[0] ?? '?').toUpperCase()}
+      {src ? <img src={src} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (name.trim()[0] ?? '?').toUpperCase()}
       {online && <span className="rs-online" />}
     </span>
   );

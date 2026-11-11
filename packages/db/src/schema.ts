@@ -46,14 +46,20 @@ export const users = pgTable('users', {
   deletedAt: ts('deleted_at'),
   /** Offentligt profilnavn i adressen /@/<username>. Små bogstaver, tal, . _ - (3–30 tegn). Sættes første gang det skal bruges. */
   username: text('username').unique(),
-  /** Valgt profilbanner (id fra appens faste liste) */
+  /** Valgt profilbanner (id fra appens faste liste, eller 'eget' = brugerens eget billede i bannerKey) */
   profileBanner: text('profile_banner'),
-  bio: text('bio')
+  bio: text('bio'),
+  /** Profilbillede i billedlageret (profiles/ÅÅÅÅ/MM/<uuid>.webp) – nøglen laves af serveren, aldrig af brugeren */
+  avatarKey: text('avatar_key'),
+  /** Eget bannerbillede i billedlageret (samme format som avatarKey) */
+  bannerKey: text('banner_key')
 }, (t) => [
   check('users_email_normalized_lower', sql`${t.emailNormalized} = lower(${t.emailNormalized})`),
   check('users_username_format', sql`${t.username} IS NULL OR ${t.username} ~ '^[a-z0-9][a-z0-9._-]{1,28}[a-z0-9]$'`),
   check('users_profile_banner_len', sql`${t.profileBanner} IS NULL OR char_length(${t.profileBanner}) BETWEEN 1 AND 20`),
-  check('users_bio_len', sql`${t.bio} IS NULL OR char_length(${t.bio}) <= 300`)
+  check('users_bio_len', sql`${t.bio} IS NULL OR char_length(${t.bio}) <= 300`),
+  check('users_avatar_key_format', sql`${t.avatarKey} IS NULL OR ${t.avatarKey} ~ '^profiles/[0-9]{4}/[0-9]{2}/[0-9a-f-]{36}[.]webp$'`),
+  check('users_banner_key_format', sql`${t.bannerKey} IS NULL OR ${t.bannerKey} ~ '^profiles/[0-9]{4}/[0-9]{2}/[0-9a-f-]{36}[.]webp$'`)
 ]);
 
 export const sellerProfiles = pgTable('seller_profiles', {

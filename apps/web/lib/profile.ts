@@ -4,7 +4,9 @@ import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { schema, type Db } from '@respin/db';
 import { normalizeUserText } from '@respin/core';
-import { isBannerId } from './banners';
+import { CUSTOM_BANNER, DEFAULT_BANNER, isBannerId } from './banners';
+import { PROFILE_IMAGE_KEY, type ImageStore } from './image-store';
+import type { ProfileImageKind } from './image-pipeline';
 
 const { users } = schema;
 
@@ -67,6 +69,11 @@ export async function updateProfile(db: Db, userId: string, raw: unknown): Promi
   }
   const v = p.data;
   if (isReservedUsername(v.username)) return { ok: false, error: 'reserved' };
+  if (v.banner === CUSTOM_BANNER) {
+    // "Eget billede" kan kun vælges, når der er uploadet et
+    const [u] = await db.select({ bannerKey: users.bannerKey }).from(users).where(eq(users.id, userId));
+    if (!u?.bannerKey) return { ok: false, error: 'invalid_banner' };
+  }
   try {
     await db.update(users).set({ username: v.username, bio: v.bio || null, profileBanner: v.banner }).where(eq(users.id, userId));
   } catch (e) {
@@ -80,12 +87,38 @@ export async function updateProfile(db: Db, userId: string, raw: unknown): Promi
 export async function memberByUsername(db: Db, username: string) {
   const u = username.toLowerCase();
   if (!USERNAME.test(u)) return null;
-  const [m] = await db.select({ id: users.id, username: users.username, displayName: users.displayName, bio: users.bio, banner: users.profileBanner, createdAt: users.createdAt })
+  const [m] = await db.select({ id: users.id, username: users.username, displayName: users.displayName, bio: users.bio, banner: users.profileBanner, avatarKey: users.avatarKey, bannerKey: users.bannerKey, createdAt: users.createdAt })
     .from(users).where(and(eq(users.username, u), eq(users.status, 'active')));
   return m ?? null;
 }
 
 export async function profileFor(db: Db, userId: string) {
-  const [m] = await db.select({ username: users.username, bio: users.bio, banner: users.profileBanner, displayName: users.displayName }).from(users).where(eq(users.id, userId));
+  const [m] = await db.select({ username: users.username, bio: users.bio, banner: users.profileBanner, displayName: users.displayName, avatarKey: users.avatarKey, bannerKey: users.bannerKey }).from(users).where(eq(users.id, userId));
   return m ?? null;
+}
+
+/* ----------------------------- Profilbillede og eget banner ----------------------------- */
+
+/** Adressen på et profilbillede/banner i billedlageret – null, hvis der ikke er et */
+export const profileImageUrl = (store: ImageStore, key: string | null | undefined) => (key ? store.urlFor(key) : null);
+
+/**
+ * Gem et nyt profilbillede eller eget banner (allerede omkodet og lagt i billedlageret under `key`).
+ * Et nyt banner vælges med det samme. Det gamle billede slettes fra lageret, så det ikke ligger offentligt tilbage.
+ */
+export async function setProfileImage(db: Db, store: ImageStore, userId: string, kind: ProfileImageKind, key: string): Promise<void> {
+  if (!PROFILE_IMAGE_KEY.test(key)) throw new Error('Ugyldig billednøgle');
+  const [old] = await db.select({ avatarKey: users.avatarKey, bannerKey: users.bannerKey }).from(users).where(eq(users.id, userId));
+  await db.update(users).set(kind === 'avatar' ? { avatarKey: key } : { bannerKey: key, profileBanner: CUSTOM_BANNER }).where(eq(users.id, userId));
+  const previous = kind === 'avatar' ? old?.avatarKey : old?.bannerKey;
+  if (previous && previous !== key) await store.delete(previous).catch((e: unknown) => console.error('profilbillede: kunne ikke slette det gamle', e instanceof Error ? e.message : 'ukendt'));
+}
+
+/** Fjern profilbilledet eller det egne banner. Var det egne banner valgt, går profilen tilbage til standardbanneret. */
+export async function removeProfileImage(db: Db, store: ImageStore, userId: string, kind: ProfileImageKind): Promise<void> {
+  const [old] = await db.select({ avatarKey: users.avatarKey, bannerKey: users.bannerKey, banner: users.profileBanner }).from(users).where(eq(users.id, userId));
+  if (!old) return;
+  await db.update(users).set(kind === 'avatar' ? { avatarKey: null } : { bannerKey: null, ...(old.banner === CUSTOM_BANNER ? { profileBanner: DEFAULT_BANNER } : {}) }).where(eq(users.id, userId));
+  const previous = kind === 'avatar' ? old.avatarKey : old.bannerKey;
+  if (previous) await store.delete(previous).catch((e: unknown) => console.error('profilbillede: kunne ikke slette', e instanceof Error ? e.message : 'ukendt'));
 }

@@ -7,7 +7,7 @@
 import { useSyncExternalStore } from 'react';
 import { removeFavorites } from './favorites';
 
-export interface Me { name: string; listingIds: readonly string[]; unread: number }
+export interface Me { name: string; listingIds: readonly string[]; unread: number; /** Profilbillede (null = forbogstavet) */ avatar: string | null }
 
 let current: Me | null = null;
 let inflight: AbortController | null = null;
@@ -31,10 +31,12 @@ export function refreshMe(): void {
   fetch('/api/me/', { cache: 'no-store', credentials: 'same-origin', signal: ctrl.signal })
     .then((r) => (r.ok ? r.json() : null))
     .then((d: unknown) => {
-      const o = d && typeof d === 'object' ? (d as { name?: unknown; listingIds?: unknown; unread?: unknown }) : null;
+      const o = d && typeof d === 'object' ? (d as { name?: unknown; listingIds?: unknown; unread?: unknown; avatar?: unknown }) : null;
       const ids = Array.isArray(o?.listingIds) ? o.listingIds.filter((x): x is string => typeof x === 'string') : [];
       const unread = typeof o?.unread === 'number' && o.unread > 0 ? Math.floor(o.unread) : 0;
-      set(o && typeof o.name === 'string' ? { name: o.name, listingIds: ids, unread } : null);
+      // Kun egne adresser (/api/billeder/…) eller https (billedlageret) – aldrig fx javascript:
+      const avatar = typeof o?.avatar === 'string' && /^(\/|https:\/\/)/.test(o.avatar) ? o.avatar : null;
+      set(o && typeof o.name === 'string' ? { name: o.name, listingIds: ids, unread, avatar } : null);
     })
     .catch((e: unknown) => { if (!(e instanceof DOMException && e.name === 'AbortError')) set(null); });
 }

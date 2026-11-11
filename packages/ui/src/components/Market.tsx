@@ -56,29 +56,39 @@ export interface SellerCardProps {
   facts?: ReadonlyArray<{ icon: IconName; text: string }>;
   /** Overskriftsniveau for navnet (default 3) */
   headingLevel?: 2 | 3;
+  /** Profilbillede (ellers vises forbogstavet) */
+  avatarSrc?: string;
+  /** Sælgerens profilbanner øverst i kortet (fx et billede eller en farveflade) */
+  banner?: ReactNode;
+  /** Ekstra indhold under navnet, fx badges */
+  children?: ReactNode;
   className?: string;
 }
 
 /** Sælgerkort: hvem sælger, hvor godt de er bedømt, og om de er certificerede. */
-export function SellerCard({ name, href, rating, reviews, certified, facts, headingLevel = 3, className }: SellerCardProps) {
+export function SellerCard({ name, href, rating, reviews, certified, facts, headingLevel = 3, avatarSrc, banner, children, className }: SellerCardProps) {
   const H = `h${headingLevel}` as 'h2' | 'h3';
   return (
-    <section className={cx('rs-seller', className)} aria-label={`Sælger: ${name}`}>
-      <div className="rs-seller__head">
-        <Avatar name={name} size="lg" />
-        <div className="rs-grow">
-          <H className="rs-seller__name">{href ? <AppLink href={href}>{name}</AppLink> : name}</H>
-          <div className="rs-seller__meta">
-            {rating !== undefined && <Rating value={rating} count={reviews !== undefined ? `${reviews} anmeldelser` : undefined} />}
-            {certified && <CertifiedBadge />}
+    <section className={cx('rs-seller', banner !== undefined && 'rs-seller--banner', className)} aria-label={`Sælger: ${name}`}>
+      {banner !== undefined && <div className="rs-seller__banner" aria-hidden="true">{banner}</div>}
+      <div className="rs-seller__body">
+        <div className="rs-seller__head">
+          <Avatar name={name} src={avatarSrc} size="lg" />
+          <div className="rs-grow">
+            <H className="rs-seller__name">{href ? <AppLink href={href}>{name}</AppLink> : name}</H>
+            <div className="rs-seller__meta">
+              {rating !== undefined && <Rating value={rating} count={reviews !== undefined ? `${reviews} anmeldelser` : undefined} />}
+              {certified && <CertifiedBadge />}
+            </div>
           </div>
         </div>
+        {children && <div className="rs-seller__extra">{children}</div>}
+        {facts && facts.length > 0 && (
+          <ul className="rs-seller__facts">
+            {facts.map((f) => <li key={f.text}><Icon name={f.icon} size={16} />{f.text}</li>)}
+          </ul>
+        )}
       </div>
-      {facts && facts.length > 0 && (
-        <ul className="rs-seller__facts">
-          {facts.map((f) => <li key={f.text}><Icon name={f.icon} size={16} />{f.text}</li>)}
-        </ul>
-      )}
     </section>
   );
 }

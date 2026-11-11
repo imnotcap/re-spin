@@ -7,6 +7,7 @@ import { formatOre, ore } from '@respin/core/money';
 import { CATEGORIES, CONDITION_HELP, KIDS_SIZES, examplesOf } from '../../lib/categories';
 import { CONDITION_CODES, CONDITION_LABEL, parseKr } from '../../lib/listing-labels';
 import { createListingAction, updateListingAction, type ListingFormState } from '../../lib/listing-actions';
+import { shrinkImage as shrink } from '../../lib/shrink-image';
 
 export interface ListingFormValues {
   id?: string; title: string; description: string; category: string; subcategory: string; brand: string; size: string;
@@ -16,23 +17,6 @@ const EMPTY: ListingFormValues = { title: '', description: '', category: '', sub
 
 type Photo = { local: string; state: 'uploading' | 'done' | 'error'; id?: string; error?: string };
 const MAX_PHOTOS = 8;
-const MAX_EDGE = 2000;
-
-/** Gør billedet mindre i browseren (telefonfotos er ofte 5–12 MB); serveren omkoder alligevel bagefter */
-async function shrink(file: File): Promise<Blob> {
-  try {
-    const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
-    const scale = Math.min(1, MAX_EDGE / Math.max(bmp.width, bmp.height));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(bmp.width * scale); canvas.height = Math.round(bmp.height * scale);
-    canvas.getContext('2d')!.drawImage(bmp, 0, 0, canvas.width, canvas.height);
-    bmp.close();
-    const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/jpeg', 0.88));
-    return blob ?? file;
-  } catch {
-    return file;
-  }
-}
 
 async function upload(blob: Blob): Promise<{ id: string } | { error: string }> {
   try {

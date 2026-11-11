@@ -6,7 +6,8 @@ import { getAuth, requireSession } from '../../lib/auth';
 import { revokeSessionAction, signOutAction, signOutOthersAction } from '../../lib/actions';
 import { T } from '../../lib/i18n/client';
 import { getDb } from '../../lib/server';
-import { ensureUsername, profileFor } from '../../lib/profile';
+import { ensureUsername, profileFor, profileImageUrl } from '../../lib/profile';
+import { getImageStore } from '../../lib/image-store';
 import { isBannerId, DEFAULT_BANNER } from '../../lib/banners';
 import { profilePath } from '../../lib/profile-url';
 import { BASE_PATH } from '../../lib/site';
@@ -39,6 +40,8 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const profilePromoted = await activeProfilePromotion(getDb(), current.user.id).catch(() => null);
   const orderTodo = await ordersNeedingAction(getDb(), current.user.id).catch(() => 0);
   const payout = await payoutStatus(getDb(), current.user.id).catch(() => null);
+  const avatarUrl = profileImageUrl(getImageStore(), profile?.avatarKey);
+  const bannerUrl = profileImageUrl(getImageStore(), profile?.bannerKey);
   return (
     <AuthPage width="page" title="Min konto" crumbs={[{ label: <T k="crumb.home" />, href: '/' }, { label: 'Min konto' }]}>
       {sp.welcome && <Notice icon="check" role="status">Din e-mail er bekræftet. Velkommen til Videro!</Notice>}
@@ -62,7 +65,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
       )}
 
       <div className="flex items-center gap-4">
-        <Avatar name={current.user.displayName} size="lg" />
+        <Avatar name={current.user.displayName} src={avatarUrl ?? undefined} size="lg" />
         <div className="min-w-0">
           <p className="truncate text-[18px] font-semibold">{current.user.displayName}</p>
           <p className="truncate text-body text-muted">{current.user.email}</p>
@@ -78,7 +81,8 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           <a href={`${BASE_PATH}${profilePath(username)}`} className="inline-flex items-center gap-1.5 text-small font-semibold text-forest underline underline-offset-4">Se din profil<Icon name="arrow" size={16} /></a>
         </div>
         <div className="mt-4">
-          <ProfileForm username={username} bio={profile?.bio ?? ''} banner={isBannerId(profile?.banner) ? profile.banner : DEFAULT_BANNER} />
+          <ProfileForm name={current.user.displayName} username={username} bio={profile?.bio ?? ''} banner={isBannerId(profile?.banner) ? profile.banner : DEFAULT_BANNER}
+            avatarUrl={avatarUrl} bannerUrl={bannerUrl} />
         </div>
       </section>
 
