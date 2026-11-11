@@ -79,7 +79,7 @@ export async function activeProfilePromotion(db: Db, userId: string, now = new D
   return rows.some((r) => r.startsAt! <= now) ? rows[0]!.endsAt : null;
 }
 
-export interface PromotedSeller { id: string; name: string; username: string | null; certified: boolean; count: number; images: string[] }
+export interface PromotedSeller { id: string; name: string; username: string | null; certified: boolean; count: number; images: string[]; avatar: string | null }
 
 /**
  * Fremhævede sælgere til forsiden: aktiv profilfremhævning, aktiv konto og mindst én vare til salg.
@@ -87,7 +87,7 @@ export interface PromotedSeller { id: string; name: string; username: string | n
  */
 export async function promotedSellers(db: Db, store: ImageStore, limit = 4, now = new Date()): Promise<PromotedSeller[]> {
   const live = and(eq(listings.status, 'active'), eq(listings.moderationStatus, 'approved'));
-  const rows = await db.selectDistinct({ id: users.id, name: users.displayName, username: users.username, certified: sql<boolean>`coalesce(${sellerProfiles.certified}, false)` })
+  const rows = await db.selectDistinct({ id: users.id, name: users.displayName, username: users.username, avatarKey: users.avatarKey, certified: sql<boolean>`coalesce(${sellerProfiles.certified}, false)` })
     .from(listingPromotions).innerJoin(users, eq(users.id, listingPromotions.sellerId)).leftJoin(sellerProfiles, eq(sellerProfiles.userId, users.id))
     .where(and(eq(listingPromotions.kind, 'profile'), eq(listingPromotions.status, 'paid'), lte(listingPromotions.startsAt, now), gt(listingPromotions.endsAt, now), eq(users.status, 'active')));
   const picked = rows.sort(() => Math.random() - 0.5).slice(0, limit * 2);
@@ -97,7 +97,8 @@ export async function promotedSellers(db: Db, store: ImageStore, limit = 4, now 
     .from(listings).where(and(live, inArray(listings.sellerId, picked.map((r) => r.id)))).orderBy(desc(listings.createdAt)).limit(500);
   return picked.map((r) => {
     const own = items.filter((i) => i.sellerId === r.id);
-    return { ...r, certified: !!r.certified, count: own.length, images: own.filter((i) => i.cover).slice(0, 3).map((i) => store.urlFor(thumbKey(i.cover!))) };
+    const { avatarKey, ...rest } = r;
+    return { ...rest, avatar: avatarKey ? store.urlFor(avatarKey) : null, certified: !!r.certified, count: own.length, images: own.filter((i) => i.cover).slice(0, 3).map((i) => store.urlFor(thumbKey(i.cover!))) };
   }).filter((s) => s.count > 0).slice(0, limit);
 }
 

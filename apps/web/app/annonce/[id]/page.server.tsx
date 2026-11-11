@@ -16,6 +16,11 @@ import { getListing } from '../../../lib/listings';
 import { CONDITION_HELP, getCategory, uploadedLabel } from '../../../lib/catalog';
 import { PARCEL_LABEL } from '../../../lib/listing-labels';
 import { profilePath } from '../../../lib/profile-url';
+import { profileFor, profileImageUrl } from '../../../lib/profile';
+import { badgesFor } from '../../../lib/badges';
+import { bannerById } from '../../../lib/banners';
+import { BannerArt } from '../../../components/profile/ProfileView';
+import { BadgeStrip } from '../../../components/badges/BadgeList';
 import { T } from '../../../lib/i18n/client';
 import { jsonLd, pageMetadata, priceMeta, productJsonLd } from '../../../lib/seo';
 import { SITE_URL } from '../../../lib/site';
@@ -64,6 +69,11 @@ export default async function ListingPage({ params, searchParams }: Props) {
   const cat = getCategory(l.category)!;
   const shippingKr = SHIPPING_PRICE_ORE[l.parcel] / 100;
   const meta = [l.brand, l.size && `str. ${l.size}`, l.condition].filter(Boolean).join(' · ');
+  // Sælgerboksen: banner, profilbillede og optjente badges (fejler det, vises boksen bare uden)
+  const [sellerProfile, sellerBadges] = await Promise.all([
+    profileFor(getDb(), l.sellerId).catch(() => null),
+    badgesFor(getDb(), l.sellerId).catch(() => [])
+  ]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
@@ -133,7 +143,11 @@ export default async function ListingPage({ params, searchParams }: Props) {
             </section>
           )}
 
-          <SellerCard className="mt-7" name={l.seller.name} href={l.sellerUsername ? profilePath(l.sellerUsername) : undefined} certified={l.seller.certified} facts={[{ icon: 'user', text: 'Medlem af Videro' }]} />
+          <SellerCard className="mt-7" name={l.seller.name} href={l.sellerUsername ? profilePath(l.sellerUsername) : undefined} certified={l.seller.certified}
+            avatarSrc={l.seller.avatar ?? undefined} banner={<BannerArt banner={bannerById(sellerProfile?.banner, profileImageUrl(getImageStore(), sellerProfile?.bannerKey))} priority={false} />}
+            facts={[{ icon: 'user', text: 'Medlem af Videro' }]}>
+            {sellerBadges.some((b) => b.earned) && <BadgeStrip badges={sellerBadges} />}
+          </SellerCard>
           {!l.isOwner && <ReportListing listingId={l.id} status={sp.anmeld} />}
           <TrackListingView id={l.id} category={l.category} owner={l.isOwner} />
         </div>

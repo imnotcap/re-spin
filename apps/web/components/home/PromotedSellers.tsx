@@ -18,7 +18,7 @@ export function PromotedSellers({ sellers, className = '' }: { sellers: readonly
           const body = (
             <>
               <div className="flex items-center gap-3">
-                <Avatar name={s.name} />
+                <Avatar name={s.name} src={s.avatar ?? undefined} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{s.name}</p>
                   <p className="text-small text-muted">{s.count === 1 ? '1 vare til salg' : `${s.count} varer til salg`}</p>

@@ -51,7 +51,7 @@ function useMeOnNavigate(pathname: string) {
 }
 
 /** Konto-knap: samme størrelse logget ind og ud, så intet i headeren flytter sig. */
-function AccountButton({ me, pathname }: { me: { name: string } | null; pathname: string }) {
+function AccountButton({ me, pathname }: { me: { name: string; avatar: string | null } | null; pathname: string }) {
   const { t } = useI18n();
   if (!AUTH) return null;
   const active = pathname.startsWith('/konto/') || pathname === '/log-ind/';
@@ -61,7 +61,7 @@ function AccountButton({ me, pathname }: { me: { name: string } | null; pathname
       aria-current={active ? 'page' : undefined}
       className="hidden h-tap w-tap items-center justify-center rounded-md text-ink transition-colors hover:bg-sunken md:inline-flex"
     >
-      {me ? <Avatar name={me.name} size="sm" /> : <Icon name="user" size={22} />}
+      {me ? <Avatar name={me.name} src={me.avatar ?? undefined} size="sm" /> : <Icon name="user" size={22} />}
       <span className="sr-only">{me ? t('header.accountNamed', { name: me.name }) : t('header.login')}</span>
     </Link>
   );

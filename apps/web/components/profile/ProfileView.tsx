@@ -10,10 +10,10 @@ export interface Review { id: string; author: string; rating: 1 | 2 | 3 | 4 | 5;
 export interface ProfileFact { icon: IconName; label: ReactNode; value: ReactNode; /** Teksten før tallet (fx "medlem siden 2026") */ labelFirst?: boolean }
 
 /** Banner (foto eller farve) */
-export function BannerArt({ banner, className = '' }: { banner: Banner; className?: string }) {
+export function BannerArt({ banner, className = '', priority = true }: { banner: Banner; className?: string; /** Øverst på siden: hent med det samme */ priority?: boolean }) {
   return banner.photo ? (
-    <img src={banner.photo.src} srcSet={banner.photo.srcSet} sizes="(min-width: 1280px) 1232px, 100vw" alt="" width={1600} height={400}
-      fetchPriority="high" className={`h-full w-full object-cover ${className}`} />
+    <img src={banner.photo.src} srcSet={banner.photo.srcSet} sizes={banner.photo.srcSet ? '(min-width: 1280px) 1232px, 100vw' : undefined} alt="" width={1600} height={400}
+      fetchPriority={priority ? 'high' : undefined} loading={priority ? undefined : 'lazy'} className={`h-full w-full object-cover ${className}`} />
   ) : (
     <span aria-hidden="true" className={`block h-full w-full ${banner.className} ${className}`} />
   );
@@ -29,8 +29,8 @@ const stars = (v: number) => (
  * Profilens top: banner, avatar oven på banneret, og én række med navn, nøgletal og "Del profil" på samme linje
  * (på mobil under hinanden). Badges og beskrivelse står under navnet.
  */
-export function ProfileHeader({ name, handle, banner, certified, rating, reviews, facts, bio, sharePath, extra }: {
-  name: string; handle: string; banner: Banner; certified?: boolean; rating?: number; reviews?: number; facts: ProfileFact[]; bio?: string; sharePath: string;
+export function ProfileHeader({ name, handle, banner, avatarSrc, certified, rating, reviews, facts, bio, sharePath, extra }: {
+  name: string; handle: string; banner: Banner; avatarSrc?: string | null; certified?: boolean; rating?: number; reviews?: number; facts: ProfileFact[]; bio?: string; sharePath: string;
   /** Fx badges – vises under navnet */
   extra?: ReactNode;
 }) {
@@ -41,7 +41,7 @@ export function ProfileHeader({ name, handle, banner, certified, rating, reviews
       </div>
       <div className="px-5 pb-6 sm:px-8 sm:pb-7">
         <div className="flex items-end justify-between gap-4">
-          <Avatar name={name} size="xl" className="-mt-12 shrink-0 ring-4 ring-white sm:-mt-16" />
+          <Avatar name={name} src={avatarSrc ?? undefined} size="xl" className="-mt-12 shrink-0 ring-4 ring-white sm:-mt-16" />
           <div className="pb-0.5 sm:hidden"><ShareButton path={sharePath} title={name} /></div>
         </div>
         <div className="mt-3 flex items-start justify-between gap-6">

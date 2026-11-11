@@ -6,7 +6,7 @@ import { getImageStore } from '../../lib/image-store';
 import { listFeed } from '../../lib/listings';
 import { listingToCard } from '../../lib/listing-card';
 import type { Metadata } from 'next';
-import { memberByUsername } from '../../lib/profile';
+import { memberByUsername, profileImageUrl } from '../../lib/profile';
 import { bannerById } from '../../lib/banners';
 import { profilePath } from '../../lib/profile-url';
 import { ProfileHeader, ProfileTabs, ReviewsPanel } from '../profile/ProfileView';
@@ -46,7 +46,7 @@ export async function MemberProfile({ name }: { name: string }) {
     <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
       <Breadcrumbs items={[{ label: <T k="crumb.home" />, href: '/' }, { label: m.displayName }]} />
       <ProfileHeader
-        name={m.displayName} handle={m.username} banner={bannerById(m.banner)} sharePath={profilePath(m.username)} certified={badges.some((b) => b.id === 'certified' && b.earned)}
+        name={m.displayName} handle={m.username} banner={bannerById(m.banner, profileImageUrl(getImageStore(), m.bannerKey))} avatarSrc={profileImageUrl(getImageStore(), m.avatarKey)} sharePath={profilePath(m.username)} certified={badges.some((b) => b.id === 'certified' && b.earned)}
         bio={m.bio ?? undefined}
         extra={<BadgeStrip badges={badges} />}
         facts={[
@@ -70,7 +70,7 @@ export async function MemberProfile({ name }: { name: string }) {
 export async function memberMetadata(name: string): Promise<Metadata> {
   const m = await memberByUsername(getDb(), name).catch(() => null);
   if (!m?.username) return { title: 'Profilen findes ikke', robots: { index: false } };
-  const banner = bannerById(m.banner);
+  const banner = bannerById(m.banner, profileImageUrl(getImageStore(), m.bannerKey));
   return pageMetadata({
     title: `${m.displayName} (@${m.username}) – profil`,
     description: m.bio || `${m.displayName} sælger brugt tøj og ting på Videro. Se annoncerne, og køb med køberbeskyttelse.`,

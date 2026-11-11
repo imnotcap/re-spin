@@ -2,7 +2,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { schema, type Db } from '@respin/db';
 import { createTestDb } from '@respin/db/testing';
-import { ensureUsername, memberByUsername, slugifyUsername, updateProfile } from './profile';
+import { ensureUsername, memberByUsername, removeProfileImage, setProfileImage, slugifyUsername, updateProfile } from './profile';
+import { MemoryImageStore, newProfileImageKey } from './image-store';
 
 let db: Db, close: () => Promise<void>;
 beforeAll(async () => { ({ db, close } = await createTestDb()); });
@@ -63,5 +64,42 @@ describe('profil-opdatering', () => {
     await db.update(schema.users).set({ status: 'suspended' }).where(eq(schema.users.id, a));
     expect(await memberByUsername(db, 'carla.c')).toBeNull();
     expect(await memberByUsername(db, "x' or '1'='1")).toBeNull();
+  });
+});
+
+describe('profilbillede og eget banner', () => {
+  const key = () => newProfileImageKey(crypto.randomUUID());
+
+  it('nyt billede erstatter det gamle, som slettes fra lageret', async () => {
+    const u = await user('Dorte'), store = new MemoryImageStore();
+    const k1 = key(), k2 = key();
+    await store.put(k1, Buffer.from('1')); await store.put(k2, Buffer.from('2'));
+    await setProfileImage(db, store, u, 'avatar', k1);
+    await setProfileImage(db, store, u, 'avatar', k2);
+    const [row] = await db.select().from(schema.users).where(eq(schema.users.id, u));
+    expect(row?.avatarKey).toBe(k2);
+    expect([store.files.has(k1), store.files.has(k2)]).toEqual([false, true]);
+    await removeProfileImage(db, store, u, 'avatar');
+    const [after] = await db.select().from(schema.users).where(eq(schema.users.id, u));
+    expect(after?.avatarKey).toBeNull();
+    expect(store.files.has(k2)).toBe(false);
+  });
+
+  it('eget banner vælges ved upload; "eget" kan kun vælges, når der er et; fjernes det, går banneret tilbage til standard', async () => {
+    const u = await user('Erik'), store = new MemoryImageStore();
+    expect(await updateProfile(db, u, { username: 'erik.e', bio: '', banner: 'eget' })).toEqual({ ok: false, error: 'invalid_banner' });
+    await setProfileImage(db, store, u, 'banner', key());
+    let [row] = await db.select().from(schema.users).where(eq(schema.users.id, u));
+    expect(row?.profileBanner).toBe('eget');
+    expect(await updateProfile(db, u, { username: 'erik.e', bio: '', banner: 'eget' })).toEqual({ ok: true, username: 'erik.e' });
+    await removeProfileImage(db, store, u, 'banner');
+    [row] = await db.select().from(schema.users).where(eq(schema.users.id, u));
+    expect([row?.bannerKey, row?.profileBanner]).toEqual([null, 'skov']);
+  });
+
+  it('nøglen skal være en profilnøgle (også i databasen)', async () => {
+    const u = await user('Fie'), store = new MemoryImageStore();
+    await expect(setProfileImage(db, store, u, 'avatar', 'listings/2026/11/0b8c1a6e-3f4d-4e5a-9b6c-7d8e9f0a1b2c.webp')).rejects.toThrow('Ugyldig');
+    await expect(db.update(schema.users).set({ avatarKey: 'https://evil.example/x.webp' }).where(eq(schema.users.id, u))).rejects.toThrow();
   });
 });

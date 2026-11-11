@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import sharp from 'sharp';
-import { processImage } from './image-pipeline';
-import { BlobImageStore, IMAGE_KEY, MemoryImageStore, newImageKey, thumbKey } from './image-store';
+import { processImage, processProfileImage } from './image-pipeline';
+import { BlobImageStore, IMAGE_KEY, MemoryImageStore, PROFILE_IMAGE_KEY, newImageKey, newProfileImageKey, thumbKey } from './image-store';
 
 const photo = (w: number, h: number, fmt: 'jpeg' | 'png' | 'webp' = 'jpeg') =>
   sharp({ create: { width: w, height: h, channels: 3, background: { r: 120, g: 90, b: 60 } } })[fmt]().toBuffer();
@@ -55,6 +55,34 @@ describe('billed-pipeline', () => {
     const r = await processImage(poly);
     if (!r.ok) throw new Error(r.error);
     expect(r.image.main.includes(Buffer.from('<script>'))).toBe(false);
+  });
+});
+
+describe('profilbillede og eget banner', () => {
+  it('beskæres til fast format (512 × 512 / 1600 × 400), uden EXIF', async () => {
+    const withGps = await sharp(await photo(1200, 900)).withExif({ IFD3: { GPSLatitudeRef: 'N', GPSLatitude: '55/1 40/1 0/1' } }).jpeg().toBuffer();
+    const a = await processProfileImage(withGps, 'avatar', { declaredType: 'image/jpeg' });
+    if (!a.ok) throw new Error(a.error);
+    const am = await sharp(a.image).metadata();
+    expect([am.format, am.width, am.height, am.exif]).toEqual(['webp', 512, 512, undefined]);
+    const b = await processProfileImage(await photo(900, 900, 'png'), 'banner');
+    if (!b.ok) throw new Error(b.error);
+    const bm = await sharp(b.image).metadata();
+    expect([bm.width, bm.height]).toEqual([1600, 400]);
+  });
+
+  it('samme afvisninger som annoncefotos (SVG, for lille)', async () => {
+    const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"><rect width="900" height="900"/></svg>');
+    expect(await processProfileImage(svg, 'avatar')).toEqual({ ok: false, error: 'unsupported_type' });
+    expect(await processProfileImage(await photo(150, 400), 'banner')).toEqual({ ok: false, error: 'too_small' });
+  });
+
+  it('nøgler under profiles/ uden miniature-variant', () => {
+    const key = newProfileImageKey('0b8c1a6e-3f4d-4e5a-9b6c-7d8e9f0a1b2c', new Date('2026-11-07T12:00:00Z'));
+    expect(key).toBe('profiles/2026/11/0b8c1a6e-3f4d-4e5a-9b6c-7d8e9f0a1b2c.webp');
+    expect(PROFILE_IMAGE_KEY.test(key) && IMAGE_KEY.test(key)).toBe(true);
+    expect(IMAGE_KEY.test(thumbKey(key))).toBe(false);
+    expect(PROFILE_IMAGE_KEY.test(newImageKey('0b8c1a6e-3f4d-4e5a-9b6c-7d8e9f0a1b2c'))).toBe(false);
   });
 });
 

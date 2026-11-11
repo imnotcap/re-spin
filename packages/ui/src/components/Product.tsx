@@ -109,7 +109,7 @@ export interface ProductCardProps {
   /** Antal der har gemt varen – vises nederst på billedet */
   favoriteCount?: number;
   /** Sælgeren over billedet (som i et feed) */
-  seller?: { name: string; certified?: boolean };
+  seller?: { name: string; certified?: boolean; /** Profilbillede (ellers forbogstavet) */ avatar?: string | null };
   /** Ikon i den grå pladsholder, når varen ikke har et billede (fx "shirt", "sneaker") */
   placeholderIcon?: IconName;
   /** scroll = fast bredde til vandrette rækker */
@@ -133,7 +133,7 @@ export function ProductCard({ product, href, badge, favorite, defaultFavorite, o
     <article className={cx('rs-card', variant === 'scroll' && 'rs-card--h')}>
       {seller && (
         <div className="rs-card__seller" aria-hidden="true">
-          <Avatar name={seller.name} size="sm" />
+          <Avatar name={seller.name} src={seller.avatar ?? undefined} size="sm" />
           <span className="rs-card__seller-name">{seller.name}</span>
           {seller.certified && <Icon name="check" size={14} className="rs-card__cert" />}
         </div>

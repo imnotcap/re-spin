@@ -98,7 +98,8 @@ export interface ListingImage { src: string; srcSet: string; width: number | nul
 export interface ListingCardData {
   id: string; title: string; brand: string; size: string; condition: string; price: number;
   category: ListingCategory; sub: string; createdAt: string; image: ListingImage | null;
-  seller: { name: string; certified: boolean };
+  /** avatar: adressen på sælgerens profilbillede (null = forbogstav) */
+  seller: { name: string; certified: boolean; avatar: string | null };
   /** Købt fremhævning, der kører lige nu */
   promoted?: boolean;
   /** Visninger de seneste 30 dage (statistik uden cookies) – bruges til "Mest populære" */
@@ -121,14 +122,14 @@ async function coverImages(db: Db, store: ImageStore, ids: string[]): Promise<Ma
 const cardColumns = {
   id: listings.id, title: listings.title, brand: listings.brand, size: listings.size, condition: listings.condition, priceOre: listings.priceOre,
   category: listings.category, sub: listings.subcategory, createdAt: listings.createdAt, status: listings.status,
-  sellerName: users.displayName, certified: sellerProfiles.certified
+  sellerName: users.displayName, certified: sellerProfiles.certified, sellerAvatarKey: users.avatarKey
 };
-type CardRow = { id: string; title: string; brand: string | null; size: string | null; condition: ListingCondition; priceOre: number; category: ListingCategory; sub: string | null; createdAt: Date; sellerName: string; certified: boolean | null };
+type CardRow = { id: string; title: string; brand: string | null; size: string | null; condition: ListingCondition; priceOre: number; category: ListingCategory; sub: string | null; createdAt: Date; sellerName: string; certified: boolean | null; sellerAvatarKey: string | null };
 
-const toCard = (r: CardRow, images: Map<string, ListingImage>): ListingCardData => ({
+const toCard = (r: CardRow, images: Map<string, ListingImage>, store: ImageStore): ListingCardData => ({
   id: r.id, title: r.title, brand: r.brand ?? '', size: r.size ?? '', condition: CONDITION_LABEL[r.condition], price: r.priceOre / 100,
   category: r.category, sub: r.sub ?? '', createdAt: r.createdAt.toISOString(), image: images.get(r.id) ?? null,
-  seller: { name: r.sellerName, certified: !!r.certified }
+  seller: { name: r.sellerName, certified: !!r.certified, avatar: r.sellerAvatarKey ? store.urlFor(r.sellerAvatarKey) : null }
 });
 
 /** Escape %, _ og \ i LIKE-mønstre, så søgning efter "50%" ikke matcher alt */
@@ -167,7 +168,7 @@ async function queryCards(db: Db, store: ImageStore, f: Omit<z.output<typeof fee
     .leftJoin(sellerProfiles, eq(sellerProfiles.userId, listings.sellerId))
     .where(and(...where)).orderBy(desc(promotedNow), desc(listings.createdAt)).limit(limit);
   const images = await coverImages(db, store, rows.map((r) => r.id));
-  return rows.map((r) => ({ ...toCard(r, images), promoted: !!r.promoted, views: Number(r.views) || 0 })).filter((c) => c.image);
+  return rows.map((r) => ({ ...toCard(r, images, store), promoted: !!r.promoted, views: Number(r.views) || 0 })).filter((c) => c.image);
 }
 
 /** Offentligt feed: kun aktive, godkendte annoncer fra aktive brugere – nyeste først (højst 48) */
@@ -273,7 +274,7 @@ export async function getListing(db: Db, store: ImageStore, id: string, viewerId
     .where(and(eq(listingImages.listingId, id), eq(listingImages.scanStatus, 'clean'))).orderBy(listingImages.position);
   const images = imgs.map((i, n) => ({ ...imageOf(store, i.key, i.w, i.h), alt: `${r.title}${r.brand ? ` fra ${r.brand}` : ''}, billede ${n + 1}` }));
   return {
-    ...toCard(r, new Map(images[0] ? [[r.id, images[0]]] : [])), description: r.description, conditionCode: r.condition, parcel: r.shippingSize,
+    ...toCard(r, new Map(images[0] ? [[r.id, images[0]]] : []), store), description: r.description, conditionCode: r.condition, parcel: r.shippingSize,
     status: r.status, moderation: r.moderation, images, isOwner, sellerId: r.sellerId, sellerUsername: r.sellerUsername
   };
 }
@@ -298,7 +299,7 @@ export async function myListings(db: Db, store: ImageStore, sellerId: string): P
     .where(and(eq(listings.sellerId, sellerId), or(inArray(listings.status, ['draft', 'active', 'reserved', 'sold']), and(eq(listings.status, 'removed'), isNotNull(listings.moderatedBy)))))
     .orderBy(desc(listings.createdAt)).limit(200);
   const images = await coverImages(db, store, rows.map((r) => r.id));
-  return rows.map((r) => ({ ...toCard(r, images), status: r.status, moderation: r.moderation, moderationNote: r.moderationNote }));
+  return rows.map((r) => ({ ...toCard(r, images, store), status: r.status, moderation: r.moderation, moderationNote: r.moderationNote }));
 }
 
 /* ------------------------------ Advarsler ------------------------------ */

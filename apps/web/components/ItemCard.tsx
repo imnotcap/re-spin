@@ -18,7 +18,7 @@ export interface CardItem {
   favorites: number;
   icon: IconName;
   vintage?: boolean;
-  seller?: { name: string; certified: boolean };
+  seller?: { name: string; certified: boolean; avatar?: string | null };
   /** Annoncens foto og side (/annonce/<id>/) */
   image?: { src: string; srcSet?: string } | null;
   href?: string;
