@@ -151,7 +151,8 @@
 .rs-field--icon { position: relative; }
 .rs-field--icon .rs-input { padding-left: 46px; }
 .rs-field__control { position: relative; }
-.rs-field--icon .rs-field__control > svg { position: absolute; left: 14px; top: 16px; color: var(--rs-text-muted); }
+/* Ikonet centreres lodret, så det også sidder midt i de lavere felter (.rs-flat er 44 px) */
+.rs-field--icon .rs-field__control > svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--rs-text-muted); pointer-events: none; }
 .rs-field--error .rs-input { border-color: var(--rs-danger); }
 .rs-field--error .rs-field__hint { color: var(--rs-danger); }
 .rs-input-affix { position: relative; }

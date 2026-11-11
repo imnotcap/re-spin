@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="videro-foerste-annonce-locked-title videro-foerste-annonce-locked-desc">
+<title id="videro-foerste-annonce-locked-title">Første annonce – låst</title><desc id="videro-foerste-annonce-locked-desc">Et prismærke med et lille glimt. Låst version i varme grå toner med en lille lås.</desc>
+<defs>
+<linearGradient id="videro-foerste-annonce-locked-rim" x1="17" y1="15" x2="106" y2="117" gradientUnits="userSpaceOnUse"><stop stop-color="#f6f4f0"/><stop offset=".45" stop-color="#e3e0da"/><stop offset="1" stop-color="#cbc6bd"/></linearGradient>
+<linearGradient id="videro-foerste-annonce-locked-face" x1="29" y1="27" x2="95" y2="106" gradientUnits="userSpaceOnUse"><stop stop-color="#f2f0eb"/><stop offset=".54" stop-color="#e7e4dd"/><stop offset="1" stop-color="#d8d3ca"/></linearGradient>
+<clipPath id="videro-foerste-annonce-locked-clip"><path d="M67 17.9 102 38.1Q106 40.4 106 45V84Q106 88.6 102 90.9L67 111.1Q64 112.8 61 111.1L26 90.9Q22 88.6 22 84V45Q22 40.4 26 38.1L61 17.9Q64 16.2 67 17.9Z"/></clipPath>
+</defs><path d="M69 5.9 110 29.6Q115 32.5 115 38.2V89.8Q115 95.5 110 98.4L69 122.1Q64 125 59 122.1L18 98.4Q13 95.5 13 89.8V38.2Q13 32.5 18 29.6L59 5.9Q64 3 69 5.9Z" fill="url(#videro-foerste-annonce-locked-rim)" stroke="#c6c1b8" stroke-width="1.5"/>
+<path d="M64 4.6V17L26 39 15 33Q16 31 18 29.6L59 5.9Q61.5 4.5 64 4.6Z" fill="#fff" opacity=".3"/>
+<path d="M114 34.8Q115 36 115 38.2V89.8Q115 95.5 110 98.4L69 122.1Q66 123.8 64 123.7V112L103 89 106 42Z" fill="#c6c1b8" opacity=".18"/>
+<path d="M14 89 24 86 64 111V123Q61 123 59 122L18 98Q13 95 14 89Z" fill="#fff" opacity=".13"/>
+<path d="M67 17.9 102 38.1Q106 40.4 106 45V84Q106 88.6 102 90.9L67 111.1Q64 112.8 61 111.1L26 90.9Q22 88.6 22 84V45Q22 40.4 26 38.1L61 17.9Q64 16.2 67 17.9Z" fill="url(#videro-foerste-annonce-locked-face)" stroke="#f6f4f0" stroke-width="1.5"/>
+<g clip-path="url(#videro-foerste-annonce-locked-clip)"><circle cx="81" cy="47" r="27" fill="#f9f7f2" opacity=".075"/><path d="M64 17 22 41V87L64 69Z" fill="#fff" opacity=".035"/><path d="M22 88 64 69 106 88 64 113Z" fill="#817b73" opacity=".12"/></g>
+<path d="M19 34 61 9.8Q64 8.1 67 9.8L87 21.3" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".78"/>
+<path d="M94 25.4 108 33.5Q111 35.2 111 39V51" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".35"/>
+<path d="M18 78V88Q18 92 21 94L38 104" fill="none" stroke="#f6f4f0" stroke-width="1.8" stroke-linecap="round" opacity=".65"/><g transform="translate(0 2.6)" opacity="0.08"><g fill="none" stroke="#817b73" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M40 39H61Q64 39 67 42L89 64Q92 67 89 70L68 91Q65 94 62 91L40 69Q37 66 37 63V42Q37 39 40 39Z" fill="#817b73"/>
+<path d="M65 90 88 67 85 64 62 87Z" fill="#817b73" stroke="none"/>
+<circle cx="48.5" cy="50.5" r="4.1" fill="#817b73" stroke="none"/>
+<path d="M56 59 73 76" stroke="#817b73" stroke-width="4"/>
+<path d="M61 55 78 72" stroke="#817b73" stroke-width="3"/>
+<path d="M41 43H59" stroke="#817b73" stroke-width="2.3"/></g><path d="M86 32 87.74 36.26 92 38 87.74 39.74 86 44 84.26 39.74 80 38 84.26 36.26Z" fill="#817b73"/></g><g fill="none" stroke="#a8a29e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M40 39H61Q64 39 67 42L89 64Q92 67 89 70L68 91Q65 94 62 91L40 69Q37 66 37 63V42Q37 39 40 39Z" fill="#f9f7f2"/>
+<path d="M65 90 88 67 85 64 62 87Z" fill="#d2ccc3" stroke="none"/>
+<circle cx="48.5" cy="50.5" r="4.1" fill="#a8a29e" stroke="none"/>
+<path d="M56 59 73 76" stroke="#a8a29e" stroke-width="4"/>
+<path d="M61 55 78 72" stroke="#d2ccc3" stroke-width="3"/>
+<path d="M41 43H59" stroke="#fffdfa" stroke-width="2.3"/></g><path d="M86 32 87.74 36.26 92 38 87.74 39.74 86 44 84.26 39.74 80 38 84.26 36.26Z" fill="#c9c3b9"/><circle cx="53.5" cy="103" r="1.3" fill="#b5aea3" opacity=".6"/><path d="M64 98.7 65.247 101.753 68.3 103 65.247 104.247 64 107.3 62.753 104.247 59.7 103 62.753 101.753Z" fill="#b5aea3"/><circle cx="74.5" cy="103" r="1.3" fill="#b5aea3" opacity=".6"/><g stroke-linecap="round" stroke-linejoin="round"><circle cx="102" cy="98" r="15" fill="#fcfbf8" stroke="#c6c1b8" stroke-width="2.2"/><path d="M97 97V93.5C97 86.8 107 86.8 107 93.5V97" fill="none" stroke="#918b82" stroke-width="2.7"/><rect x="94.5" y="96" width="15" height="12" rx="3" fill="#aaa398"/><circle cx="102" cy="101" r="1.6" fill="#fcfbf8"/><path d="M102 102V104" stroke="#fcfbf8" stroke-width="1.8"/></g>
+</svg>

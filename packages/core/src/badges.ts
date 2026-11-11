@@ -29,7 +29,7 @@ export interface BadgeRule {
   /** Fremskridt mod målet (fx 3 af 10 salg) – mål 1 for ja/nej-badges */
   progress: (s: BadgeStats) => number;
   goal: number;
-  /** Særlige badges vises med lime baggrund */
+  /** Særlige badges (de sværeste at opnå) */
   special?: boolean;
 }
 
