@@ -51,7 +51,7 @@ export default function PrivacyPage() {
         { id: 'deling', title: 'Hvem vi deler med', body: <>
           <p>Vi sælger aldrig dine oplysninger. Vi bruger disse databehandlere, som kun må behandle oplysningerne efter vores instruks:</p>
           <ul>
-            <li><b>Vercel Inc.</b> – hosting af hjemmesiden (servere i Frankfurt) og billedlager til annoncefotos.</li>
+            <li><b>Vercel Inc.</b> – hosting af hjemmesiden (servere i Frankfurt), billedlager til annoncefotos og besøgs- og hastighedsstatistik uden cookies (se <a href="#statistik">Statistik uden cookies</a>).</li>
             <li><b>Neon Inc.</b> – database (servere i Frankfurt).</li>
             <li><b>Cloudflare Inc.</b> – beskyttelse mod angreb og hurtig levering af siden.</li>
             <li><b>Resend Inc.</b> – udsendelse af e-mails (bekræftelse, nulstilling af adgangskode og notifikationer).</li>
@@ -82,6 +82,7 @@ export default function PrivacyPage() {
             <li>Grundlag: vores legitime interesse i at forbedre siden (GDPR art. 6, stk. 1, litra f). Oplysningerne slettes efter 13 måneder.</li>
             <li>Har din browser slået "Global Privacy Control" eller "Do Not Track" til, tæller vi slet ikke dine besøg.</li>
           </ul>
+          <p>Derudover bruger vi <b>Vercel Web Analytics</b> (hvilke sider der bliver besøgt, og hvor besøgende kommer fra) og <b>Vercel Speed Insights</b> (hvor hurtigt siderne indlæses). De bruger heller ikke cookies og gemmer intet på din enhed. Vercel får sidens adresse – uden søgeord og andre tilføjelser efter "?" – samt land, browser, styresystem og enhedstype. Besøgende tælles med et kodet tal, der laves ud fra forespørgslen og slettes efter 24 timer; IP-adressen gemmes ikke. Samme grundlag som ovenfor, og "Global Privacy Control" og "Do Not Track" respekteres også her.</p>
         </> },
         { id: 'cookies', title: 'Cookies', body: <p>Vi bruger kun det, der er nødvendigt for at siden virker. Læs mere i vores <Link href="/cookiepolitik/">cookiepolitik</Link>, og ret dit valg under <Link href="/cookieindstillinger/">cookieindstillinger</Link>.</p> }
       ]}
