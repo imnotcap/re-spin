@@ -9,7 +9,7 @@ export const PERMISSIONS = [
   'user.view', 'user.suspend', 'listing.view', 'listing.moderate', 'report.handle',
   'order.view', 'order.refund', 'order.resolve_dispute', 'payout.view', 'ledger.view',
   'fees.edit', 'staff.manage', 'audit.view', 'support.handle',
-  'user.warn', 'listing.delete', 'analytics.view'
+  'user.warn', 'listing.delete', 'analytics.view', 'user.delete'
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 

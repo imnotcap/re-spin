@@ -1,17 +1,19 @@
 import Link from 'next/link';
-import { Badge, EmptyState } from '@respin/ui';
+import { Badge, EmptyState, Notice } from '@respin/ui';
 import { AdminFrame, when } from '../../components/AdminFrame';
 import { requireDb, requireStaff } from '../../lib/auth';
 import { searchUsers } from '../../lib/people';
 
 export const metadata = { title: 'Brugere' };
 
-export default async function UsersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+export default async function UsersPage({ searchParams }: { searchParams: Promise<{ q?: string; slettet?: string }> }) {
   const staff = await requireStaff('user.view');
-  const q = ((await searchParams).q ?? '').slice(0, 100);
+  const sp = await searchParams;
+  const q = (sp.q ?? '').slice(0, 100);
   const rows = await searchUsers(requireDb(), q);
   return (
     <AdminFrame staff={staff} title="Brugere" section="users">
+      {sp.slettet && <Notice icon="check" role="status" className="mb-4">Brugeren er slettet.</Notice>}
       <form action="/users" className="flex gap-2" role="search">
         <label htmlFor="q" className="sr-only">Søg brugere</label>
         <input id="q" name="q" defaultValue={q} placeholder="Navn, e-mail, profilnavn eller id" className="h-10 w-80 max-w-full rounded-md border border-line bg-surface px-3 text-small" />

@@ -11,7 +11,7 @@ import { staffReply, updateCase } from '@respin/support';
 import type { Permission } from '@respin/security';
 import { audit, requireDb, requireStaff } from './auth';
 import { MONEY_ACTIONS, decideApproval, isMoneyAction, requestMoneyAction } from './orders';
-import { handleReport, moderateListing, setUserStatus } from './people';
+import { deleteUser, handleReport, moderateListing, setUserStatus } from './people';
 import { closeReportsFor, deleteListing, moderate, recategorize, warnUser } from './listings';
 
 const str = (fd: FormData, k: string) => { const v = fd.get(k); return typeof v === 'string' ? v : ''; };
@@ -85,6 +85,26 @@ export async function userStatusAction(fd: FormData): Promise<void> {
   await audit({ actorType: 'staff', actorId: staff.id, action: status === 'suspended' ? 'user.suspended' : 'user.reactivated', targetType: 'user', targetId: id, ip: staff.ip, metadata: { reason, ok } });
   revalidatePath(`/users/${id}`);
   redirect(`/users/${id}?${status === 'suspended' ? 'spaerret' : 'genaabnet'}=1`);
+}
+
+/**
+ * Slet en bruger (kun admin). Kræver, at medarbejderen skriver SLET for at bekræfte. Brugere uden penge-historik
+ * slettes helt; ellers anonymiseres de (se deleteUser). Audit-loggen gemmer kun id og visningsnavn – ikke e-mailen.
+ */
+export async function deleteUserAction(fd: FormData): Promise<void> {
+  const staff = await requireStaff('user.delete');
+  const id = str(fd, 'userId');
+  const back = `/users/${/^[0-9a-f-]{36}$/i.test(id) ? id : ''}`;
+  if (str(fd, 'confirm').trim().toUpperCase() !== 'SLET') redirect(`${back}?fejl=bekraeft`);
+  const db = requireDb();
+  const [u] = /^[0-9a-f-]{36}$/i.test(id) ? await db.select({ name: schema.users.displayName }).from(schema.users).where(eq(schema.users.id, id)) : [];
+  const r = await deleteUser(db, id);
+  await audit({ actorType: 'staff', actorId: staff.id, action: r.ok ? `user.${r.mode}` : 'user.delete_failed', targetType: 'user', targetId: id, ip: staff.ip,
+    metadata: { name: u?.name ?? null, reason: str(fd, 'reason').trim().slice(0, 500), ...(r.ok ? {} : { error: r.error }) } });
+  revalidatePath('/users');
+  if (!r.ok) redirect(`${back}?fejl=${r.error === 'already_deleted' ? 'allerede_slettet' : 'ukendt_bruger'}`);
+  if (r.mode === 'anonymized') { revalidatePath(back); redirect(`${back}?anonymiseret=1`); }
+  redirect('/users?slettet=1');
 }
 
 export async function moderateAction(fd: FormData): Promise<void> {

@@ -5,7 +5,7 @@ import { can } from '@respin/security';
 import { STATUS_LABEL } from '@respin/support';
 import { AdminFrame, Panel, kr, when } from '../../../components/AdminFrame';
 import { requireDb, requireStaff } from '../../../lib/auth';
-import { userStatusAction, warnAction } from '../../../lib/actions';
+import { deleteUserAction, userStatusAction, warnAction } from '../../../lib/actions';
 import { WARNING_REASONS, warningsForUser } from '../../../lib/listings';
 import { ORDER_STATUS_LABEL } from '../../../lib/orders';
 import { getUser } from '../../../lib/people';
@@ -13,7 +13,14 @@ import { ORDER_TONE } from '../../../lib/labels';
 
 export const metadata = { title: 'Bruger' };
 
-export default async function UserPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ spaerret?: string; genaabnet?: string; fejl?: string; advaret?: string }> }) {
+const FEJL: Record<string, string> = {
+  advarsel: 'Vælg en grund, og skriv en besked på mindst 5 tegn.',
+  bekraeft: 'Skriv SLET i feltet for at bekræfte sletningen.',
+  allerede_slettet: 'Brugeren er allerede slettet.',
+  ukendt_bruger: 'Brugeren findes ikke.'
+};
+
+export default async function UserPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ spaerret?: string; genaabnet?: string; fejl?: string; advaret?: string; anonymiseret?: string }> }) {
   const staff = await requireStaff('user.view');
   const { id } = await params;
   const sp = await searchParams;
@@ -25,7 +32,8 @@ export default async function UserPage({ params, searchParams }: { params: Promi
       actions={<Badge tone={u.status === 'active' ? 'forest' : 'coral'}>{u.status === 'active' ? 'Aktiv' : u.status === 'suspended' ? 'Spærret' : 'Slettet'}</Badge>}>
       {sp.spaerret && <Notice icon="check" role="status" className="mb-4">Brugeren er spærret og logget ud på alle enheder.</Notice>}
       {sp.genaabnet && <Notice icon="check" role="status" className="mb-4">Brugeren er genåbnet.</Notice>}
-      {sp.fejl && <Notice icon="info" warn role="alert" className="mb-4">{sp.fejl === 'advarsel' ? 'Vælg en grund, og skriv en besked på mindst 5 tegn.' : 'Skriv en begrundelse på mindst 5 tegn.'}</Notice>}
+      {sp.anonymiseret && <Notice icon="check" role="status" className="mb-4">Brugeren havde ordrer eller betalinger, så kontoen er anonymiseret i stedet for slettet helt: navn, e-mail og profil er fjernet, brugeren er logget ud og kan ikke logge ind, og annoncerne er fjernet fra siden. Ordrer og bogføring er bevaret.</Notice>}
+      {sp.fejl && <Notice icon="info" warn role="alert" className="mb-4">{FEJL[sp.fejl] ?? 'Skriv en begrundelse på mindst 5 tegn.'}</Notice>}
       {sp.advaret && <Notice icon="check" role="status" className="mb-4">Advarslen er givet. Brugeren ser den øverst på sin konto. Det er advarsel nr. {sp.advaret}.{Number(sp.advaret) >= 3 ? ' Overvej at spærre brugeren.' : ''}</Notice>}
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex flex-col gap-4">
@@ -102,6 +110,25 @@ export default async function UserPage({ params, searchParams }: { params: Promi
                 <label className="text-small font-semibold">Begrundelse<textarea name="reason" rows={3} maxLength={500} required={u.status === 'active'} minLength={u.status === 'active' ? 5 : undefined} className="mt-1 block w-full rounded-md border border-line px-3 py-2 text-small" placeholder="Fx: Gentagne forsøg på betaling uden om Videro" /></label>
                 {u.status === 'active' && <p className="text-caption text-muted">Brugeren logges ud overalt og kan ikke logge ind, før spærringen ophæves.</p>}
                 <button className={`h-9 rounded-md text-small font-semibold text-white ${u.status === 'active' ? 'bg-coral-600' : 'bg-forest'}`}>{u.status === 'active' ? 'Spær' : 'Genåbn'}</button>
+              </form>
+            </Panel>
+          )}
+          {can(staff.role, 'user.delete') && u.status !== 'deleted' && (
+            <Panel title="Slet bruger">
+              <form action={deleteUserAction} className="flex flex-col gap-2 text-small">
+                <input type="hidden" name="userId" value={u.id} />
+                <p className="text-muted">
+                  {!u.moneyHistory
+                    ? 'Brugeren slettes helt: konto, annoncer, beskeder, bud, supportsager og logins. Det kan ikke fortrydes.'
+                    : 'Brugeren har ordrer eller betalinger, som skal gemmes. Kontoen anonymiseres derfor: navn, e-mail og profil fjernes, brugeren logges ud og kan ikke logge ind, og annoncerne fjernes fra siden. Det kan ikke fortrydes.'}
+                </p>
+                <label className="flex flex-col gap-1 font-semibold">Begrundelse <span className="font-normal text-muted">(valgfri)</span>
+                  <input name="reason" maxLength={500} className="h-9 rounded-md border border-line px-2 font-normal" placeholder="Fx: Testbruger eller bot" />
+                </label>
+                <label className="flex flex-col gap-1 font-semibold">Skriv SLET for at bekræfte
+                  <input name="confirm" required autoComplete="off" pattern="[Ss][Ll][Ee][Tt]" className="h-9 rounded-md border border-line px-2 font-normal" />
+                </label>
+                <button className="h-9 self-start rounded-md bg-coral-600 px-4 font-semibold text-white">Slet bruger</button>
               </form>
             </Panel>
           )}
