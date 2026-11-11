@@ -4,7 +4,7 @@ import { computeOrderAmounts, ore } from '@respin/core';
 import { schema, type Db } from '@respin/db';
 import { createTestDb } from '@respin/db/testing';
 import { decideApproval, getOrder, listApprovals, listOrders, requestMoneyAction } from './orders';
-import { dailySeries, dashboardStats, getUser, moderateListing, pendingListings, searchUsers, setUserStatus } from './people';
+import { dailySeries, dashboardStats, deleteUser, getUser, moderateListing, pendingListings, searchUsers, setUserStatus } from './people';
 
 const s = schema;
 let db: Db, close: () => Promise<void>;
@@ -113,5 +113,66 @@ describe('brugere og moderation', () => {
     const series = await dailySeries(db, 14);
     expect(series).toHaveLength(14);
     expect(series.at(-1)!.users).toBeGreaterThan(0);
+  });
+});
+
+describe('slet bruger', () => {
+  const listing = async (sellerId: string) => (await db.insert(s.listings).values({ sellerId, title: 'Testjakke', category: 'kvinder', condition: 'very_good', priceOre: 10_000, shippingSize: 'small', status: 'active', moderationStatus: 'approved' }).returning())[0]!.id;
+  const rows = async <T>(q: Promise<T[]>) => (await q).length;
+
+  it('uden penge-historik: alt om brugeren slettes, og andres data består', async () => {
+    const bot = await user('Bot'), other = await user('Anden');
+    const own = await listing(bot), theirs = await listing(other);
+    await db.insert(s.listingImages).values([
+      { ownerId: bot, listingId: own, storageKey: `listings/2026/11/${crypto.randomUUID()}.webp`, contentType: 'image/webp', bytes: 10, scanStatus: 'clean' },
+      { ownerId: bot, storageKey: `listings/2026/11/${crypto.randomUUID()}.webp`, contentType: 'image/webp', bytes: 10, scanStatus: 'clean' }
+    ]);
+    // Botten skriver til en anden sælger og byder; en anden bruger skriver til botten
+    const [c1] = await db.insert(s.conversations).values({ listingId: theirs, buyerId: bot, sellerId: other }).returning();
+    await db.insert(s.messages).values({ conversationId: c1!.id, senderId: bot, body: 'Køb billigt her: spam.example' });
+    const [c2] = await db.insert(s.conversations).values({ listingId: own, buyerId: other, sellerId: bot }).returning();
+    await db.insert(s.messages).values({ conversationId: c2!.id, senderId: other, body: 'Er den stadig til salg?' });
+    await db.insert(s.offers).values({ listingId: theirs, buyerId: bot, amountOre: 5_000, expiresAt: new Date(Date.now() + 86_400_000) });
+    await db.insert(s.favorites).values({ userId: other, listingId: own });
+    await db.insert(s.sessions).values({ tokenHash: 'b'.repeat(64), userId: bot, expiresAt: new Date(Date.now() + 86_400_000) });
+    await db.insert(s.sellerProfiles).values({ userId: bot });
+    await db.insert(s.supportCases).values({ userId: bot, subject: 'Hjælp mig', category: 'account' });
+    await db.insert(s.listingPromotions).values({ kind: 'profile', sellerId: bot, package: '1d', priceOre: 1_000, status: 'paid', startsAt: new Date(), endsAt: new Date(Date.now() + 86_400_000) }); // testfremhævning uden Stripe
+
+    expect((await getUser(db, bot))?.moneyHistory).toBe(false);
+    expect(await deleteUser(db, bot)).toEqual({ ok: true, mode: 'deleted' });
+    expect(await getUser(db, bot)).toBeNull();
+    expect(await rows(db.select().from(s.listings).where(eq(s.listings.sellerId, bot)))).toBe(0);
+    expect(await rows(db.select().from(s.listingImages).where(eq(s.listingImages.ownerId, bot)))).toBe(0);
+    expect(await rows(db.select().from(s.conversations).where(eq(s.conversations.id, c1!.id)))).toBe(0);
+    expect(await rows(db.select().from(s.conversations).where(eq(s.conversations.id, c2!.id)))).toBe(0);
+    expect(await rows(db.select().from(s.sessions).where(eq(s.sessions.userId, bot)))).toBe(0);
+    expect(await rows(db.select().from(s.supportCases).where(eq(s.supportCases.userId, bot)))).toBe(0);
+    expect(await rows(db.select().from(s.listings).where(eq(s.listings.id, theirs)))).toBe(1); // den anden sælgers annonce består
+    expect(await deleteUser(db, bot)).toEqual({ ok: false, error: 'not_found' });
+  });
+
+  it('med ordrer: anonymiseres, logges ud og annoncer fjernes – ordren består', async () => {
+    const orderId = await paidOrder(200);
+    const [o] = await db.select({ sellerId: s.orders.sellerId }).from(s.orders).where(eq(s.orders.id, orderId));
+    const seller = o!.sellerId;
+    const other = await listing(seller);
+    await db.insert(s.sessions).values({ tokenHash: 'c'.repeat(64), userId: seller, expiresAt: new Date(Date.now() + 86_400_000) });
+
+    expect((await getUser(db, seller))?.moneyHistory).toBe(true);
+    expect(await deleteUser(db, seller)).toEqual({ ok: true, mode: 'anonymized' });
+    const [u] = await db.select().from(s.users).where(eq(s.users.id, seller));
+    expect(u).toMatchObject({ status: 'deleted', displayName: 'Slettet bruger', username: null, bio: null, avatarKey: null, email: `slettet-${seller}@slettet.invalid` });
+    expect(u?.deletedAt).toBeInstanceOf(Date);
+    const [sess] = await db.select().from(s.sessions).where(eq(s.sessions.userId, seller));
+    expect(sess?.revokedAt).toBeInstanceOf(Date);
+    const [l] = await db.select({ status: s.listings.status }).from(s.listings).where(eq(s.listings.id, other));
+    expect(l?.status).toBe('removed');
+    expect(await rows(db.select().from(s.orders).where(eq(s.orders.id, orderId)))).toBe(1);
+    expect(await deleteUser(db, seller)).toEqual({ ok: false, error: 'already_deleted' });
+  });
+
+  it('afviser ugyldige id’er', async () => {
+    expect(await deleteUser(db, "x' or '1'='1")).toEqual({ ok: false, error: 'not_found' });
   });
 });

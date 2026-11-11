@@ -1,9 +1,9 @@
 import 'server-only';
 /** Brugere, moderation, nøgletal og audit-log til admin. Ingen adgangskontrol her – den sker i siderne/handlingerne. */
-import { and, count, desc, eq, ilike, inArray, isNull, or, sql } from 'drizzle-orm';
+import { and, count, desc, eq, ilike, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import { schema, type Db } from '@respin/db';
 
-const { users, listings, orders, sessions, supportCases, reports, auditLog, listingPromotions, staffUsers } = schema;
+const { users, listings, listingImages, orders, sessions, supportCases, reports, auditLog, listingPromotions, staffUsers, sellerProfiles, conversations, offers } = schema;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const likeOf = (q: string) => `%${q.replace(/[\\%_]/g, (m) => `\\${m}`)}%`;
 
@@ -30,7 +30,7 @@ export async function getUser(db: Db, id: string) {
       .from(supportCases).where(eq(supportCases.userId, id)).orderBy(desc(supportCases.updatedAt)).limit(20),
     db.select({ n: count() }).from(sessions).where(and(eq(sessions.userId, id), isNull(sessions.revokedAt), sql`${sessions.expiresAt} > now()`))
   ]);
-  return { ...u, listings: userListings, orders: userOrders, cases, activeSessions: activeSessions[0]?.n ?? 0 };
+  return { ...u, listings: userListings, orders: userOrders, cases, activeSessions: activeSessions[0]?.n ?? 0, moneyHistory: await hasMoneyHistory(db, id) };
 }
 
 /** Spær eller genåbn en bruger. Ved spærring logges brugeren ud overalt, og aktive annoncer skjules (status bevares). */
@@ -41,6 +41,61 @@ export async function setUserStatus(db: Db, id: string, status: 'active' | 'susp
     if (r.length !== 1) return false;
     if (status === 'suspended') await tx.update(sessions).set({ revokedAt: now }).where(and(eq(sessions.userId, id), isNull(sessions.revokedAt)));
     return true;
+  });
+}
+
+/**
+ * Har brugeren penge-historik, der skal gemmes (bogføringsloven)? Ordrer som køber eller sælger, betalte
+ * fremhævninger via Stripe eller en Stripe-udbetalingskonto. Testfremhævninger uden betaling tæller ikke.
+ */
+async function hasMoneyHistory(tx: Db, id: string): Promise<boolean> {
+  const [[o], [p], [sp]] = await Promise.all([
+    tx.select({ n: count() }).from(orders).where(or(eq(orders.buyerId, id), eq(orders.sellerId, id))),
+    tx.select({ n: count() }).from(listingPromotions).where(and(eq(listingPromotions.sellerId, id), eq(listingPromotions.status, 'paid'), isNotNull(listingPromotions.stripeSessionId))),
+    tx.select({ n: count() }).from(sellerProfiles).where(and(eq(sellerProfiles.userId, id), isNotNull(sellerProfiles.stripeAccountId)))
+  ]);
+  return (o?.n ?? 0) + (p?.n ?? 0) + (sp?.n ?? 0) > 0;
+}
+
+export type DeleteUserResult = { ok: true; mode: 'deleted' | 'anonymized' } | { ok: false; error: 'not_found' | 'already_deleted' };
+
+/**
+ * Slet en bruger (fx testbrugere og bots).
+ * - Uden penge-historik: alt slettes – annoncer (med billeder, favoritter, bud og samtaler), egne bud og samtaler,
+ *   supportsager, fremhævninger og sælgerprofil. Sessioner, adgangskode, passkeys, to-trins-login, favoritter og
+ *   advarsler forsvinder med brugeren (kaskade i databasen).
+ * - Med penge-historik: brugeren anonymiseres i stedet (navn, e-mail, profil og billeder fjernes), logges ud og kan
+ *   ikke logge ind igen; annoncerne fjernes fra siden. Ordrer og bogføring bevares, som loven kræver.
+ * Alt sker i én transaktion. Billedfiler i lageret slettes ikke herfra (admin har ingen skriveadgang til lageret);
+ * de har tilfældige navne og vises ingen steder, når rækkerne er væk.
+ */
+export async function deleteUser(db: Db, id: string, now = new Date()): Promise<DeleteUserResult> {
+  if (!UUID.test(id)) return { ok: false, error: 'not_found' };
+  return db.transaction(async (tx) => {
+    const [u] = await tx.select({ status: users.status }).from(users).where(eq(users.id, id)).for('update');
+    if (!u) return { ok: false as const, error: 'not_found' as const };
+    if (u.status === 'deleted') return { ok: false as const, error: 'already_deleted' as const };
+
+    if (await hasMoneyHistory(tx as unknown as Db, id)) {
+      await tx.update(users).set({
+        status: 'deleted', deletedAt: now, email: `slettet-${id}@slettet.invalid`, emailNormalized: `slettet-${id}@slettet.invalid`,
+        displayName: 'Slettet bruger', username: null, bio: null, profileBanner: null, avatarKey: null, bannerKey: null
+      }).where(eq(users.id, id));
+      await tx.update(sessions).set({ revokedAt: now }).where(and(eq(sessions.userId, id), isNull(sessions.revokedAt)));
+      await tx.update(listings).set({ status: 'removed' }).where(and(eq(listings.sellerId, id), inArray(listings.status, ['draft', 'active', 'reserved'])));
+      return { ok: true as const, mode: 'anonymized' as const };
+    }
+
+    // Rækkefølgen følger fremmednøglerne (RESTRICT): først det, der peger på brugeren, så brugeren selv
+    await tx.delete(offers).where(eq(offers.buyerId, id));
+    await tx.delete(conversations).where(or(eq(conversations.buyerId, id), eq(conversations.sellerId, id)));
+    await tx.delete(listingPromotions).where(eq(listingPromotions.sellerId, id));
+    await tx.delete(listingImages).where(eq(listingImages.ownerId, id));
+    await tx.delete(listings).where(eq(listings.sellerId, id));
+    await tx.delete(supportCases).where(eq(supportCases.userId, id));
+    await tx.delete(sellerProfiles).where(eq(sellerProfiles.userId, id));
+    await tx.delete(users).where(eq(users.id, id));
+    return { ok: true as const, mode: 'deleted' as const };
   });
 }
 

@@ -29,6 +29,9 @@ GRANT USAGE ON SEQUENCE support_cases_number_seq TO respin_web;
 -- ---------- admin ----------
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO respin_admin;
 GRANT UPDATE (status) ON users TO respin_admin;
+-- sletning af brugere (helt uden penge-historik, ellers anonymiseret) – se migration 0015
+GRANT DELETE ON users, seller_profiles, listing_images, listing_promotions, conversations, offers, support_cases TO respin_admin;
+GRANT UPDATE (email, email_normalized, display_name, username, bio, profile_banner, avatar_key, banner_key, deleted_at) ON users TO respin_admin;
 GRANT UPDATE (status, moderation_status, moderation_note, moderated_by, moderated_at, category, subcategory, updated_at) ON listings TO respin_admin;
 GRANT DELETE ON listings TO respin_admin;                                    -- permanent sletning af annoncer (uden ordrer)
 GRANT SELECT, INSERT ON user_warnings TO respin_admin;                       -- advarsler: kun tilføjes
