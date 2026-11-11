@@ -13,7 +13,7 @@ export function BadgeList({ badges, showLocked = false }: { badges: readonly Bad
     <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
       {list.map((b) => (
         <li key={b.id} className={`flex items-center gap-3 rounded-lg border p-3 ${b.earned ? 'border-line bg-surface' : 'border-dashed border-line bg-sunken'}`}>
-          <BadgeArt id={b.id} earned={b.earned} special={b.special} size={56} className="shrink-0" />
+          <BadgeArt id={b.id} earned={b.earned} size={56} className="shrink-0" />
           <div className="min-w-0">
             <p className={`text-small font-bold ${b.earned ? 'text-ink' : 'text-slate-700'}`}><T k={`badge.${b.id}.name`} /></p>
             <p className="text-caption text-muted"><T k={`badge.${b.id}.desc`} /></p>
@@ -38,7 +38,7 @@ export function BadgeStrip({ badges }: { badges: readonly BadgeState[] }) {
     <ul className="flex flex-wrap items-center gap-1.5" aria-label="Badges">
       {earned.map((b) => (
         <li key={b.id} className="inline-flex items-center gap-1.5 rounded-pill border border-line bg-surface py-0.5 pl-0.5 pr-2.5 text-caption font-semibold">
-          <BadgeArt id={b.id} special={b.special} size={24} /><T k={`badge.${b.id}.name`} />
+          <BadgeArt id={b.id} size={24} /><T k={`badge.${b.id}.name`} />
         </li>
       ))}
     </ul>
