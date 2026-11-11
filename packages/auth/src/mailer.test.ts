@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ResendMailer, isSingleAddress } from './mailer';
+import { ResendMailer, isSingleAddress, templates } from './mailer';
+import { renderMail } from './mail-html';
 
 const KEY = 're_test_abcdefghijklmnop';
 const ok = () => vi.fn(async () => new Response('{"id":"x"}', { status: 200 }));
@@ -62,5 +63,37 @@ describe('ResendMailer', () => {
     expect(isSingleAddress(evil)).toBe(false);
     expect(() => new ResendMailer({ apiKey: KEY, from: '<!@!.' + '!.'.repeat(50_000) + ' ' })).toThrow('MAIL_FROM');
     expect(performance.now() - t).toBeLessThan(50);
+  });
+});
+
+describe('HTML-mails', () => {
+  const link = 'https://videro.dk/bekraeft-email/?token=abc_DEF-123';
+
+  it('bekræftelsesmailen har både tekst og HTML i Videros tema med knap, link og logo', () => {
+    const m = templates.verify(link);
+    expect(m.text).toContain(link);
+    expect(m.html).toContain('Bekræft din e-mail');
+    expect(m.html).toContain(`href="${link}"`);
+    expect(m.html).toContain('https://videro.dk/img/mail/logo-lime.png');
+    expect(m.html).toContain('#d2ff32');
+    expect(m.html).toContain('#0e5a2f');
+  });
+
+  it('escaper indhold og afviser andet end http(s)-links', () => {
+    const html = renderMail({ preheader: '<b>', heading: 'Hej "<script>alert(1)</script>"', paragraphs: ['a & b'], button: { label: '<i>Klik</i>', href: 'https://videro.dk/x?a=1&b="2"' } });
+    expect(html).not.toContain('<script>');
+    expect(html).toContain('&lt;script&gt;');
+    expect(html).toContain('a &amp; b');
+    expect(html).toContain('a=1&amp;b=%222%22');
+    expect(() => renderMail({ preheader: '', heading: '', paragraphs: [], button: { label: 'x', href: 'javascript:alert(1)' } })).toThrow('Ugyldigt link');
+  });
+
+  it('Resend får html med, når mailen har en', async () => {
+    const f = ok();
+    const m = new ResendMailer({ apiKey: KEY, from: 'Videro <noreply@videro.dk>', fetch: f as unknown as typeof fetch });
+    await m.send({ to: 'mette@example.dk', ...templates.verify(link) });
+    const body = JSON.parse(String((f.mock.calls[0] as unknown as [string, RequestInit])[1].body));
+    expect(body.text).toContain(link);
+    expect(body.html).toContain('<!doctype html>');
   });
 });

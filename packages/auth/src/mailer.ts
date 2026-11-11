@@ -1,5 +1,8 @@
+import { renderMail } from './mail-html';
+
 /** E-mail-afsendelse. Produktion skal bruge en rigtig udbyder (DKIM); konsol-afsenderen afvises i produktion. */
-export interface Mail { to: string; subject: string; text: string }
+/** `text` sendes altid (læses af mailprogrammer uden HTML og af spamfiltre); `html` er den pæne udgave, hvor den findes. */
+export interface Mail { to: string; subject: string; text: string; html?: string }
 export interface Mailer { send(mail: Mail): Promise<void> }
 
 export class ConsoleMailer implements Mailer {
@@ -69,7 +72,7 @@ export class ResendMailer implements Mailer {
       res = await this.o.fetch(this.o.endpoint, {
         method: 'POST',
         headers: { Authorization: `Bearer ${this.o.apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: this.o.from, to: [mail.to], subject: mail.subject, text: mail.text }),
+        body: JSON.stringify({ from: this.o.from, to: [mail.to], subject: mail.subject, text: mail.text, ...(mail.html ? { html: mail.html } : {}) }),
         redirect: 'error',
         signal: AbortSignal.timeout(this.o.timeoutMs)
       });
@@ -83,7 +86,18 @@ export class ResendMailer implements Mailer {
 export const templates = {
   verify: (link: string): Omit<Mail, 'to'> => ({
     subject: 'Bekræft din e-mail til Videro',
-    text: `Hej!\n\nBekræft din e-mail ved at åbne linket og logge ind med den adgangskode, du valgte:\n${link}\n\nLinket virker i 24 timer. Har du ikke oprettet en konto, kan du se bort fra denne mail.\n\n– Videro`
+    text: `Hej!\n\nBekræft din e-mail ved at åbne linket og logge ind med den adgangskode, du valgte:\n${link}\n\nLinket virker i 24 timer. Har du ikke oprettet en konto, kan du se bort fra denne mail.\n\n– Videro`,
+    html: renderMail({
+      preheader: 'Ét klik mere, så er din Videro-konto klar.',
+      heading: 'Bekræft din e-mail',
+      paragraphs: [
+        'Hej, og velkommen til Videro!',
+        'Tryk på knappen for at bekræfte din e-mail. Derefter logger du ind med den adgangskode, du valgte – og så er du klar til at købe og sælge brugt tøj og ting.'
+      ],
+      button: { label: 'Bekræft e-mail', href: link },
+      note: 'Linket virker i 24 timer.',
+      footnote: 'Har du ikke oprettet en konto på Videro, kan du se bort fra denne mail. Der sker ikke noget, før linket bliver brugt.'
+    })
   }),
   alreadyRegistered: (loginLink: string, resetLink: string): Omit<Mail, 'to'> => ({
     subject: 'Forsøg på at oprette en konto med din e-mail',
