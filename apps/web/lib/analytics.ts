@@ -6,9 +6,23 @@
 export type AnalyticsType = 'pageview' | 'listing_view' | 'click' | 'search' | 'favorite' | 'share';
 export interface AnalyticsData { listingId?: string; category?: string; value?: string; num?: number }
 
-function optedOut(): boolean {
+export function optedOut(): boolean {
   const n = navigator as Navigator & { globalPrivacyControl?: boolean };
   return n.globalPrivacyControl === true || n.doNotTrack === '1';
+}
+
+/**
+ * Til Vercel Web Analytics og Speed Insights: adressen uden query og hash (nogle adresser bærer engangskoder,
+ * fx /bekraeft-email/?token=…), og intet ved "Global Privacy Control"/"Do Not Track".
+ */
+export function insightsEvent<T extends { url: string }>(event: T): T | null {
+  if (optedOut()) return null;
+  try {
+    const u = new URL(event.url);
+    return { ...event, url: `${u.origin}${u.pathname}` };
+  } catch {
+    return null;
+  }
 }
 
 /** Domænet man kom fra – kun ved første visning og kun andre sider end vores egen */

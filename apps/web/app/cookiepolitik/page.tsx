@@ -16,7 +16,7 @@ export default function CookiePolicyPage() {
         { id: 'kort', title: 'Kort fortalt', body: <ul>
           <li>Vi bruger kun det, der er nødvendigt for, at siden virker, og for at huske de valg, du selv træffer.</li>
           <li>Vi bruger <b>ingen</b> cookies til statistik eller markedsføring, og ingen tredjeparter sætter cookies via Videro.</li>
-          <li>Vores egen besøgsstatistik bruger hverken cookies eller lokal lagring – se <a href="/privatliv/#statistik">Statistik uden cookies</a>.</li>
+          <li>Vores besøgsstatistik – både vores egen og Vercel Web Analytics og Speed Insights – bruger hverken cookies eller lokal lagring – se <a href="/privatliv/#statistik">Statistik uden cookies</a>.</li>
           <li>Tager vi cookies til statistik eller markedsføring i brug, sker det kun, hvis du har sagt ja. Dit valg respekteres allerede nu.</li>
         </ul> },
         { id: 'liste', title: 'Det gemmer vi', body: (

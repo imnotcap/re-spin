@@ -11,6 +11,7 @@ import { CookieBanner } from '../components/consent/CookieBanner';
 import { BottomNav } from '../components/nav/BottomNav';
 import { getMenuMeta } from '../lib/site-stats';
 import { Tracker } from '../components/Tracker';
+import { VercelInsights } from '../components/VercelInsights';
 import { SITE_URL, SITE } from '../lib/site';
 import { DEFAULT_OG_IMAGE } from '../lib/seo';
 
@@ -61,6 +62,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <Footer />
           <BottomNav />
           <Tracker />
+          <VercelInsights />
           <CookieBanner />
         </Providers>
       </body>
