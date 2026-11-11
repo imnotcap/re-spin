@@ -94,7 +94,7 @@ describe('profilbillede og eget banner', () => {
     expect(await updateProfile(db, u, { username: 'erik.e', bio: '', banner: 'eget' })).toEqual({ ok: true, username: 'erik.e' });
     await removeProfileImage(db, store, u, 'banner');
     [row] = await db.select().from(schema.users).where(eq(schema.users.id, u));
-    expect([row?.bannerKey, row?.profileBanner]).toEqual([null, 'skov']);
+    expect([row?.bannerKey, row?.profileBanner]).toEqual([null, 'videro']);
   });
 
   it('nøglen skal være en profilnøgle (også i databasen)', async () => {

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Avatar, CertifiedBadge, Icon, type IconName } from '@respin/ui';
+import { Avatar, CertifiedBadge, Icon, LogoMark, type IconName } from '@respin/ui';
 import { T } from '../../lib/i18n/client';
 import type { Banner } from '../../lib/banners';
 import { ShareButton } from './ShareButton';
@@ -9,8 +9,18 @@ export interface Review { id: string; author: string; rating: 1 | 2 | 3 | 4 | 5;
 
 export interface ProfileFact { icon: IconName; label: ReactNode; value: ReactNode; /** Teksten før tallet (fx "medlem siden 2026") */ labelFirst?: boolean }
 
-/** Banner (foto eller farve) */
+/** Banner (foto, farve eller Videro-banneret med logo og navn) */
 export function BannerArt({ banner, className = '', priority = true }: { banner: Banner; className?: string; /** Øverst på siden: hent med det samme */ priority?: boolean }) {
+  if (banner.brand) {
+    // Logo og navn skaleres med bannerets højde (container-enhed), så det passer både i profilen og i små forhåndsvisninger
+    return (
+      <span aria-hidden="true" className={`flex h-full w-full items-center justify-center bg-forest text-white [container-type:size] ${className}`}>
+        <span className="inline-flex items-center gap-[0.18em] font-extrabold leading-none tracking-[-0.04em]" style={{ fontSize: 'clamp(12px, 24cqh, 56px)' }}>
+          <LogoMark className="h-[1.3em] w-[1.3em]" />videro
+        </span>
+      </span>
+    );
+  }
   return banner.photo ? (
     <img src={banner.photo.src} srcSet={banner.photo.srcSet} sizes={banner.photo.srcSet ? '(min-width: 1280px) 1232px, 100vw' : undefined} alt="" width={1600} height={400}
       fetchPriority={priority ? 'high' : undefined} loading={priority ? undefined : 'lazy'} className={`h-full w-full object-cover ${className}`} />
