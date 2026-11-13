@@ -29,7 +29,7 @@ export function ChatComposer({ conversationId, listingId, placeholder = 'Skriv e
       <label htmlFor="besked" className="sr-only">Skriv en besked</label>
       <div className="flex items-end gap-2 rounded-lg border border-line bg-surface p-2 focus-within:border-forest">
         <textarea ref={area} id="besked" name="body" rows={2} maxLength={2000} required onKeyDown={onKey} placeholder={placeholder}
-          className="max-h-48 min-h-11 flex-1 resize-y bg-transparent px-2 py-2 text-body outline-none focus-visible:outline-none [field-sizing:content]" aria-describedby="besked-hint" />
+          className="max-h-48 min-h-11 flex-1 resize-none bg-transparent px-2 py-2 text-body outline-none focus-visible:outline-none [field-sizing:content]" aria-describedby="besked-hint" />
         <Button type="submit" icon="send" disabled={pending}>{pending ? 'Sender…' : 'Send'}</Button>
       </div>
       <p id="besked-hint" className="px-1 text-caption text-muted">Enter sender · Shift+Enter giver ny linje · Del aldrig betaling eller telefonnummer – så mister du køberbeskyttelsen</p>

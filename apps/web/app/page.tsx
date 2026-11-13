@@ -8,7 +8,7 @@ import { ItemCard } from '../components/ItemCard';
 import { CATEGORIES } from '../lib/catalog';
 import { categoryIllustration } from '../lib/images';
 import { jsonLd } from '../lib/seo';
-import { SITE, SITE_URL } from '../lib/site';
+import { SITE, SITE_URL, SOCIAL } from '../lib/site';
 import { getDb } from '../lib/server';
 import { getImageStore } from '../lib/image-store';
 import { listForBrowse, type ListingCardData } from '../lib/listings';
@@ -17,7 +17,8 @@ import { getSiteStats } from '../lib/site-stats';
 
 /** Google: navn, logo og søgefelt for Videro i søgeresultaterne */
 const SITE_LD = [
-  { '@context': 'https://schema.org', '@type': 'Organization', name: SITE.name, url: `${SITE_URL}/`, logo: `${SITE_URL}/apple-icon.png` },
+  // sameAs: Videros profiler på sociale medier (samme liste som i footeren) – hjælper Google med at koble dem til Videro
+  { '@context': 'https://schema.org', '@type': 'Organization', name: SITE.name, url: `${SITE_URL}/`, logo: `${SITE_URL}/apple-icon.png`, sameAs: SOCIAL.map((s) => s.href) },
   {
     '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, url: `${SITE_URL}/`, inLanguage: 'da-DK',
     potentialAction: { '@type': 'SearchAction', target: { '@type': 'EntryPoint', urlTemplate: `${SITE_URL}/soeg/?q={search_term_string}` }, 'query-input': 'required name=search_term_string' }

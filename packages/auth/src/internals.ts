@@ -10,7 +10,7 @@ export interface Internals {
   link: (path: string, token?: string) => string;
   limit: (name: LimitName, key: string) => Promise<boolean>;
   audit: (action: string, ctx: RequestContext, actorId: string | null, metadata?: Record<string, unknown>) => Promise<void>;
-  send: (to: string, mail: { subject: string; text: string }) => Promise<void>;
+  send: (to: string, mail: { subject: string; text: string; html?: string }) => Promise<void>;
   createSession: (userId: string, ctx: RequestContext, elevated?: boolean, method?: string) => Promise<IssuedSession>;
   isElevated: (cur: CurrentSession) => boolean;
   hasher: PasswordHasher;

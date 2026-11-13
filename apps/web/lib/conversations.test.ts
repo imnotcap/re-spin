@@ -128,6 +128,8 @@ describe('mail-notifikationer', () => {
     expect(mine()).toHaveLength(1);
     expect(mine()[0]!.text).toContain(`https://videro.dk/konto/beskeder/${c.id}/`);
     expect(mine()[0]!.text).toContain('Hej, kan du sende i morgen?');
+    expect(mine()[0]!.html).toContain(`href="https://videro.dk/konto/beskeder/${c.id}/"`); // HTML-udgave med knap
+    expect(mine()[0]!.html).toContain('Hej, kan du sende i morgen?');
     // Ny besked lige efter: ingen ny mail inden for et kvarter
     await sendMessage(db, buyer, c.id, 'Betal på MobilePay 22334455', new Date(t1.getTime() + 60_000));
     await run(new Date(t1.getTime() + 5 * 60_000));
@@ -136,6 +138,7 @@ describe('mail-notifikationer', () => {
     await run(t2);
     expect(mine()).toHaveLength(2);
     expect(mine()[1]!.text).not.toContain('MobilePay'); // mistænkelig besked citeres ikke
+    expect(mine()[1]!.html).not.toContain('MobilePay'); // heller ikke i HTML-udgaven (heller ikke som forhåndstekst)
     // Læst → ingen mail
     await getThread(db, store, seller, c.id, new Date(t2.getTime() + 1000));
     await sendMessage(db, seller, c.id, 'Ja!', new Date(t2.getTime() + 2000));

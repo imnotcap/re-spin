@@ -9,7 +9,7 @@ import 'server-only';
  */
 import { and, eq, isNotNull, sql } from 'drizzle-orm';
 import { schema, type Db } from '@respin/db';
-import type { Mailer } from '@respin/auth';
+import { renderMail, type Mailer } from '@respin/auth';
 
 const { conversations, messages, listings, users, supportCases } = schema;
 
@@ -19,6 +19,8 @@ export const SUPPORT_GRACE_MS = 60_000;
 const BATCH = 50;
 
 const FOOTER = '\n\n—\nDu får denne mail, fordi du har en konto på Videro. Svar ikke på mailen – skriv i stedet på videro.dk.\nBetal aldrig uden om Videro, og klik ikke på links, du får tilsendt i beskeder. Så mister du køberbeskyttelsen.';
+const REASON = 'Du får denne mail, fordi du har en konto på Videro.';
+const SAFETY = 'Betal aldrig uden om Videro, og klik ikke på links, du får tilsendt i beskeder – så mister du køberbeskyttelsen.';
 
 export interface NotifyResult { messages: number; support: number; failed: number }
 
@@ -56,10 +58,22 @@ export async function runNotifications(db: Db, mailer: Mailer, appUrl: string, n
       const what = r.lastKind?.startsWith('offer') ? (r.lastBody ?? 'Nyt om et bud') : r.unread === 1 ? 'en ny besked' : `${r.unread} nye beskeder`;
       const quote = r.lastKind === 'text' && r.lastRisk === 'low' && r.lastBody ? `\n\n“${r.lastBody.length > 200 ? `${r.lastBody.slice(0, 200)}…` : r.lastBody}”` : '';
       try {
+        const offer = r.lastKind?.startsWith('offer');
+        const link = `${base}/konto/beskeder/${r.id}/`;
+        const quoted = r.lastKind === 'text' && r.lastRisk === 'low' && r.lastBody ? (r.lastBody.length > 200 ? `${r.lastBody.slice(0, 200)}…` : r.lastBody) : null;
         await mailer.send({
           to: r.email,
           subject: `${r.from} har skrevet til dig om “${r.title.slice(0, 60)}”`,
-          text: `Hej ${r.name}\n\n${r.from} har sendt dig ${r.lastKind?.startsWith('offer') ? `en opdatering om et bud: ${what}` : what} om “${r.title}”.${quote}\n\nLæs og svar her:\n${base}/konto/beskeder/${r.id}/${FOOTER}`
+          text: `Hej ${r.name}\n\n${r.from} har sendt dig ${offer ? `en opdatering om et bud: ${what}` : what} om “${r.title}”.${quote}\n\nLæs og svar her:\n${link}${FOOTER}`,
+          html: renderMail({
+            preheader: quoted ?? `${r.from} har skrevet til dig om “${r.title}”.`,
+            heading: offer ? 'Nyt om et bud' : r.unread === 1 ? 'Du har en ny besked' : `Du har ${r.unread} nye beskeder`,
+            paragraphs: [`Hej ${r.name}`, `${r.from} har sendt dig ${offer ? `en opdatering om et bud: ${what}` : what} om “${r.title}”.`],
+            ...(quoted ? { quote: { author: r.from, text: quoted } } : {}),
+            button: { label: offer ? 'Se buddet' : 'Læs og svar', href: link },
+            footnote: SAFETY,
+            reason: REASON
+          })
         });
         await db.update(conversations).set(role === 'buyer' ? { buyerNotifiedAt: now } : { sellerNotifiedAt: now }).where(eq(conversations.id, r.id));
         out.messages++;
@@ -79,10 +93,18 @@ export async function runNotifications(db: Db, mailer: Mailer, appUrl: string, n
     )).limit(BATCH);
   for (const c of cases) {
     try {
+      const link = `${base}/konto/support/${c.number}/`;
       await mailer.send({
         to: c.email,
         subject: `Svar fra Videro kundeservice (sag #${c.number})`,
-        text: `Hej ${c.name}\n\nVi har svaret på din henvendelse “${c.subject}” (sag #${c.number}).\n\nLæs svaret her:\n${base}/konto/support/${c.number}/${FOOTER}`
+        text: `Hej ${c.name}\n\nVi har svaret på din henvendelse “${c.subject}” (sag #${c.number}).\n\nLæs svaret her:\n${link}${FOOTER}`,
+        html: renderMail({
+          preheader: `Vi har svaret på “${c.subject}”.`,
+          heading: 'Du har fået svar fra kundeservice',
+          paragraphs: [`Hej ${c.name}`, `Vi har svaret på din henvendelse “${c.subject}” (sag #${c.number}). Af hensyn til dit privatliv står svaret kun på Videro – log ind for at læse det.`],
+          button: { label: 'Læs svaret', href: link },
+          reason: REASON
+        })
       });
       await db.update(supportCases).set({ customerNotifiedAt: now }).where(eq(supportCases.id, c.id));
       out.support++;
