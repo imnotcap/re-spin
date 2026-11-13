@@ -49,3 +49,7 @@ body:has([data-fullscreen]) [data-chrome] { display: none; }
 .legal table { width: 100%; border-collapse: collapse; font-size: 15px; }
 .legal th, .legal td { text-align: left; vertical-align: top; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--rs-border); }
 .legal th { font-weight: 600; color: var(--rs-text); background: var(--rs-stone-50); }
+
+/* Søgefelter: ingen indbygget (blå) ryd-knap – vi har vores egen */
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }

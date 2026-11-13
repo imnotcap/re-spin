@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { usePathname } from 'next/navigation';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Avatar, Button, Icon, LogoMark, Wordmark } from '@respin/ui';
-import { BASE_PATH, HELP_NAV, SITE } from '../lib/site';
+import { HELP_NAV, SITE } from '../lib/site';
+import { SearchBox } from './search/SearchBox';
 import type { MenuMeta } from '../lib/catalog';
 import { useFavorites } from '../lib/favorites';
 import { NotificationBell } from './notify/NotificationBell';
@@ -13,35 +14,6 @@ import { useI18n } from '../lib/i18n/client';
 import { LanguageMenu } from './LanguageMenu';
 import { MobileCategories } from './nav/CategoryMenu';
 export { CategoryNav } from './nav/CategoryMenu';
-
-/** Søgefelt. Uden JavaScript sendes formularen som almindelig GET til /soeg/?q=… (med base-stien). */
-function SearchForm({ id, className = '' }: { id: string; className?: string }) {
-  const router = useRouter();
-  const { t } = useI18n();
-  const ref = useRef<HTMLInputElement>(null);
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const q = (ref.current?.value ?? '').trim();
-    router.push(q ? `/soeg/?q=${encodeURIComponent(q)}` : '/soeg/');
-    ref.current?.blur();
-  };
-  return (
-    <form role="search" action={`${BASE_PATH}/soeg/`} method="get" onSubmit={onSubmit} className={`relative ${className}`}>
-      <label htmlFor={id} className="sr-only">{t('header.searchLabel')}</label>
-      <Icon name="search" size={20} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-      <input
-        ref={ref}
-        id={id}
-        name="q"
-        type="search"
-        enterKeyHint="search"
-        autoComplete="off"
-        placeholder={t('header.searchPlaceholder')}
-        className="h-11 w-full rounded-md border border-stone-300 bg-surface pl-11 pr-4 text-body text-ink placeholder:text-muted transition-colors focus:border-slate focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
-      />
-    </form>
-  );
-}
 
 const AUTH = process.env.NEXT_PUBLIC_AUTH_ENABLED === '1';
 
@@ -89,6 +61,13 @@ export function Header({ meta }: { meta: MenuMeta }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
 
+  // Populære mærker på tværs af kategorierne (vises i søgefeltet, før man skriver)
+  const popular = useMemo(() => {
+    const totals = new Map<string, number>();
+    for (const c of Object.values(meta.cats)) for (const b of c.brands) totals.set(b.brand, (totals.get(b.brand) ?? 0) + b.count);
+    return [...totals].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([b]) => b);
+  }, [meta]);
+
   const favLabel = count > 0 ? t('header.favoritesCount', { n: count }) : t('header.favorites');
 
   return (
@@ -99,7 +78,7 @@ export function Header({ meta }: { meta: MenuMeta }) {
           <span className="hidden sm:block"><Wordmark size={24} color="var(--rs-forest)" onLight /></span>
         </Link>
 
-        <SearchForm id={searchId} className="min-w-0 flex-1 lg:max-w-2xl" />
+        <SearchBox id={searchId} popular={popular} className="min-w-0 flex-1 lg:max-w-2xl" />
 
         <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
           {/* Favoritter står også på mobil (bundmenuen har Beskeder og Profil) */}
