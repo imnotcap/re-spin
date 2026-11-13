@@ -22,7 +22,7 @@
     "@vercel/blob": "~2.8.2",
     "@vercel/speed-insights": "^2.1.0",
     "motion": "^14.9.0",
-    "next": "^16.4.0",
+    "next": "^16.4.6",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
