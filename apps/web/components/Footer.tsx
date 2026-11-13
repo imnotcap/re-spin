@@ -9,7 +9,7 @@ const head = 'text-small font-bold text-lime';
 
 export function Footer() {
   return (
-    <footer className="mt-20 bg-forest-900 text-cream">
+    <footer data-chrome className="mt-20 bg-forest-900 text-cream">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
         <div>
           <Wordmark size={26} color="var(--rs-cream)" />

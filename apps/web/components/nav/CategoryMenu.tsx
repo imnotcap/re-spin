@@ -203,7 +203,7 @@ export function CategoryNav({ meta }: { meta: MenuMeta }) {
   const current = open ? CATEGORIES.find((c) => c.slug === open) : undefined;
 
   return (
-    <nav ref={nav} aria-label={t('menu.categories')} className="relative border-b border-line bg-surface"
+    <nav ref={nav} aria-label={t('menu.categories')} data-chrome className="relative border-b border-line bg-surface"
       onMouseLeave={() => schedule(() => setOpen(null), CLOSE_DELAY)} onMouseEnter={() => clearTimeout(timer.current)}>
       <div className="mx-auto flex max-w-7xl items-center">
       <ul className="flex min-w-0 flex-1 gap-1 overflow-x-auto px-2 [mask-image:linear-gradient(to_right,#000_85%,transparent)] [scrollbar-width:none] sm:px-4 md:[mask-image:none] lg:gap-2 lg:overflow-visible lg:px-3 [&::-webkit-scrollbar]:hidden">

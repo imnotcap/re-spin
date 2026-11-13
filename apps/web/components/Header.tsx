@@ -101,11 +101,11 @@ export function Header({ meta }: { meta: MenuMeta }) {
         <SearchForm id={searchId} className="min-w-0 flex-1 lg:max-w-2xl" />
 
         <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
-          {/* Favoritter og konto ligger i bundmenuen på mobil */}
+          {/* Favoritter står også på mobil (bundmenuen har Beskeder og Profil) */}
           <Link
             href="/favoritter/"
             aria-current={pathname === '/favoritter/' ? 'page' : undefined}
-            className="relative hidden h-tap w-tap items-center justify-center rounded-md text-ink transition-colors hover:bg-sunken md:inline-flex"
+            className="relative inline-flex h-tap w-tap items-center justify-center rounded-md text-ink transition-colors hover:bg-sunken"
           >
             <span className="sr-only">{favLabel}</span>
             <Icon name="heart" size={22} />

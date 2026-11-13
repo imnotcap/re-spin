@@ -34,6 +34,9 @@ body { height: auto; padding-left: env(safe-area-inset-left); padding-right: env
   body:has(.rs-bottomnav) .rs-toast { bottom: calc(76px + env(safe-area-inset-bottom)); }
 }
 @media print { .rs-bottomnav { display: none !important; } }
+
+/* Fuldskærmssider (en samtale): kun headeren bliver – topbjælke, kategorimenu og footer skjules, så siden fylder skærmen */
+body:has([data-fullscreen]) [data-chrome] { display: none; }
 @media print { .rs-buybar { display: none !important; } }
 
 

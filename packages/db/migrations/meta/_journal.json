@@ -113,6 +113,13 @@
       "when": 1794406558085,
       "tag": "0015_admin_delete_users",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1794556431357,
+      "tag": "0016_chat_images",
+      "breakpoints": true
     }
   ]
 }

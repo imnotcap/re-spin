@@ -5,7 +5,7 @@ import { createTestDb } from '@respin/db/testing';
 import { MemoryMailer } from '@respin/auth';
 import { MemoryImageStore, newImageKey } from './image-store';
 import { createListing, saveProcessedImage } from './listings';
-import { findConversation, getThread, inbox, listingToMessage, makeOffer, respondToOffer, sendFirstMessage, sendMessage, startConversation, unreadConversations } from './conversations';
+import { findConversation, getThread, inbox, listingToMessage, makeOffer, messageImageKey, respondToOffer, sendFirstMessage, sendImage, sendMessage, startConversation, unreadConversations } from './conversations';
 import { runNotifications } from './notifications';
 
 let db: Db, close: () => Promise<void>;
@@ -154,5 +154,35 @@ describe('mail-notifikationer', () => {
     expect(support()[0]!.text).toContain(`https://videro.dk/konto/support/${cs!.number}/`);
     await run(new Date(t2.getTime() + 60_000));
     expect(support()).toHaveLength(1); // kun én gang pr. svar
+  });
+});
+
+describe('billeder og læst-status', () => {
+  it('billeder gemmes i lageret, vises kun for samtalens parter og står som "Billede" i indbakken', async () => {
+    const seller = await user('Sælger'), buyer = await user('Køber'), stranger = await user('Fremmed'), l = await listing(seller);
+    const c = await startConversation(db, buyer, l); if (!c.ok) throw new Error();
+    const r = await sendImage(db, store, buyer, c.id, { main: Buffer.from('stor'), thumb: Buffer.from('lille') });
+    expect(r.ok).toBe(true); if (!r.ok) return;
+    const full = await messageImageKey(db, seller, r.id, 'full'), thumb = await messageImageKey(db, buyer, r.id, 'thumb');
+    expect(full).toMatch(/^chat\/\d{4}\/\d{2}\/[0-9a-f-]{36}\.webp$/);
+    expect(thumb).toBe(full!.replace('.webp', '-480.webp'));
+    expect((await store.get(full!))?.toString()).toBe('stor');
+    expect(await messageImageKey(db, stranger, r.id, 'full')).toBeNull(); // ikke part i samtalen
+    expect(await messageImageKey(db, seller, 'ikke-et-id', 'full')).toBeNull();
+    expect(await sendImage(db, store, stranger, c.id, { main: Buffer.from('x'), thumb: Buffer.from('x') })).toEqual({ ok: false, error: 'not_found' });
+    expect((await inbox(db, store, seller))[0]).toMatchObject({ preview: '📷 Billede', unread: true });
+    const t = await getThread(db, store, seller, c.id);
+    expect(t?.messages.at(-1)).toMatchObject({ kind: 'image', image: true, body: '' });
+  });
+
+  it('otherReadAt fortæller, om den anden part har åbnet samtalen efter ens besked', async () => {
+    const seller = await user('Sælger'), buyer = await user('Køber'), l = await listing(seller);
+    const c = await startConversation(db, buyer, l); if (!c.ok) throw new Error();
+    const t0 = new Date('2026-11-13T10:00:00Z');
+    await sendMessage(db, buyer, c.id, 'Hej', t0);
+    expect((await getThread(db, store, buyer, c.id, new Date(t0.getTime() + 1000)))?.otherReadAt).toBeNull(); // sælgeren har ikke læst
+    await getThread(db, store, seller, c.id, new Date(t0.getTime() + 60_000));
+    const after = await getThread(db, store, buyer, c.id, new Date(t0.getTime() + 120_000));
+    expect(after!.otherReadAt!.getTime()).toBeGreaterThanOrEqual(t0.getTime());
   });
 });

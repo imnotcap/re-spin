@@ -55,7 +55,7 @@ export async function runNotifications(db: Db, mailer: Mailer, appUrl: string, n
       )).limit(BATCH);
     for (const r of rows) {
       if (r.unread === 0) continue;
-      const what = r.lastKind?.startsWith('offer') ? (r.lastBody ?? 'Nyt om et bud') : r.unread === 1 ? 'en ny besked' : `${r.unread} nye beskeder`;
+      const what = r.lastKind?.startsWith('offer') ? (r.lastBody ?? 'Nyt om et bud') : r.unread === 1 ? (r.lastKind === 'image' ? 'et billede' : 'en ny besked') : `${r.unread} nye beskeder`;
       const quote = r.lastKind === 'text' && r.lastRisk === 'low' && r.lastBody ? `\n\n“${r.lastBody.length > 200 ? `${r.lastBody.slice(0, 200)}…` : r.lastBody}”` : '';
       try {
         const offer = r.lastKind?.startsWith('offer');
