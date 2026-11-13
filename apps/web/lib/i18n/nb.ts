@@ -34,6 +34,7 @@ const nb: Messages = {
   'mega.open': 'Vis typer i {cat}',
   'mega.explore': "Utforsk {cat}",
   'mega.allIn': "Alle varer i {cat}",
+  'mega.allOf': "Alle {group}",
   'mega.news': "Nyheter",
   'mega.newWeek': "+{n} denne uken",
   'mega.popular': "Mest populære akkurat nå",

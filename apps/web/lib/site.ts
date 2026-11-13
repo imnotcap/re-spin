@@ -32,8 +32,9 @@ export const HELP_NAV = [
 ] as const;
 
 /**
- * Sociale medier i footeren. OBS: profilnavnene er pladsholdere – ret dem til jeres rigtige profiler, før
- * siden lanceres (linkene peger ellers på profiler, I ikke ejer).
+ * Sociale medier i footeren og som `sameAs` i forsidens strukturerede data (Google kobler dem til Videro).
+ * OBS: profilnavnene er pladsholdere – ret dem til jeres rigtige profiler, før siden lanceres (linkene peger
+ * ellers på profiler, I ikke ejer).
  */
 export const SOCIAL = [
   { name: 'Instagram', icon: 'instagram', href: 'https://www.instagram.com/videro.dk/' },

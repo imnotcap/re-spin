@@ -1,5 +1,7 @@
 import { renderMail } from './mail-html';
 
+export { renderMail, esc as escapeHtml, type MailLayout } from './mail-html';
+
 /** E-mail-afsendelse. Produktion skal bruge en rigtig udbyder (DKIM); konsol-afsenderen afvises i produktion. */
 /** `text` sendes altid (læses af mailprogrammer uden HTML og af spamfiltre); `html` er den pæne udgave, hvor den findes. */
 export interface Mail { to: string; subject: string; text: string; html?: string }
@@ -83,6 +85,8 @@ export class ResendMailer implements Mailer {
   }
 }
 
+const WHY_ACCOUNT = 'Du får denne mail, fordi den handler om din konto på Videro.';
+
 export const templates = {
   verify: (link: string): Omit<Mail, 'to'> => ({
     subject: 'Bekræft din e-mail til Videro',
@@ -96,23 +100,61 @@ export const templates = {
       ],
       button: { label: 'Bekræft e-mail', href: link },
       note: 'Linket virker i 24 timer.',
-      footnote: 'Har du ikke oprettet en konto på Videro, kan du se bort fra denne mail. Der sker ikke noget, før linket bliver brugt.'
+      footnote: 'Har du ikke oprettet en konto på Videro, kan du se bort fra denne mail. Der sker ikke noget, før linket bliver brugt.',
+      reason: 'Du får denne mail, fordi nogen har oprettet en Videro-konto med din e-mail.'
     })
   }),
   alreadyRegistered: (loginLink: string, resetLink: string): Omit<Mail, 'to'> => ({
     subject: 'Forsøg på at oprette en konto med din e-mail',
-    text: `Hej!\n\nNogen (måske dig) forsøgte at oprette en ny Videro-konto med din e-mail. Du har allerede en konto.\n\nLog ind: ${loginLink}\nGlemt adgangskode: ${resetLink}\n\nVar det ikke dig, behøver du ikke gøre noget.\n\n– Videro`
+    text: `Hej!\n\nNogen (måske dig) forsøgte at oprette en ny Videro-konto med din e-mail. Du har allerede en konto.\n\nLog ind: ${loginLink}\nGlemt adgangskode: ${resetLink}\n\nVar det ikke dig, behøver du ikke gøre noget.\n\n– Videro`,
+    html: renderMail({
+      preheader: 'Du har allerede en konto – log ind i stedet.',
+      heading: 'Du har allerede en konto',
+      paragraphs: [
+        'Hej!',
+        'Nogen – måske dig – forsøgte at oprette en ny Videro-konto med din e-mail. Der findes allerede en konto med den, så der er ikke oprettet en ny.'
+      ],
+      button: { label: 'Log ind', href: loginLink },
+      secondary: { label: 'Glemt din adgangskode?', href: resetLink },
+      footnote: 'Var det ikke dig, behøver du ikke gøre noget. Din konto er uændret.',
+      reason: WHY_ACCOUNT
+    })
   }),
   reset: (link: string): Omit<Mail, 'to'> => ({
     subject: 'Nulstil din adgangskode til Videro',
-    text: `Hej!\n\nVælg en ny adgangskode her:\n${link}\n\nLinket virker i 30 minutter og kan kun bruges én gang. Bad du ikke om det, kan du se bort fra denne mail – din adgangskode er uændret.\n\n– Videro`
+    text: `Hej!\n\nVælg en ny adgangskode her:\n${link}\n\nLinket virker i 30 minutter og kan kun bruges én gang. Bad du ikke om det, kan du se bort fra denne mail – din adgangskode er uændret.\n\n– Videro`,
+    html: renderMail({
+      preheader: 'Vælg en ny adgangskode – linket virker i 30 minutter.',
+      heading: 'Nulstil din adgangskode',
+      paragraphs: ['Hej!', 'Vi har fået en anmodning om at nulstille adgangskoden til din Videro-konto. Tryk på knappen for at vælge en ny.'],
+      button: { label: 'Vælg ny adgangskode', href: link },
+      note: 'Linket virker i 30 minutter og kan kun bruges én gang.',
+      footnote: 'Bad du ikke om det, kan du se bort fra denne mail – din adgangskode er uændret.',
+      reason: WHY_ACCOUNT
+    })
   }),
   securityChange: (what: string, resetLink: string): Omit<Mail, 'to'> => ({
     subject: `Sikkerhedsændring på din konto: ${what}`,
-    text: `Hej!\n\nDer er lige foretaget en sikkerhedsændring på din Videro-konto: ${what}.\n\nVar det ikke dig? Nulstil din adgangskode straks: ${resetLink}\n\n– Videro`
+    text: `Hej!\n\nDer er lige foretaget en sikkerhedsændring på din Videro-konto: ${what}.\n\nVar det ikke dig? Nulstil din adgangskode straks: ${resetLink}\n\n– Videro`,
+    html: renderMail({
+      preheader: `Ændring på din konto: ${what}.`,
+      heading: 'Sikkerhedsændring på din konto',
+      paragraphs: ['Hej!', `Der er lige foretaget en sikkerhedsændring på din Videro-konto: ${what}.`, 'Var det dig, behøver du ikke gøre noget.'],
+      alert: 'Var det ikke dig? Nulstil din adgangskode med det samme. Så bliver du logget ud alle andre steder.',
+      button: { label: 'Nulstil adgangskode', href: resetLink },
+      reason: WHY_ACCOUNT
+    })
   }),
   passwordChanged: (resetLink: string): Omit<Mail, 'to'> => ({
     subject: 'Din adgangskode er ændret',
-    text: `Hej!\n\nAdgangskoden til din Videro-konto er lige blevet ændret, og du er logget ud på alle andre enheder.\n\nVar det ikke dig? Nulstil straks: ${resetLink}\n\n– Videro`
+    text: `Hej!\n\nAdgangskoden til din Videro-konto er lige blevet ændret, og du er logget ud på alle andre enheder.\n\nVar det ikke dig? Nulstil straks: ${resetLink}\n\n– Videro`,
+    html: renderMail({
+      preheader: 'Adgangskoden til din Videro-konto er ændret.',
+      heading: 'Din adgangskode er ændret',
+      paragraphs: ['Hej!', 'Adgangskoden til din Videro-konto er lige blevet ændret, og du er logget ud på alle andre enheder.', 'Var det dig, behøver du ikke gøre noget.'],
+      alert: 'Var det ikke dig? Nulstil din adgangskode med det samme.',
+      button: { label: 'Nulstil adgangskode', href: resetLink },
+      reason: WHY_ACCOUNT
+    })
   })
 };

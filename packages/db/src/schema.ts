@@ -190,13 +190,16 @@ export const messages = pgTable('messages', {
   body: text('body').notNull(),
   /** Fra assessMessageRisk(): 'low' | 'medium' | 'high' */
   riskLevel: text('risk_level').notNull().default('low'),
-  /** text = almindelig besked; offer/offer_accepted/offer_declined/offer_withdrawn = hændelser om et bud */
+  /** text = almindelig besked; image = billede (imageKey, tom tekst); offer/offer_accepted/offer_declined/offer_withdrawn = hændelser om et bud */
   kind: text('kind').notNull().default('text'),
   offerId: uuid('offer_id'),
+  /** Billede i billedlageret (chat/ÅÅÅÅ/MM/<uuid>.webp, miniature med -480) – vises kun til samtalens to parter via /api/beskeder/billede/ */
+  imageKey: text('image_key'),
   createdAt: createdAt()
 }, (t) => [
-  check('messages_body_len', sql`char_length(${t.body}) BETWEEN 1 AND 2000`),
-  check('messages_kind', sql`${t.kind} IN ('text', 'offer', 'offer_accepted', 'offer_declined', 'offer_withdrawn')`),
+  check('messages_body_len', sql`char_length(${t.body}) BETWEEN 1 AND 2000 OR (${t.kind} = 'image' AND char_length(${t.body}) = 0)`),
+  check('messages_kind', sql`${t.kind} IN ('text', 'image', 'offer', 'offer_accepted', 'offer_declined', 'offer_withdrawn')`),
+  check('messages_image', sql`(${t.kind} = 'image') = (${t.imageKey} IS NOT NULL) AND (${t.imageKey} IS NULL OR ${t.imageKey} ~ '^chat/[0-9]{4}/[0-9]{2}/[0-9a-f-]{36}[.]webp$')`),
   index('messages_conv_idx').on(t.conversationId, t.createdAt)
 ]);
 

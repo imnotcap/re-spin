@@ -14,7 +14,7 @@ import { and, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { schema, type Db } from '@respin/db';
 import { assessMessageRisk, normalizeUserText } from '@respin/core';
-import { thumbKey, type ImageStore } from './image-store';
+import { CHAT_IMAGE_KEY, newChatImageKey, thumbKey, type ImageStore } from './image-store';
 import { OFFER_HOURS, OFFER_MIN_SHARE } from './offer-rules';
 export { OFFER_HOURS, OFFER_MIN_SHARE };
 
@@ -83,9 +83,9 @@ async function participant(db: Db, userId: string, conversationId: string) {
 
 const bodyInput = z.string().max(MESSAGE_MAX * 4).transform(normalizeUserText).pipe(z.string().min(1).max(MESSAGE_MAX));
 
-async function addMessage(tx: Db, c: { id: string; role: 'buyer' | 'seller' }, senderId: string, body: string, kind: string, offerId: string | null, now: Date) {
+async function addMessage(tx: Db, c: { id: string; role: 'buyer' | 'seller' }, senderId: string, body: string, kind: string, offerId: string | null, now: Date, imageKey: string | null = null) {
   const risk = kind === 'text' ? assessMessageRisk(body).level : 'low';
-  const [m] = await tx.insert(messages).values({ conversationId: c.id, senderId, body, riskLevel: risk, kind, offerId, createdAt: now }).returning({ id: messages.id });
+  const [m] = await tx.insert(messages).values({ conversationId: c.id, senderId, body, riskLevel: risk, kind, offerId, imageKey, createdAt: now }).returning({ id: messages.id });
   await tx.update(conversations).set({ lastMessageAt: now, ...(c.role === 'buyer' ? { buyerReadAt: now } : { sellerReadAt: now }) }).where(eq(conversations.id, c.id));
   return { id: m!.id, risk };
 }
@@ -97,6 +97,30 @@ export async function sendMessage(db: Db, userId: string, conversationId: string
   if (!body.success) return { ok: false, error: 'invalid_body' };
   const m = await db.transaction((tx) => addMessage(tx as unknown as Db, c, userId, body.data, 'text', null, now));
   return { ok: true, ...m };
+}
+
+/**
+ * Send et billede i en samtale. Billedet er allerede omkodet (EXIF/GPS fjernet) af billedpipelinen; her lægges det i
+ * lageret under en tilfældig nøgle og bliver en besked. Filen vises aldrig med sin lager-adresse – kun via
+ * /api/beskeder/billede/<besked-id>/, der tjekker, at man er part i samtalen.
+ */
+export async function sendImage(db: Db, store: ImageStore, userId: string, conversationId: string, img: { main: Buffer; thumb: Buffer }, now = new Date()): Promise<Result<{ id: string }>> {
+  const c = await participant(db, userId, conversationId);
+  if (!c) return { ok: false, error: 'not_found' };
+  const key = newChatImageKey(crypto.randomUUID(), now);
+  await store.put(key, img.main, 'image/webp');
+  await store.put(thumbKey(key), img.thumb, 'image/webp');
+  const m = await db.transaction((tx) => addMessage(tx as unknown as Db, c, userId, '', 'image', null, now, key));
+  return { ok: true, id: m.id };
+}
+
+/** Lager-nøglen til et billede i en besked – kun hvis brugeren er part i samtalen (ellers null = "findes ikke") */
+export async function messageImageKey(db: Db, userId: string, messageId: string, size: 'thumb' | 'full'): Promise<string | null> {
+  if (!UUID.test(messageId)) return null;
+  const [r] = await db.select({ key: messages.imageKey }).from(messages).innerJoin(conversations, eq(conversations.id, messages.conversationId))
+    .where(and(eq(messages.id, messageId), or(eq(conversations.buyerId, userId), eq(conversations.sellerId, userId))));
+  if (!r?.key || !CHAT_IMAGE_KEY.test(r.key)) return null;
+  return size === 'thumb' ? thumbKey(r.key) : r.key;
 }
 
 /* ------------------------------ Bud ------------------------------ */
@@ -166,7 +190,7 @@ export async function inbox(db: Db, store: ImageStore, userId: string): Promise<
     buyerId: conversations.buyerId, buyerReadAt: conversations.buyerReadAt, sellerReadAt: conversations.sellerReadAt, lastMessageAt: conversations.lastMessageAt,
     buyerName: sql<string>`(select display_name from ${users} where id = ${conversations.buyerId})`,
     sellerName: sql<string>`(select display_name from ${users} where id = ${conversations.sellerId})`,
-    preview: sql<string | null>`(select body from ${messages} m where m.conversation_id = ${conversations.id} order by m.created_at desc limit 1)`,
+    preview: sql<string | null>`(select case when m.kind = 'image' then '📷 Billede' else m.body end from ${messages} m where m.conversation_id = ${conversations.id} order by m.created_at desc limit 1)`,
     lastSender: sql<string | null>`(select sender_id from ${messages} m where m.conversation_id = ${conversations.id} order by m.created_at desc limit 1)`,
     cover: sql<string | null>`(select storage_key from ${listingImages} li where li.listing_id = listings.id order by li.position limit 1)`
   }).from(conversations).innerJoin(listings, eq(listings.id, conversations.listingId))
@@ -194,7 +218,7 @@ export async function unreadConversations(db: Db, userId: string): Promise<numbe
   return r?.n ?? 0;
 }
 
-export interface ThreadMessage { id: string; mine: boolean; body: string; kind: string; risk: string; offerId: string | null; createdAt: Date }
+export interface ThreadMessage { id: string; mine: boolean; body: string; kind: string; risk: string; offerId: string | null; createdAt: Date; /** Beskeden er et billede (hentes via /api/beskeder/billede/<id>/) */ image: boolean }
 export interface ThreadOffer { id: string; amountOre: number; status: string; expiresAt: Date; createdAt: Date }
 
 /** Én samtale med beskeder og bud. Markerer den som læst for brugeren. */
@@ -206,8 +230,8 @@ export async function getThread(db: Db, store: ImageStore, userId: string, conve
     db.select({ id: listings.id, title: listings.title, priceOre: listings.priceOre, status: listings.status, moderation: listings.moderationStatus,
       cover: sql<string | null>`(select storage_key from ${listingImages} li where li.listing_id = listings.id order by li.position limit 1)` })
       .from(listings).where(eq(listings.id, c.listingId)),
-    db.select({ name: users.displayName, username: users.username, status: users.status }).from(users).where(eq(users.id, c.role === 'buyer' ? c.sellerId : c.buyerId)),
-    db.select({ id: messages.id, senderId: messages.senderId, body: messages.body, kind: messages.kind, risk: messages.riskLevel, offerId: messages.offerId, createdAt: messages.createdAt })
+    db.select({ name: users.displayName, username: users.username, status: users.status, avatarKey: users.avatarKey }).from(users).where(eq(users.id, c.role === 'buyer' ? c.sellerId : c.buyerId)),
+    db.select({ id: messages.id, senderId: messages.senderId, body: messages.body, kind: messages.kind, risk: messages.riskLevel, offerId: messages.offerId, createdAt: messages.createdAt, imageKey: messages.imageKey })
       .from(messages).where(eq(messages.conversationId, c.id)).orderBy(messages.createdAt).limit(500),
     db.select({ id: offers.id, amountOre: offers.amountOre, status: offers.status, expiresAt: offers.expiresAt, createdAt: offers.createdAt })
       .from(offers).where(and(eq(offers.listingId, c.listingId), eq(offers.buyerId, c.buyerId))).orderBy(desc(offers.createdAt)).limit(50)
@@ -217,8 +241,12 @@ export async function getThread(db: Db, store: ImageStore, userId: string, conve
   return {
     id: c.id, role: c.role,
     listing: { ...l, image: l.cover ? store.urlFor(thumbKey(l.cover)) : null },
-    other: other[0] ?? { name: 'Slettet bruger', username: null, status: 'deleted' },
-    messages: msgs.map((m): ThreadMessage => ({ id: m.id, mine: m.senderId === userId, body: m.body, kind: m.kind, risk: m.risk, offerId: m.offerId, createdAt: m.createdAt })),
+    other: other[0]
+      ? { name: other[0].name, username: other[0].username, status: other[0].status, avatar: other[0].avatarKey ? store.urlFor(other[0].avatarKey) : null }
+      : { name: 'Slettet bruger', username: null, status: 'deleted' as const, avatar: null },
+    /** Hvornår den anden part sidst åbnede samtalen ("Læst" under egne beskeder) */
+    otherReadAt: c.role === 'buyer' ? c.sellerReadAt : c.buyerReadAt,
+    messages: msgs.map((m): ThreadMessage => ({ id: m.id, mine: m.senderId === userId, body: m.body, kind: m.kind, risk: m.risk, offerId: m.offerId, createdAt: m.createdAt, image: !!m.imageKey })),
     offers: offs as ThreadOffer[],
     pendingOffer: (offs as ThreadOffer[]).find((o) => o.status === 'pending') ?? null,
     acceptedOffer: (offs as ThreadOffer[]).find((o) => o.status === 'accepted') ?? null

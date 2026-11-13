@@ -11,8 +11,8 @@ import type { MessageKey } from '../../lib/i18n';
 
 const AUTH = process.env.NEXT_PUBLIC_AUTH_ENABLED === '1';
 
-/** Sider med egen fast bjælke i bunden (købsbjælken på varesiden) – der vises bundmenuen ikke */
-const HIDE_ON = [/^\/vare\//, /^\/annonce\//];
+/** Sider med egen fast bjælke i bunden (købsbjælken på varesiden, skrivefeltet i en samtale) – der vises bundmenuen ikke */
+const HIDE_ON = [/^\/vare\//, /^\/annonce\//, /^\/konto\/beskeder\/[0-9a-f-]{36}\//];
 
 interface Tab { href: string; label: MessageKey; icon: IconName; active: (p: string) => boolean; sell?: boolean; track: string }
 
@@ -20,8 +20,13 @@ const TABS: Tab[] = [
   { href: '/', label: 'bottom.home', icon: 'home', track: 'nav_home', active: (p) => p === '/' },
   { href: '/soeg/', label: 'bottom.search', icon: 'search', track: 'nav_search', active: (p) => p.startsWith('/soeg/') || p.startsWith('/kategori/') },
   { href: AUTH ? '/saelg/ny/' : '/saelg/', label: 'bottom.sell', icon: 'plus', track: 'nav_sell', active: (p) => p.startsWith('/saelg/'), sell: true },
-  { href: '/favoritter/', label: 'bottom.favorites', icon: 'heart', track: 'nav_favorites', active: (p) => p.startsWith('/favoritter/') },
-  ...(AUTH ? [{ href: '/konto/', label: 'bottom.account' as MessageKey, icon: 'user' as IconName, track: 'nav_account', active: (p: string) => p.startsWith('/konto/') || p === '/log-ind/' || p === '/opret-konto/' }] : [])
+  // Med login: Beskeder i stedet for Favoritter (favoritterne ligger som hjerte i headeren), så "Sælg" bliver i midten
+  ...(AUTH
+    ? [
+      { href: '/konto/beskeder/', label: 'bottom.messages' as MessageKey, icon: 'chat' as IconName, track: 'nav_messages', active: (p: string) => p.startsWith('/konto/beskeder/') },
+      { href: '/konto/', label: 'bottom.account' as MessageKey, icon: 'user' as IconName, track: 'nav_account', active: (p: string) => (p.startsWith('/konto/') && !p.startsWith('/konto/beskeder/')) || p === '/log-ind/' || p === '/opret-konto/' }
+    ]
+    : [{ href: '/favoritter/', label: 'bottom.favorites' as MessageKey, icon: 'heart' as IconName, track: 'nav_favorites', active: (p: string) => p.startsWith('/favoritter/') }])
 ];
 
 /**
@@ -62,7 +67,7 @@ export function BottomNav() {
                 ) : (
                   <span className="relative flex h-8 items-center">
                     <Icon name={tab.icon} size={22} />
-                    {tab.icon === 'user' && unread > 0 && (
+                    {tab.icon === 'chat' && unread > 0 && (
                       <span className="absolute -right-2.5 top-0 min-w-[18px] rounded-pill bg-coral-600 px-1 text-center text-[10px] font-bold leading-[18px] text-white">
                         <span aria-hidden="true">{unread > 99 ? '99+' : unread}</span><span className="sr-only">{t('account.unread', { n: unread })}</span>
                       </span>

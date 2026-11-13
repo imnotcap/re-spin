@@ -38,6 +38,7 @@ const da = {
   'mega.open': 'Vis typer i {cat}',
   'mega.explore': "Udforsk {cat}",
   'mega.allIn': "Alle varer i {cat}",
+  'mega.allOf': "Alle {group}",
   'mega.news': "Nyheder",
   'mega.newWeek': "+{n} denne uge",
   'mega.popular': "Mest populære lige nu",

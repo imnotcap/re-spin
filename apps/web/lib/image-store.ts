@@ -8,10 +8,13 @@ import { blobOriginFromToken } from './blob-origin';
  *   listings/2026/11/<uuid>.webp      (1600 px)
  *   listings/2026/11/<uuid>-480.webp  (480 px)
  *   profiles/2026/11/<uuid>.webp      (profilbillede 512 × 512 eller banner 1600 × 400)
+ *   chat/2026/11/<uuid>.webp          (billede i en samtale, 1600 px – miniature med -480; vises kun via /api/beskeder/billede/)
  * Fotos serveres fra et andet domæne end siden selv (Vercel Blob), så en fil aldrig kan køre som en del af siden.
  */
 export interface ImageStore {
   put(key: string, body: Buffer, contentType: 'image/webp'): Promise<void>;
+  /** Hent en fil (bruges til chatbilleder, der kun må ses af samtalens parter). null, hvis den ikke findes. */
+  get(key: string): Promise<Buffer | null>;
   /** Slet en fil (fx et udskiftet profilbillede). Findes filen ikke, sker der ingenting. */
   delete(key: string): Promise<void>;
   urlFor(key: string): string;
@@ -20,12 +23,19 @@ export interface ImageStore {
 const UUID_PART = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 /** Profilbillede eller eget banner (samme regel som databasens CHECK på users.avatar_key / banner_key) */
 export const PROFILE_IMAGE_KEY = new RegExp(`^profiles/\\d{4}/\\d{2}/${UUID_PART}\\.webp$`);
-export const IMAGE_KEY = new RegExp(`^(?:listings/\\d{4}/\\d{2}/${UUID_PART}(-480)?|profiles/\\d{4}/\\d{2}/${UUID_PART})\\.webp$`);
+/** Billede i en samtale (samme regel som databasens CHECK på messages.image_key) */
+export const CHAT_IMAGE_KEY = new RegExp(`^chat/\\d{4}/\\d{2}/${UUID_PART}\\.webp$`);
+export const IMAGE_KEY = new RegExp(`^(?:(?:listings|chat)/\\d{4}/\\d{2}/${UUID_PART}(-480)?|profiles/\\d{4}/\\d{2}/${UUID_PART})\\.webp$`);
 export const thumbKey = (key: string) => key.replace(/\.webp$/, '-480.webp');
 
 export function newImageKey(id: string, now = new Date()): string {
   const mm = String(now.getUTCMonth() + 1).padStart(2, '0');
   return `listings/${now.getUTCFullYear()}/${mm}/${id}.webp`;
+}
+
+export function newChatImageKey(id: string, now = new Date()): string {
+  const mm = String(now.getUTCMonth() + 1).padStart(2, '0');
+  return `chat/${now.getUTCFullYear()}/${mm}/${id}.webp`;
 }
 
 export function newProfileImageKey(id: string, now = new Date()): string {
@@ -39,6 +49,7 @@ const assertKey = (key: string) => { if (!IMAGE_KEY.test(key)) throw new Error('
 export class MemoryImageStore implements ImageStore {
   readonly files = new Map<string, Buffer>();
   async put(key: string, body: Buffer) { assertKey(key); this.files.set(key, body); }
+  async get(key: string) { return IMAGE_KEY.test(key) ? this.files.get(key) ?? null : null; }
   async delete(key: string) { assertKey(key); this.files.delete(key); }
   urlFor(key: string) { return `https://billeder.test/${key}`; }
 }
@@ -52,6 +63,7 @@ export class DevFsImageStore implements ImageStore {
     await mkdir(path.dirname(file), { recursive: true });
     await writeFile(file, body);
   }
+  async get(key: string) { return this.read(key); }
   async delete(key: string) {
     assertKey(key);
     await rm(path.join(this.root, key), { force: true });
@@ -77,6 +89,11 @@ export class BlobImageStore implements ImageStore {
     const res = await put(key, body, { access: 'public', contentType, addRandomSuffix: false, allowOverwrite: false, cacheControlMaxAge: 31_536_000, token: this.token });
     // Vi gemmer kun nøglen og beregner adressen; afviger Vercels adresse, ses det her i stedet for som døde billeder
     if (res.url !== this.urlFor(key)) console.error('billedlager: uventet adresse fra Vercel Blob – sæt BLOB_PUBLIC_BASE_URL');
+  }
+  async get(key: string) {
+    if (!IMAGE_KEY.test(key)) return null;
+    const res = await fetch(this.urlFor(key), { redirect: 'error', signal: AbortSignal.timeout(10_000) });
+    return res.ok ? Buffer.from(await res.arrayBuffer()) : null;
   }
   async delete(key: string) {
     assertKey(key);

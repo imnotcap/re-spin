@@ -6,7 +6,7 @@ import { LanguageMenu } from './LanguageMenu';
 /** Smal bjælke øverst: besked om testversionen + hjælpelinks (fra tablet og op). Scroller væk. */
 export function TopBar() {
   return (
-    <section aria-label="Information" className="bg-slate text-cream">
+    <section aria-label="Information" data-chrome className="bg-slate text-cream">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-1.5 text-caption sm:px-6">
         <p className="min-w-0">
           <T k={SITE.isTest ? 'top.test' : 'top.protection'} />

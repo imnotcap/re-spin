@@ -88,6 +88,27 @@ describe('HTML-mails', () => {
     expect(() => renderMail({ preheader: '', heading: '', paragraphs: [], button: { label: 'x', href: 'javascript:alert(1)' } })).toThrow('Ugyldigt link');
   });
 
+  it('alle konto-mails har HTML med knap, og linket står kun bag knappen og i bunden', () => {
+    const all = [templates.verify(link), templates.alreadyRegistered(link, 'https://videro.dk/glemt-adgangskode/'), templates.reset(link), templates.securityChange('passkey tilføjet', link), templates.passwordChanged(link)];
+    for (const m of all) {
+      expect(m.html).toBeDefined();
+      expect(m.text).toContain(link);
+      // href på knappen + én gang som tekst i bunden (+ href dér) – ikke i brødteksten
+      expect(m.html!.split(link).length - 1).toBe(3);
+      expect(m.html).toContain('Videro beder aldrig om din adgangskode');
+    }
+    expect(templates.alreadyRegistered(link, 'https://videro.dk/glemt-adgangskode/').html).toContain('href="https://videro.dk/glemt-adgangskode/"');
+  });
+
+  it('citat, oversigt og advarsel escapes', () => {
+    const html = renderMail({ preheader: '', heading: 'x', paragraphs: ['linje 1\nlinje 2'], quote: { author: '<b>Ond</b>', text: '<img src=x onerror=alert(1)>' },
+      details: { rows: [['<i>Vare</i>', '1 & 2']], total: ['I alt', '3 kr.'] }, alert: '<script>x</script>', button: { label: 'Se', href: 'https://videro.dk/' }, secondary: { label: 'Mere', href: 'https://videro.dk/mere/' } });
+    expect(html).not.toMatch(/<img src=x|<script>x|<b>Ond|<i>Vare/);
+    expect(html).toContain('linje 1<br>linje 2');
+    expect(html).toContain('1 &amp; 2');
+    expect(() => renderMail({ preheader: '', heading: '', paragraphs: [], button: { label: 'x', href: 'https://videro.dk/' }, secondary: { label: 'y', href: 'javascript:alert(1)' } })).toThrow('Ugyldigt link');
+  });
+
   it('Resend får html med, når mailen har en', async () => {
     const f = ok();
     const m = new ResendMailer({ apiKey: KEY, from: 'Videro <noreply@videro.dk>', fetch: f as unknown as typeof fetch });

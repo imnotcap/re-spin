@@ -92,7 +92,7 @@ export function createAuth(deps: AuthDeps) {
   const auditor = createAuditor({ write: async (e) => { await db.insert(auditLog).values({ ...e, metadata: e.metadata ?? {} }); } }, deps.onError);
   const audit = (action: string, ctx: RequestContext, actorId: string | null, metadata: Record<string, unknown> = {}) =>
     auditor.record({ actorType: actorId ? 'user' : 'system', actorId, action, ip: ctx.ip ?? null, userAgent: ctx.userAgent ?? null, metadata });
-  const send = async (to: string, mail: { subject: string; text: string }) => {
+  const send = async (to: string, mail: { subject: string; text: string; html?: string }) => {
     try { await deps.mailer.send({ to, ...mail }); } catch (e) { deps.onError?.(e); }
   };
 
