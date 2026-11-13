@@ -5,8 +5,6 @@ import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Icon } from '@respin/ui';
 import { CATEGORIES, type Category, type CategorySlug } from '../../lib/categories';
-import { formatKr } from '@respin/ui/utils';
-import { SHIPPING_PRICE_ORE } from '@respin/core/fees';
 import type { MenuCategory, MenuMeta } from '../../lib/catalog';
 import { categoryImage } from '../../lib/images';
 import { useI18n } from '../../lib/i18n/client';
@@ -15,159 +13,72 @@ const typeHref = (slug: string, sub?: string) => `/kategori/${slug}/${sub ? `?ty
 const groupHref = (slug: string, group: string) => `/kategori/${slug}/?gruppe=${encodeURIComponent(group)}`;
 const OPEN_DELAY = 110;   // musen skal "hvile" et øjeblik, før menuen åbner (ingen blinken når man bare passerer)
 const CLOSE_DELAY = 180;
-const SHIPPING_FROM_KR = Number(SHIPPING_PRICE_ORE.small) / 100;
-
-/**
- * Fordel sektionerne i højst n kolonner i rækkefølge (Tøj · Sko · Tasker …), så den højeste kolonne er så lav
- * som muligt. Få sektioner – prøv alle delinger.
- */
-function balance<G extends { items: readonly string[] }>(groups: readonly G[], n: number): G[][] {
-  const h = groups.map((g) => g.items.length + 2); // overskrift og luft tæller med
-  let best: G[][] = [groups.slice()];
-  let bestMax = Infinity;
-  const split = (start: number, left: number, acc: G[][], max: number) => {
-    if (max >= bestMax) return;
-    if (left === 1 || start === groups.length) {
-      const rest = groups.slice(start);
-      const m = Math.max(max, rest.reduce((s, _, i) => s + h[start + i]!, 0));
-      if (m < bestMax) { bestMax = m; best = rest.length ? [...acc, rest] : acc; }
-      return;
-    }
-    let sum = 0;
-    for (let end = start + 1; end <= groups.length; end++) {
-      sum += h[end - 1]!;
-      split(end, left - 1, [...acc, groups.slice(start, end)], Math.max(max, sum));
-    }
-  };
-  split(0, n, [], 0);
-  return best;
-}
 
 const catHref = (slug: string, q = '') => `/kategori/${slug}/${q}`;
-const kicker = 'text-caption font-bold uppercase tracking-[0.1em]';
-const count = 'font-mono text-caption tabular-nums text-muted';
+/** Underkategorier pr. gruppe i drop-downen – resten nås via "Alle …" */
+const PER_GROUP = 6;
 
-/** Indholdet af megamenuen for én kategori: udforsk | typer | populære mærker | ugens fokus, og en bjælke nederst */
-function MegaPanel({ c, meta, brandTotal, onNavigate, id }: { c: Category; meta: MenuCategory; brandTotal: number; onNavigate: () => void; id: string }) {
+/**
+ * Indholdet af drop-downen for én kategori (kompakt): genveje som knapper øverst, én kolonne pr. gruppe
+ * (Tøj, Sko, Tasker …) med de vigtigste typer og "Alle …", og populære mærker nederst.
+ */
+function MegaPanel({ c, meta, onNavigate, id }: { c: Category; meta: MenuCategory; onNavigate: () => void; id: string }) {
   const { t, n } = useI18n();
   const cat = t(`cat.${c.slug}`, undefined, c.label);
-  const rows = [
-    { href: catHref(c.slug, '?sort=nyeste'), label: t('mega.news'), extra: meta.newWeek > 0 ? <span className="inline-flex items-center gap-1.5 rounded-pill border border-[var(--rs-forest-50)] bg-[var(--rs-forest-50)] px-2 py-0.5 text-caption font-semibold text-forest"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-forest" />{t('mega.newWeek', { n: n(meta.newWeek) })}</span> : null },
+  const chipBase = 'inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-pill border px-3.5 text-small font-semibold transition-colors';
+  const chip = `${chipBase} border-line bg-surface text-ink hover:border-slate`;
+  const num = 'font-normal tabular-nums text-muted';
+  const shortcuts = [
+    { href: catHref(c.slug, '?sort=nyeste'), label: t('mega.news'), extra: meta.newWeek > 0 ? <><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-forest" /><span className={num}>+{n(meta.newWeek)}</span></> : null },
     { href: catHref(c.slug, '?sort=populaere'), label: t('mega.popular'), extra: null },
-    meta.likeNew > 0 ? { href: catHref(c.slug, `?stand=${encodeURIComponent('Ny med mærke')}`), label: t('cond.Ny med mærke', undefined, 'Ny med mærke'), extra: <span className={count}>{n(meta.likeNew)}</span> } : null,
-    meta.under200 > 0 ? { href: catHref(c.slug, '?pris=under-200'), label: t('price.under-200', undefined, 'Under 200 kr.'), extra: <span className={count}>{n(meta.under200)}</span> } : null
+    meta.likeNew > 0 ? { href: catHref(c.slug, `?stand=${encodeURIComponent('Ny med mærke')}`), label: t('cond.Ny med mærke', undefined, 'Ny med mærke'), extra: <span className={num}>{n(meta.likeNew)}</span> } : null,
+    meta.under200 > 0 ? { href: catHref(c.slug, '?pris=under-200'), label: t('price.under-200', undefined, 'Under 200 kr.'), extra: <span className={num}>{n(meta.under200)}</span> } : null
   ].filter((x) => x !== null);
-  const focusImg = meta.focus?.image;
-  const cols = c.subs.length > 24 ? 3 : 2;
+  const cols = Math.min(c.groups.length, 5);
 
   return (
-    <div id={id} className="mx-auto max-w-7xl">
-      <div className="grid grid-cols-[280px_minmax(0,1fr)_200px_180px]">
-        {/* Udforsk */}
-        <div className="flex flex-col border-r border-line bg-sunken px-7 py-7">
-          <p className={`${kicker} text-muted`}>{t('mega.explore', { cat })}</p>
-          <Link href={catHref(c.slug)} onClick={onNavigate}
-            className="mt-4 flex items-center justify-between gap-3 rounded-md border border-line bg-surface px-4 py-3 text-body font-semibold text-ink hover:border-slate">
-            {t('mega.allIn', { cat })}
-            <span className={`${count} inline-flex items-center gap-1`}>{n(meta.count)}<Icon name="arrow" size={14} /></span>
+    <div id={id} className="mx-auto max-w-7xl px-8 pb-6 pt-5">
+      <ul className="flex flex-wrap items-center gap-2">
+        <li>
+          <Link href={catHref(c.slug)} onClick={onNavigate} className={`${chipBase} border-forest bg-forest text-white hover:bg-forest-700`}>
+            {t('mega.allIn', { cat })}<span className="font-normal tabular-nums text-lime">{n(meta.count)}</span>
           </Link>
-          <ul className="mt-2 flex flex-col">
-            {rows.map((r) => (
-              <li key={r.href}>
-                <Link href={r.href} onClick={onNavigate} className="flex items-center justify-between gap-3 rounded-md px-4 py-2.5 text-body text-slate-700 hover:bg-surface hover:text-ink">
-                  {r.label}{r.extra}
-                </Link>
-              </li>
-            ))}
-          </ul>
-          {meta.sizes.length > 0 && (
-            <div className="mt-auto border-t border-line pt-5">
-              <p className="text-small font-semibold text-ink">{t('mega.sizeTitle')}</p>
-              <ul className="mt-3 flex flex-wrap gap-2">
-                {meta.sizes.map((s) => (
-                  <li key={s}>
-                    <Link href={catHref(c.slug, `?str=${encodeURIComponent(s)}`)} onClick={onNavigate} aria-label={t('mega.sizeLabel', { s, cat })}
-                      className="inline-flex h-9 min-w-10 items-center justify-center rounded-md border border-line bg-surface px-2.5 text-small font-semibold text-ink hover:border-ink">{s}</Link>
+        </li>
+        {shortcuts.map((r) => <li key={r.href}><Link href={r.href} onClick={onNavigate} className={chip}>{r.label}{r.extra}</Link></li>)}
+      </ul>
+
+      <div className="mt-5 grid gap-x-8 gap-y-6" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+        {c.groups.map((g) => {
+          const label = t(`group.${g.label}`, undefined, g.label);
+          return (
+            <section key={g.label} aria-label={label} className="min-w-0">
+              <Link href={groupHref(c.slug, g.label)} onClick={onNavigate} data-track="mega_group" data-category={c.slug}
+                className="block text-caption font-bold uppercase tracking-[0.08em] text-ink hover:text-forest">{label}</Link>
+              <ul className="mt-2">
+                {g.items.slice(0, PER_GROUP).map((x) => (
+                  <li key={x}>
+                    <Link href={typeHref(c.slug, x)} onClick={onNavigate} data-track="mega_sub" data-category={c.slug}
+                      className="block truncate py-1 text-small text-slate-700 underline-offset-4 hover:text-forest hover:underline">{t(`sub.${x}`, undefined, x)}</Link>
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-caption text-muted">{t('mega.sizeHint')}</p>
-            </div>
-          )}
-        </div>
+              <Link href={groupHref(c.slug, g.label)} onClick={onNavigate} className="mt-1 inline-flex items-center gap-1 text-small font-semibold text-forest hover:underline">
+                {t('mega.allOf', { group: label.toLowerCase() })}<Icon name="arrow" size={14} />
+              </Link>
+            </section>
+          );
+        })}
+      </div>
 
-        {/* Underkategorier: sektionerne fordelt i lige høje kolonner (tre, når kategorien er stor) */}
-        <div className={`grid min-w-0 gap-8 px-8 py-7 ${cols === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
-          {balance(c.groups, cols).map((col, i) => (
-            <div key={i} className="flex min-w-0 flex-col gap-6">
-              {col.map((g) => {
-                const label = t(`group.${g.label}`, undefined, g.label);
-                return (
-                  <section key={g.label} aria-label={label}>
-                    <Link href={groupHref(c.slug, g.label)} onClick={onNavigate} data-track="mega_group" data-category={c.slug} className={`${kicker} block border-b border-line pb-3 text-ink hover:text-forest`}>{label}</Link>
-                    <ul className="mt-2">
-                      {g.items.map((x) => (
-                        <li key={x}>
-                          <Link href={typeHref(c.slug, x)} onClick={onNavigate} data-track="mega_sub" data-category={c.slug} className={`block text-slate-700 underline-offset-4 hover:text-forest hover:underline ${cols === 3 ? 'py-1 text-small' : 'py-1.5 text-body'}`}>
-                            {t(`sub.${x}`, undefined, x)}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                );
-              })}
-            </div>
+      {meta.brands.length > 0 && (
+        <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-line pt-4">
+          <span className="mr-1 text-small text-muted">{t('mega.brands')}:</span>
+          {meta.brands.slice(0, 6).map((b) => (
+            <Link key={b.brand} href={catHref(c.slug, `?maerke=${encodeURIComponent(b.brand)}`)} onClick={onNavigate} className={`${chip} h-8 font-medium`}>{b.brand}</Link>
           ))}
+          <Link href="/maerker/" onClick={onNavigate} className="ml-1 inline-flex items-center gap-1 text-small font-semibold text-forest hover:underline">{t('nav.brandsAZ')}<Icon name="arrow" size={14} /></Link>
         </div>
-
-        {/* Populære mærker */}
-        <div className="flex flex-col border-l border-line px-7 py-7">
-          <p className={`${kicker} border-b border-line pb-3 text-ink`}>{t('mega.brands')}</p>
-          <ul className="mt-2">
-            {meta.brands.map((b) => (
-              <li key={b.brand}>
-                <Link href={catHref(c.slug, `?maerke=${encodeURIComponent(b.brand)}`)} onClick={onNavigate}
-                  className="flex items-center justify-between gap-3 py-1.5 text-body text-ink hover:text-forest">
-                  <span className="truncate">{b.brand}</span><span className={count}>{n(b.count)}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <Link href="/maerker/" onClick={onNavigate} className="mt-auto flex items-center gap-1.5 border-t border-line pt-4 text-small font-semibold text-ink hover:text-forest">
-            {t('mega.allBrands', { n: n(brandTotal) })}<Icon name="arrow" size={14} />
-          </Link>
-        </div>
-
-        {/* Ugens fokus */}
-        <div className="py-7 pr-7">
-          {meta.focus && focusImg && (
-            <Link href={typeHref(c.slug, meta.focus.sub)} onClick={onNavigate} className="group relative flex h-full min-h-[360px] flex-col justify-end overflow-hidden rounded-lg bg-slate text-white">
-              <img src={focusImg.src} srcSet={focusImg.srcSet} sizes="200px" alt="" width={200} height={250} loading="lazy" decoding="async"
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] motion-reduce:transition-none" />
-              <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/75 to-transparent" />
-              <span className={`${kicker} absolute left-3 top-3 rounded-sm bg-surface px-2 py-1 text-[10px] text-ink`}>{t('mega.focus')}</span>
-              <span className="relative px-4 pb-4">
-                <span className="block text-caption text-white/85">{t('mega.focusKicker')}</span>
-                <span className="mt-1 block text-h3 font-bold leading-tight">{t(`sub.${meta.focus.sub}`, undefined, meta.focus.sub)}</span>
-                <span className="mt-3 inline-flex items-center gap-1.5 border-b border-white pb-0.5 text-small font-semibold">{t('mega.focusCta')}<Icon name="arrow" size={14} /></span>
-              </span>
-            </Link>
-          )}
-        </div>
-      </div>
-
-      {/* Tryghed og salg */}
-      <div className="flex items-center justify-between gap-6 border-t border-line bg-sunken px-7 py-3 text-small text-slate-700">
-        <p className="flex items-center gap-2">
-          <Icon name="shield" size={16} className="text-forest" />{t('mega.trust')}
-          <span aria-hidden="true" className="mx-2 text-stone-400">·</span>{t('mega.shipping', { price: formatKr(SHIPPING_FROM_KR) })}
-        </p>
-        <p className="flex items-center gap-2">
-          <span className="text-muted">{t('mega.sellQ')}</span>
-          <Link href="/saelg/" onClick={onNavigate} className="inline-flex items-center gap-1 font-semibold text-forest underline-offset-4 hover:underline">{t('mega.sellCta')}<Icon name="arrow" size={14} /></Link>
-        </p>
-      </div>
+      )}
     </div>
   );
 }
@@ -251,7 +162,7 @@ export function CategoryNav({ meta }: { meta: MenuMeta }) {
 
       {current && (
         <div className="absolute inset-x-0 top-full z-30 hidden border-b border-line bg-surface shadow-float motion-safe:animate-[rs-mega-in_160ms_ease-out] lg:block">
-          <MegaPanel c={current} meta={meta.cats[current.slug]} brandTotal={meta.brandTotal} onNavigate={close} id={panelId} />
+          <MegaPanel c={current} meta={meta.cats[current.slug]} onNavigate={close} id={panelId} />
         </div>
       )}
     </nav>

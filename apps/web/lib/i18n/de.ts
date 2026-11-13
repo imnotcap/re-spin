@@ -34,6 +34,7 @@ const de: Messages = {
   'mega.open': 'Typen in {cat} anzeigen',
   'mega.explore': "{cat} entdecken",
   'mega.allIn': "Alle Artikel in {cat}",
+  'mega.allOf': "Alle: {group}",
   'mega.news': "Neuheiten",
   'mega.newWeek': "+{n} diese Woche",
   'mega.popular': "Gerade besonders beliebt",

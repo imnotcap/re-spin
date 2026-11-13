@@ -34,6 +34,7 @@ const sv: Messages = {
   'mega.open': 'Visa typer i {cat}',
   'mega.explore': "Utforska {cat}",
   'mega.allIn': "Alla varor i {cat}",
+  'mega.allOf': "Alla {group}",
   'mega.news': "Nyheter",
   'mega.newWeek': "+{n} denna vecka",
   'mega.popular': "Mest populära just nu",
