@@ -8,6 +8,8 @@ import { getImageStore } from '../../../../lib/image-store';
 import { MAX_UPLOAD_BYTES, UPLOAD_MESSAGES, processImage, type ProcessError } from '../../../../lib/image-pipeline';
 import { sendImage } from '../../../../lib/conversations';
 import { readCapped } from '../../../../lib/read-capped';
+import { checkMessage } from '../../../../lib/spam';
+import { notifyAfterMessage } from '../../../../lib/message-notify';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -31,7 +33,7 @@ export async function POST(req: Request) {
   if (Number(req.headers.get('content-length') ?? '0') > MAX_UPLOAD_BYTES) return fail(413, 'too_large');
   const conversationId = new URL(req.url).searchParams.get('samtale') ?? '';
   const db = getDb();
-  if (!(await new PgRateLimiter(db, LIMIT).consume(`chat-image:${current.user.id}`)).allowed) return fail(429, 'rate_limited');
+  if (!(await new PgRateLimiter(db, LIMIT).consume(`chat-image:${current.user.id}`)).allowed || (await checkMessage(db, current.user.id))) return fail(429, 'rate_limited');
 
   const bytes = await readCapped(req.body, MAX_UPLOAD_BYTES);
   if (bytes === 'too_large') return fail(413, 'too_large');
@@ -40,6 +42,7 @@ export async function POST(req: Request) {
 
   const sent = await sendImage(db, getImageStore(), current.user.id, conversationId, r.image);
   if (!sent.ok) return fail(404, 'not_found');
+  notifyAfterMessage(conversationId, current.user.id);
   revalidatePath(`/konto/beskeder/${conversationId}/`);
   return NextResponse.json({ id: sent.id }, { status: 201, headers: NO_STORE });
 }

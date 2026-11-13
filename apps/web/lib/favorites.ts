@@ -1,7 +1,8 @@
 'use client';
 
 /**
- * Favoritter gemt lokalt i browseren (ingen konto i testversionen).
+ * Favoritter gemt lokalt i browseren – og, når man er logget ind, også på serveren (/api/favoritter/), så sælgeren
+ * kan se, hvor mange der har gemt annoncen, og få besked. Uden login virker de kun i denne browser.
  * localStorage kan mangle eller kaste (privat browsing, blokerede data) – så virker favoritter
  * bare indtil siden lukkes. Ændringer i én fane slår igennem i andre faner via "storage"-hændelsen.
  */
@@ -47,6 +48,30 @@ function subscribe(cb: () => void) {
   return () => { listeners.delete(cb); window.removeEventListener('storage', onStorage); };
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+let loggedIn = false;
+let synced = false;
+const post = (body: unknown) => {
+  void fetch('/api/favoritter/', { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin' }).catch(() => undefined);
+};
+
+/**
+ * Kaldes med serverens liste, når man er logget ind (fra lib/me.ts): de to lister flettes, og favoritter, der kun
+ * ligger i browseren, gemmes på serveren (én gang pr. sidevisning). null = logget ud.
+ */
+export function mergeServerFavorites(serverIds: readonly string[] | null): void {
+  loggedIn = serverIds !== null;
+  if (!serverIds) { synced = false; return; }
+  const cur = snapshot();
+  const missingLocally = serverIds.filter((id) => !cur.includes(id));
+  if (missingLocally.length) write([...missingLocally, ...cur].slice(0, 500));
+  if (!synced) {
+    synced = true;
+    const onlyLocal = cur.filter((id) => UUID.test(id) && !serverIds.includes(id));
+    if (onlyLocal.length) post({ sync: onlyLocal });
+  }
+}
+
 /** Fjern flere på én gang (fx egne annoncer) */
 export function removeFavorites(ids: readonly string[]): void {
   const cur = snapshot();
@@ -61,6 +86,7 @@ export function useFavorites() {
     const cur = snapshot();
     if (on === cur.includes(id)) return;
     write(on ? [id, ...cur] : cur.filter((x) => x !== id));
+    if (loggedIn && UUID.test(id)) post({ listingId: id, on });
   }, []);
   return { ids, has, set, count: ids.length };
 }

@@ -6,6 +6,7 @@ import { SHIPPING_PRICE_ORE, computeOrderAmounts } from '@respin/core/fees';
 import { formatOre, fromKr } from '@respin/core/money';
 import { buyerTotal, formatKr } from '@respin/ui/utils';
 import { useFavorites } from '../../lib/favorites';
+import { useFavoriteCount } from '../../lib/me';
 import { track } from '../../lib/analytics';
 import { useI18n } from '../../lib/i18n/client';
 import { makeOfferAction, type OfferState } from '../../lib/conversation-actions';
@@ -48,6 +49,7 @@ export function ItemActions({ id, title, meta, price, parcel, favorites, sellerN
   const { toast } = useToast();
   const fav = useFavorites();
   const on = fav.has(id);
+  const count = useFavoriteCount(id, favorites, on);
   const a = computeOrderAmounts({ price: fromKr(price), shipping: SHIPPING_PRICE_ORE[parcel], sellerCertified });
   const { t, n } = useI18n();
   const [offerOpen, setOfferOpen] = useState(false);
@@ -69,7 +71,7 @@ export function ItemActions({ id, title, meta, price, parcel, favorites, sellerN
         </div>
         <div className="flex items-center gap-2 text-small text-muted">
           <FavoriteButton glass={false} pressed={on} onPressedChange={(next) => { fav.set(id, next); track('favorite', { listingId: id, num: next ? 1 : -1 }); toast(next ? t('fav.saved') : t('fav.removed'), { icon: 'heart' }); }} />
-          <span>{t('buy.savedBy', { n: n(favorites + (on ? 1 : 0)) })}</span>
+          <span>{t('buy.savedBy', { n: n(count) })}</span>
         </div>
       </div>
 

@@ -12,6 +12,7 @@ import { BottomNav } from '../components/nav/BottomNav';
 import { getMenuMeta } from '../lib/site-stats';
 import { Tracker } from '../components/Tracker';
 import { VercelInsights } from '../components/VercelInsights';
+import { LiveNotifier } from '../components/notify/LiveNotifier';
 import { SITE_URL, SITE } from '../lib/site';
 import { DEFAULT_OG_IMAGE } from '../lib/seo';
 
@@ -63,6 +64,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <BottomNav />
           <Tracker />
           <VercelInsights />
+          <LiveNotifier />
           <CookieBanner />
         </Providers>
       </body>

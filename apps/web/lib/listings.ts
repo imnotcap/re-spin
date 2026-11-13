@@ -100,6 +100,8 @@ export interface ListingCardData {
   category: ListingCategory; sub: string; createdAt: string; image: ListingImage | null;
   /** avatar: adressen på sælgerens profilbillede (null = forbogstav) */
   seller: { name: string; certified: boolean; avatar: string | null };
+  /** Antal, der har gemt annoncen som favorit (indloggede brugere) */
+  favorites: number;
   /** Købt fremhævning, der kører lige nu */
   promoted?: boolean;
   /** Visninger de seneste 30 dage (statistik uden cookies) – bruges til "Mest populære" */
@@ -122,14 +124,17 @@ async function coverImages(db: Db, store: ImageStore, ids: string[]): Promise<Ma
 const cardColumns = {
   id: listings.id, title: listings.title, brand: listings.brand, size: listings.size, condition: listings.condition, priceOre: listings.priceOre,
   category: listings.category, sub: listings.subcategory, createdAt: listings.createdAt, status: listings.status,
-  sellerName: users.displayName, certified: sellerProfiles.certified, sellerAvatarKey: users.avatarKey
+  sellerName: users.displayName, certified: sellerProfiles.certified, sellerAvatarKey: users.avatarKey,
+  // Tabelnavnet skrives ud: i forespørgsler uden join skriver Drizzle kolonner uden tabel, og så ville "id" pege forkert
+  favCount: sql<number>`(select count(*)::int from ${schema.favorites} f where f.listing_id = "listings"."id")`.mapWith(Number)
 };
-type CardRow = { id: string; title: string; brand: string | null; size: string | null; condition: ListingCondition; priceOre: number; category: ListingCategory; sub: string | null; createdAt: Date; sellerName: string; certified: boolean | null; sellerAvatarKey: string | null };
+type CardRow = { id: string; title: string; brand: string | null; size: string | null; condition: ListingCondition; priceOre: number; category: ListingCategory; sub: string | null; createdAt: Date; sellerName: string; certified: boolean | null; sellerAvatarKey: string | null; favCount: number };
 
 const toCard = (r: CardRow, images: Map<string, ListingImage>, store: ImageStore): ListingCardData => ({
   id: r.id, title: r.title, brand: r.brand ?? '', size: r.size ?? '', condition: CONDITION_LABEL[r.condition], price: r.priceOre / 100,
   category: r.category, sub: r.sub ?? '', createdAt: r.createdAt.toISOString(), image: images.get(r.id) ?? null,
-  seller: { name: r.sellerName, certified: !!r.certified, avatar: r.sellerAvatarKey ? store.urlFor(r.sellerAvatarKey) : null }
+  seller: { name: r.sellerName, certified: !!r.certified, avatar: r.sellerAvatarKey ? store.urlFor(r.sellerAvatarKey) : null },
+  favorites: Number(r.favCount) || 0
 });
 
 /** Escape %, _ og \ i LIKE-mønstre, så søgning efter "50%" ikke matcher alt */

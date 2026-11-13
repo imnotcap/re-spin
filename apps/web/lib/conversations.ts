@@ -23,7 +23,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 export const MESSAGE_MAX = 2000;
 
-export type MessageError = 'not_found' | 'own_listing' | 'not_for_sale' | 'invalid_body' | 'invalid_amount' | 'offer_exists' | 'invalid_state';
+export type MessageError = 'not_found' | 'own_listing' | 'not_for_sale' | 'invalid_body' | 'invalid_amount' | 'offer_exists' | 'invalid_state' | 'duplicate';
 export type Result<T = object> = ({ ok: true } & T) | { ok: false; error: MessageError };
 
 const kr = (ore: number) => `${(ore / 100).toLocaleString('da-DK', { minimumFractionDigits: ore % 100 ? 2 : 0, maximumFractionDigits: 2 })} kr.`;
@@ -90,11 +90,23 @@ async function addMessage(tx: Db, c: { id: string; role: 'buyer' | 'seller' }, s
   return { id: m!.id, risk };
 }
 
+/** Samme tekst (mindst så lang) sendt til så mange forskellige samtaler inden for en time = masseudsendelse */
+export const DUPLICATE_MIN_LENGTH = 15;
+export const DUPLICATE_MAX_CONVERSATIONS = 3;
+
 export async function sendMessage(db: Db, userId: string, conversationId: string, raw: string, now = new Date()): Promise<Result<{ id: string; risk: string }>> {
   const c = await participant(db, userId, conversationId);
   if (!c) return { ok: false, error: 'not_found' };
   const body = bodyInput.safeParse(raw);
   if (!body.success) return { ok: false, error: 'invalid_body' };
+  // Spam: den samme (lange) besked sendt til mange forskellige sælgere/købere på kort tid afvises
+  if (body.data.length >= DUPLICATE_MIN_LENGTH) {
+    const [d] = await db.select({ n: sql<number>`count(distinct ${messages.conversationId})`.mapWith(Number) }).from(messages).where(and(
+      eq(messages.senderId, userId), eq(messages.body, body.data), sql`${messages.conversationId} <> ${c.id}`,
+      sql`${messages.createdAt} > ${new Date(now.getTime() - 3_600_000).toISOString()}::timestamptz`
+    ));
+    if ((d?.n ?? 0) >= DUPLICATE_MAX_CONVERSATIONS) return { ok: false, error: 'duplicate' };
+  }
   const m = await db.transaction((tx) => addMessage(tx as unknown as Db, c, userId, body.data, 'text', null, now));
   return { ok: true, ...m };
 }
