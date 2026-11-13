@@ -122,3 +122,25 @@ export async function removeProfileImage(db: Db, store: ImageStore, userId: stri
   const previous = kind === 'avatar' ? old.avatarKey : old.bannerKey;
   if (previous) await store.delete(previous).catch((e: unknown) => console.error('profilbillede: kunne ikke slette', e instanceof Error ? e.message : 'ukendt'));
 }
+
+/* ------------------------------ Søg efter personer ------------------------------ */
+
+export interface MemberHit { username: string; name: string; avatar: string | null; forSale: number }
+
+/**
+ * Personer, der matcher en søgning (visningsnavn eller profilnavn – "@mette" virker også). Kun aktive brugere med
+ * en offentlig profil; dem med flest varer til salg først. Ingen e-mails eller andet privat.
+ */
+export async function searchMembers(db: Db, store: ImageStore, raw: string, limit = 8): Promise<MemberHit[]> {
+  const q = raw.trim().replace(/^@+/, '').slice(0, 60);
+  if (q.length < 2) return [];
+  const pat = `%${q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+  const rows = await db.select({
+    username: users.username, name: users.displayName, avatarKey: users.avatarKey,
+    forSale: sql<number>`(select count(*)::int from ${schema.listings} l where l.seller_id = "users"."id" and l.status = 'active' and l.moderation_status = 'approved')`.mapWith(Number)
+  }).from(users)
+    .where(and(eq(users.status, 'active'), sql`${users.username} is not null`, sql`(${users.displayName} ilike ${pat} or ${users.username} ilike ${pat})`))
+    .orderBy(users.displayName).limit(50);
+  return rows.sort((a, b) => b.forSale - a.forSale).slice(0, Math.min(limit, 20))
+    .map((r) => ({ username: r.username!, name: r.name, avatar: r.avatarKey ? store.urlFor(r.avatarKey) : null, forSale: r.forSale }));
+}

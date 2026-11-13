@@ -5,21 +5,27 @@ import { ownListingIds } from '../../../lib/listings';
 import { unreadConversations } from '../../../lib/conversations';
 import { profileFor, profileImageUrl } from '../../../lib/profile';
 import { getImageStore } from '../../../lib/image-store';
+import { latestUnreadMessage, notesFor, touchPresence, type LiveMessage, type LiveNote } from '../../../lib/live';
+import { favoriteIds } from '../../../lib/favorites-server';
 
 /**
- * Hvem er logget ind? Bruges af headerens konto-knap og varekortene. Returnerer visningsnavnet og id'erne på
- * brugerens egne annoncer (så man ikke kan sætte hjerte på dem), profilbilledets adresse og antal samtaler med ulæste beskeder – aldrig e-mail eller bruger-id – og må aldrig
- * caches (svaret er personligt). Ingen session eller en fejl → null (knappen viser "Log ind").
+ * Hvem er logget ind? Bruges af headeren, bundmenuen, varekortene og notifikationerne (hentes hvert 20. sekund, mens
+ * siden er åben – det registrerer også, at brugeren er på siden, så nye beskeder ikke giver mail). Returnerer navn,
+ * egne annoncer (ingen hjerte på dem), gemte favoritter, profilbillede, ulæste samtaler, nyeste ulæste besked og
+ * notifikationer – aldrig e-mail eller bruger-id. Må aldrig caches. Ingen session eller en fejl → null.
  */
 export async function GET() {
-  let body: { name: string; listingIds: string[]; unread: number; avatar: string | null } | null = null;
+  let body: { name: string; listingIds: string[]; unread: number; avatar: string | null; favorites: string[]; message: LiveMessage | null; notes: { unread: number; items: LiveNote[] } } | null = null;
   try {
     const s = await getCurrentSession();
     if (s) {
-      const [listingIds, unread, profile] = await Promise.all([
-        ownListingIds(getDb(), s.user.id).catch(() => []), unreadConversations(getDb(), s.user.id).catch(() => 0), profileFor(getDb(), s.user.id).catch(() => null)
+      const db = getDb();
+      const [listingIds, unread, profile, favorites, message, notes] = await Promise.all([
+        ownListingIds(db, s.user.id).catch(() => []), unreadConversations(db, s.user.id).catch(() => 0), profileFor(db, s.user.id).catch(() => null),
+        favoriteIds(db, s.user.id).catch(() => []), latestUnreadMessage(db, s.user.id).catch(() => null), notesFor(db, s.user.id).catch(() => ({ unread: 0, items: [] })),
+        touchPresence(db, s.user.id).catch(() => undefined)
       ]);
-      body = { name: s.user.displayName, listingIds, unread, avatar: profileImageUrl(getImageStore(), profile?.avatarKey) };
+      body = { name: s.user.displayName, listingIds, unread, avatar: profileImageUrl(getImageStore(), profile?.avatarKey), favorites, message, notes };
     }
   } catch {
     body = null;

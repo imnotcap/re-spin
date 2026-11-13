@@ -3,7 +3,7 @@
 import { ProductCard, useToast } from '@respin/ui';
 import type { IconName } from '@respin/ui';
 import { useFavorites } from '../lib/favorites';
-import { useOwnListingIds } from '../lib/me';
+import { useFavoriteCount, useOwnListingIds } from '../lib/me';
 import { track } from '../lib/analytics';
 import { useI18n } from '../lib/i18n/client';
 
@@ -33,6 +33,7 @@ export function ItemCard({ item, showSeller = false }: { item: CardItem; showSel
   const { toast } = useToast();
   const on = !own && fav.has(item.id);
   const { t } = useI18n();
+  const count = useFavoriteCount(item.id, item.favorites, on);
   return (
     // data-track: klik på kortet tælles i statistikken (uden cookies)
     <div data-track="card" data-listing={item.id} className="contents">
@@ -41,7 +42,7 @@ export function ItemCard({ item, showSeller = false }: { item: CardItem; showSel
       href={item.href ?? `/annonce/${item.id}/`}
       badge={item.badge ?? (item.vintage ? 'Vintage' : undefined)}
       placeholderIcon={item.icon}
-      favoriteCount={item.favorites + (on ? 1 : 0)}
+      favoriteCount={count}
       seller={showSeller ? item.seller : undefined}
       favorite={on}
       // Man kan ikke sætte hjerte på sine egne annoncer

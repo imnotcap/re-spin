@@ -7,6 +7,7 @@ import { Avatar, Button, Icon, LogoMark, Wordmark } from '@respin/ui';
 import { BASE_PATH, HELP_NAV, SITE } from '../lib/site';
 import type { MenuMeta } from '../lib/catalog';
 import { useFavorites } from '../lib/favorites';
+import { NotificationBell } from './notify/NotificationBell';
 import { refreshMe, useMe } from '../lib/me';
 import { useI18n } from '../lib/i18n/client';
 import { LanguageMenu } from './LanguageMenu';
@@ -115,6 +116,7 @@ export function Header({ meta }: { meta: MenuMeta }) {
               </span>
             )}
           </Link>
+          {AUTH && me && <NotificationBell />}
           {AUTH && me && (
             <Link href="/konto/beskeder/" aria-current={pathname.startsWith('/konto/beskeder/') ? 'page' : undefined}
               className="relative hidden h-tap w-tap items-center justify-center rounded-md text-ink transition-colors hover:bg-sunken md:inline-flex">

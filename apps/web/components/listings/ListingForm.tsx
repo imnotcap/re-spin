@@ -1,6 +1,6 @@
 'use client';
 
-import { startTransition, useActionState, useEffect, useRef, useState, type FormEvent } from 'react';
+import { startTransition, useActionState, useEffect, useRef, useState, type DragEvent, type FormEvent } from 'react';
 import { Button, Field, Icon, Notice, OptionCard, Select, Textarea } from '@respin/ui';
 import { SHIPPING_PRICE_ORE, sellerPayout } from '@respin/core/fees';
 import { formatOre, ore } from '@respin/core/money';
@@ -30,10 +30,13 @@ async function upload(blob: Blob): Promise<{ id: string } | { error: string }> {
 
 function Photos({ photos, setPhotos }: { photos: Photo[]; setPhotos: (fn: (p: Photo[]) => Photo[]) => void }) {
   const input = useRef<HTMLInputElement>(null);
-  const add = async (files: FileList | null) => {
+  const [dragging, setDragging] = useState(false);
+  const depth = useRef(0); // dragenter/dragleave fyrer også for børn – tæl, så markeringen ikke blinker
+  const add = async (files: FileList | File[] | null) => {
     if (!files) return;
     const room = MAX_PHOTOS - photos.length;
-    for (const file of Array.from(files).slice(0, room)) {
+    // Kun billeder (træk og slip kan indeholde alt muligt); serveren tjekker alligevel filens indhold
+    for (const file of Array.from(files).filter((f) => /^image\/(jpeg|png|webp)$/.test(f.type)).slice(0, room)) {
       const local = URL.createObjectURL(file);
       setPhotos((p) => [...p, { local, state: 'uploading' }]);
       const r = await upload(await shrink(file));
@@ -44,10 +47,23 @@ function Photos({ photos, setPhotos }: { photos: Photo[]; setPhotos: (fn: (p: Ph
   const remove = (local: string) => setPhotos((p) => { URL.revokeObjectURL(local); return p.filter((x) => x.local !== local); });
   const cover = (local: string) => setPhotos((p) => [...p.filter((x) => x.local === local), ...p.filter((x) => x.local !== local)]);
 
+  const hasFiles = (e: DragEvent<HTMLElement>) => Array.from(e.dataTransfer.types).includes('Files');
+  const dnd = {
+    onDragEnter: (e: DragEvent<HTMLElement>) => { if (!hasFiles(e)) return; e.preventDefault(); depth.current++; setDragging(true); },
+    onDragOver: (e: DragEvent<HTMLElement>) => { if (!hasFiles(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = photos.length < MAX_PHOTOS ? 'copy' : 'none'; },
+    onDragLeave: () => { depth.current = Math.max(0, depth.current - 1); if (depth.current === 0) setDragging(false); },
+    onDrop: (e: DragEvent<HTMLElement>) => { if (!hasFiles(e)) return; e.preventDefault(); depth.current = 0; setDragging(false); void add(Array.from(e.dataTransfer.files)); }
+  };
+
   return (
-    <fieldset className="flex flex-col gap-3">
+    <fieldset {...dnd} className={`relative flex flex-col gap-3 rounded-lg transition-[box-shadow,background-color] ${dragging ? 'bg-[var(--rs-forest-50)] shadow-[0_0_0_2px_var(--rs-forest)]' : ''}`}>
       <legend className="text-h3">Billeder</legend>
-      <p className="text-small text-muted">1–8 billeder. Det første er forsidebilledet. Vis gerne mærke, detaljer og evt. slid.</p>
+      <p className="text-small text-muted">1–8 billeder. Det første er forsidebilledet. Vis gerne mærke, detaljer og evt. slid. <span className="hidden md:inline">Du kan også trække billederne herind.</span></p>
+      {dragging && (
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed border-forest bg-[var(--rs-forest-50)]/90 text-body font-bold text-forest">
+          <span className="inline-flex items-center gap-2"><Icon name="upload" size={22} />{photos.length < MAX_PHOTOS ? 'Slip billederne her' : 'Du har allerede 8 billeder'}</span>
+        </div>
+      )}
       <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4" aria-label="Valgte billeder">
         {photos.map((p, i) => (
           <li key={p.local} className="relative aspect-square overflow-hidden rounded-md border border-line bg-stone-50">
@@ -69,6 +85,7 @@ function Photos({ photos, setPhotos }: { photos: Photo[]; setPhotos: (fn: (p: Ph
           <li>
             <button type="button" onClick={() => input.current?.click()} className="flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-line text-small font-semibold text-forest hover:border-forest">
               <Icon name="camera" size={24} />Tilføj billeder
+              <span className="hidden text-caption font-normal text-muted md:block">eller træk dem herind</span>
             </button>
           </li>
         )}

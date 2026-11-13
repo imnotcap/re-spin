@@ -24,6 +24,62 @@ const SAFETY = 'Betal aldrig uden om Videro, og klik ikke på links, du får til
 
 export interface NotifyResult { messages: number; support: number; failed: number }
 
+/** Modtageren regnes for "på siden", hvis hen har været aktiv inden for halvandet minut (siden spørger hvert 20. sek.) */
+export const ONLINE_MS = 90_000;
+
+interface MessageMailInput { id: string; title: string; name: string; from: string; unread: number; lastKind: string | null; lastBody: string | null; lastRisk: string | null }
+
+/** Mailen om nye beskeder i en samtale (tekst + HTML). Mistænkelige beskeder citeres aldrig (phishing). */
+export function messageMail(r: MessageMailInput, base: string) {
+  const offer = r.lastKind?.startsWith('offer');
+  const what = offer ? (r.lastBody ?? 'Nyt om et bud') : r.unread === 1 ? (r.lastKind === 'image' ? 'et billede' : 'en ny besked') : `${r.unread} nye beskeder`;
+  const quoted = r.lastKind === 'text' && r.lastRisk === 'low' && r.lastBody ? (r.lastBody.length > 200 ? `${r.lastBody.slice(0, 200)}…` : r.lastBody) : null;
+  const link = `${base}/konto/beskeder/${r.id}/`;
+  return {
+    subject: `${r.from} har skrevet til dig om “${r.title.slice(0, 60)}”`,
+    text: `Hej ${r.name}\n\n${r.from} har sendt dig ${offer ? `en opdatering om et bud: ${what}` : what} om “${r.title}”.${quoted ? `\n\n“${quoted}”` : ''}\n\nLæs og svar her:\n${link}${FOOTER}`,
+    html: renderMail({
+      preheader: quoted ?? `${r.from} har skrevet til dig om “${r.title}”.`,
+      heading: offer ? 'Nyt om et bud' : r.unread === 1 ? 'Du har en ny besked' : `Du har ${r.unread} nye beskeder`,
+      paragraphs: [`Hej ${r.name}`, `${r.from} har sendt dig ${offer ? `en opdatering om et bud: ${what}` : what} om “${r.title}”.`],
+      ...(quoted ? { quote: { author: r.from, text: quoted } } : {}),
+      button: { label: offer ? 'Se buddet' : 'Læs og svar', href: link },
+      footnote: SAFETY,
+      reason: REASON
+    })
+  };
+}
+
+/**
+ * Lige efter en ny besked (kaldes med after() fra handlingen): er modtageren ikke på siden lige nu, får hen en mail
+ * med det samme – højst én pr. samtale pr. kvarter. Er modtageren på siden, vises beskeden i stedet som notifikation
+ * dér (se LiveNotifier). Cron-jobbet (runNotifications) er sikkerhedsnet, hvis afsendelsen her fejler.
+ */
+export async function notifyNewMessage(db: Db, mailer: Mailer, appUrl: string, conversationId: string, senderId: string, now = new Date()): Promise<'sent' | 'online' | 'throttled' | 'skipped'> {
+  const [c] = await db.select().from(conversations).where(eq(conversations.id, conversationId));
+  if (!c || (c.buyerId !== senderId && c.sellerId !== senderId)) return 'skipped';
+  const role = c.buyerId === senderId ? 'seller' : 'buyer'; // modtagerens rolle
+  const recipientId = role === 'buyer' ? c.buyerId : c.sellerId;
+  const readAt = role === 'buyer' ? c.buyerReadAt : c.sellerReadAt;
+  const notifiedAt = role === 'buyer' ? c.buyerNotifiedAt : c.sellerNotifiedAt;
+  const [[to], [from], [l]] = await Promise.all([
+    db.select({ email: users.email, name: users.displayName, status: users.status, verified: users.emailVerifiedAt, lastSeenAt: users.lastSeenAt }).from(users).where(eq(users.id, recipientId)),
+    db.select({ name: users.displayName }).from(users).where(eq(users.id, senderId)),
+    db.select({ title: listings.title }).from(listings).where(eq(listings.id, c.listingId))
+  ]);
+  if (!to || !from || !l || to.status !== 'active' || !to.verified) return 'skipped';
+  if (to.lastSeenAt && now.getTime() - to.lastSeenAt.getTime() < ONLINE_MS) return 'online';
+  if (notifiedAt && now.getTime() - notifiedAt.getTime() < MESSAGE_THROTTLE_MS) return 'throttled';
+  const unreadMsgs = await db.select({ body: messages.body, kind: messages.kind, risk: messages.riskLevel }).from(messages)
+    .where(and(eq(messages.conversationId, c.id), eq(messages.senderId, senderId), sql`${messages.createdAt} > ${(readAt ?? new Date(0)).toISOString()}::timestamptz`))
+    .orderBy(sql`${messages.createdAt} desc`).limit(50);
+  const last = unreadMsgs[0];
+  if (!last) return 'skipped';
+  await mailer.send({ to: to.email, ...messageMail({ id: c.id, title: l.title, name: to.name, from: from.name, unread: unreadMsgs.length, lastKind: last.kind, lastBody: last.body, lastRisk: last.risk }, appUrl.replace(/\/$/, '')) });
+  await db.update(conversations).set(role === 'buyer' ? { buyerNotifiedAt: now } : { sellerNotifiedAt: now }).where(eq(conversations.id, c.id));
+  return 'sent';
+}
+
 export async function runNotifications(db: Db, mailer: Mailer, appUrl: string, now = new Date()): Promise<NotifyResult> {
   const base = appUrl.replace(/\/$/, '');
   const out: NotifyResult = { messages: 0, support: 0, failed: 0 };
@@ -55,26 +111,8 @@ export async function runNotifications(db: Db, mailer: Mailer, appUrl: string, n
       )).limit(BATCH);
     for (const r of rows) {
       if (r.unread === 0) continue;
-      const what = r.lastKind?.startsWith('offer') ? (r.lastBody ?? 'Nyt om et bud') : r.unread === 1 ? (r.lastKind === 'image' ? 'et billede' : 'en ny besked') : `${r.unread} nye beskeder`;
-      const quote = r.lastKind === 'text' && r.lastRisk === 'low' && r.lastBody ? `\n\n“${r.lastBody.length > 200 ? `${r.lastBody.slice(0, 200)}…` : r.lastBody}”` : '';
       try {
-        const offer = r.lastKind?.startsWith('offer');
-        const link = `${base}/konto/beskeder/${r.id}/`;
-        const quoted = r.lastKind === 'text' && r.lastRisk === 'low' && r.lastBody ? (r.lastBody.length > 200 ? `${r.lastBody.slice(0, 200)}…` : r.lastBody) : null;
-        await mailer.send({
-          to: r.email,
-          subject: `${r.from} har skrevet til dig om “${r.title.slice(0, 60)}”`,
-          text: `Hej ${r.name}\n\n${r.from} har sendt dig ${offer ? `en opdatering om et bud: ${what}` : what} om “${r.title}”.${quote}\n\nLæs og svar her:\n${link}${FOOTER}`,
-          html: renderMail({
-            preheader: quoted ?? `${r.from} har skrevet til dig om “${r.title}”.`,
-            heading: offer ? 'Nyt om et bud' : r.unread === 1 ? 'Du har en ny besked' : `Du har ${r.unread} nye beskeder`,
-            paragraphs: [`Hej ${r.name}`, `${r.from} har sendt dig ${offer ? `en opdatering om et bud: ${what}` : what} om “${r.title}”.`],
-            ...(quoted ? { quote: { author: r.from, text: quoted } } : {}),
-            button: { label: offer ? 'Se buddet' : 'Læs og svar', href: link },
-            footnote: SAFETY,
-            reason: REASON
-          })
-        });
+        await mailer.send({ to: r.email, ...messageMail(r, base) });
         await db.update(conversations).set(role === 'buyer' ? { buyerNotifiedAt: now } : { sellerNotifiedAt: now }).where(eq(conversations.id, r.id));
         out.messages++;
       } catch (e) {

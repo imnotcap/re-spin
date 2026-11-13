@@ -16,6 +16,7 @@ GRANT SELECT, INSERT ON seller_profiles TO respin_web;
 GRANT UPDATE (stripe_account_id, payouts_enabled, kyc_status, stripe_requirements, stripe_disabled_reason, stripe_synced_at, sender_address) ON seller_profiles TO respin_web;
 GRANT UPDATE (status, attempts, run_after, last_error, done_at) ON outbox TO respin_web;  -- outbox køres fra cron i web-appen
 GRANT SELECT, INSERT, DELETE ON favorites TO respin_web;
+GRANT SELECT, INSERT, UPDATE ON notifications TO respin_web;                  -- notifikationer (fx "gemt som favorit")
 GRANT SELECT, INSERT, UPDATE ON listing_promotions TO respin_web;      -- fremhævning (købes af sælgeren selv)
 GRANT SELECT, INSERT, UPDATE ON orders TO respin_web;
 GRANT SELECT, INSERT ON order_events, ledger_transactions, outbox, reports TO respin_web;
@@ -30,7 +31,7 @@ GRANT USAGE ON SEQUENCE support_cases_number_seq TO respin_web;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO respin_admin;
 GRANT UPDATE (status) ON users TO respin_admin;
 -- sletning af brugere (helt uden penge-historik, ellers anonymiseret) – se migration 0015
-GRANT DELETE ON users, seller_profiles, listing_images, listing_promotions, conversations, offers, support_cases TO respin_admin;
+GRANT DELETE ON users, seller_profiles, listing_images, listing_promotions, conversations, offers, support_cases, notifications TO respin_admin;
 GRANT UPDATE (email, email_normalized, display_name, username, bio, profile_banner, avatar_key, banner_key, deleted_at) ON users TO respin_admin;
 GRANT UPDATE (status, moderation_status, moderation_note, moderated_by, moderated_at, category, subcategory, updated_at) ON listings TO respin_admin;
 GRANT DELETE ON listings TO respin_admin;                                    -- permanent sletning af annoncer (uden ordrer)

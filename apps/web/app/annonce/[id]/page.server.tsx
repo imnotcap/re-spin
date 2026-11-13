@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
-import { Breadcrumbs, Button, DetailList, Notice, PriceDetails, ProductGallery, SellerCard } from '@respin/ui';
+import { Breadcrumbs, Button, DetailList, Icon, Notice, PriceDetails, ProductGallery, SellerCard } from '@respin/ui';
 import { SHIPPING_PRICE_ORE } from '@respin/core/fees';
 import { formatKr } from '@respin/ui/utils';
 import { ItemActions } from '../../../components/item/ItemActions';
@@ -114,9 +114,10 @@ export default async function ListingPage({ params, searchParams }: Props) {
                 <Button href={`/konto/annoncer/${l.id}/rediger/`} icon="edit">Redigér annonce</Button>
                 {l.status === 'active' && l.moderation === 'approved' && <Button href={`/konto/annoncer/${l.id}/fremhaev/`} variant="outline" icon="sparkle">Fremhæv annonce</Button>}
                 <Button href="/konto/annoncer/" variant="ghost">Mine annoncer</Button>
+                <p className="flex w-full items-center gap-1.5 text-small text-muted"><Icon name="heart" size={16} className="text-coral-600" />{l.favorites === 1 ? '1 har gemt annoncen som favorit' : `${l.favorites} har gemt annoncen som favorit`}</p>
               </div>
             ) : l.status === 'active' ? (
-              <ItemActions id={l.id} title={l.title} meta={meta} price={l.price} parcel={l.parcel} favorites={0} sellerName={l.seller.name} sellerCertified={l.seller.certified} pickup={!!getShipmondoOrNull()} />
+              <ItemActions id={l.id} title={l.title} meta={meta} price={l.price} parcel={l.parcel} favorites={l.favorites} sellerName={l.seller.name} sellerCertified={l.seller.certified} pickup={!!getShipmondoOrNull()} />
             ) : null}
           </div>
 

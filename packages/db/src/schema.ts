@@ -52,7 +52,9 @@ export const users = pgTable('users', {
   /** Profilbillede i billedlageret (profiles/ÅÅÅÅ/MM/<uuid>.webp) – nøglen laves af serveren, aldrig af brugeren */
   avatarKey: text('avatar_key'),
   /** Eget bannerbillede i billedlageret (samme format som avatarKey) */
-  bannerKey: text('banner_key')
+  bannerKey: text('banner_key'),
+  /** Sidst set på siden (opdateres højst hvert minut, mens siden er åben) – afgør om en ny besked giver mail med det samme */
+  lastSeenAt: ts('last_seen_at')
 }, (t) => [
   check('users_email_normalized_lower', sql`${t.emailNormalized} = lower(${t.emailNormalized})`),
   check('users_username_format', sql`${t.username} IS NULL OR ${t.username} ~ '^[a-z0-9][a-z0-9._-]{1,28}[a-z0-9]$'`),
@@ -161,6 +163,23 @@ export const favorites = pgTable('favorites', {
   createdAt: createdAt()
 }, (t) => [primaryKey({ columns: [t.userId, t.listingId] })]);
 
+/**
+ * Notifikationer til en bruger (klokken i headeren). kind 'favorite': nogen har gemt brugerens annonce som favorit.
+ * actorId bruges kun til at undgå gentagelser – hvem der gemte, vises aldrig.
+ */
+export const notifications = pgTable('notifications', {
+  id: id(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  kind: text('kind').notNull(),
+  listingId: uuid('listing_id').references(() => listings.id, { onDelete: 'cascade' }),
+  actorId: uuid('actor_id').references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: createdAt(),
+  readAt: ts('read_at')
+}, (t) => [
+  check('notifications_kind', sql`${t.kind} IN ('favorite')`),
+  index('notifications_user_idx').on(t.userId, t.createdAt)
+]);
+
 /* --------------------------- Samtaler og bud --------------------------- */
 export const conversations = pgTable('conversations', {
   id: id(),
@@ -200,7 +219,8 @@ export const messages = pgTable('messages', {
   check('messages_body_len', sql`char_length(${t.body}) BETWEEN 1 AND 2000 OR (${t.kind} = 'image' AND char_length(${t.body}) = 0)`),
   check('messages_kind', sql`${t.kind} IN ('text', 'image', 'offer', 'offer_accepted', 'offer_declined', 'offer_withdrawn')`),
   check('messages_image', sql`(${t.kind} = 'image') = (${t.imageKey} IS NOT NULL) AND (${t.imageKey} IS NULL OR ${t.imageKey} ~ '^chat/[0-9]{4}/[0-9]{2}/[0-9a-f-]{36}[.]webp$')`),
-  index('messages_conv_idx').on(t.conversationId, t.createdAt)
+  index('messages_conv_idx').on(t.conversationId, t.createdAt),
+  index('messages_sender_idx').on(t.senderId, t.createdAt)
 ]);
 
 export const offers = pgTable('offers', {
