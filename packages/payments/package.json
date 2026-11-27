@@ -8,6 +8,6 @@
   "types": "./src/index.ts",
   "exports": { ".": "./src/index.ts" },
   "scripts": { "typecheck": "tsc --noEmit" },
-  "dependencies": { "@respin/core": "*", "@respin/db": "*", "drizzle-orm": "^0.45.0", "stripe": "^23.0.0" },
+  "dependencies": { "@respin/core": "*", "@respin/db": "*", "drizzle-orm": "^0.45.0", "stripe": "^23.2.0" },
   "devDependencies": { "typescript": "~6.0.3" }
 }
